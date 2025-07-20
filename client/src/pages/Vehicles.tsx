@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { VehicleSearch } from '../components/VehicleSearch';
 import { VehicleForm } from '../components/VehicleForm';
 import { OpportunityForm } from '../components/OpportunityForm';
-import { useAuth } from '../hooks/useAuth';
 
 import type { Vehicle } from '../types/index';
 
@@ -15,7 +14,6 @@ interface VehiclesProps {
 
 export const Vehicles = ({ initialMode = 'search', onModeUsed }: VehiclesProps) => {
   console.log('🚗 VEHICLES COMPONENT LOADED with initialMode:', initialMode);
-  const { user } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>(initialMode);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 

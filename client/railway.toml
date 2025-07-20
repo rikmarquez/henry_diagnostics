@@ -1,8 +1,11 @@
 [build]
 builder = "nixpacks"
 
+[build.nixpacksConfig]
+buildCommand = "echo 'Using pre-built static files'"
+
 [deploy]
-startCommand = "npm run preview"
+startCommand = "npx serve -s dist -l 8080"
 
 [env]
 NODE_ENV = "production"
