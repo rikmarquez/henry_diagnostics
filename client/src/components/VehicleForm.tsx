@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { vehicleService } from '../services/vehicles';
 import { customerService } from '../services/customers';
+import { BarcodeScanner } from './BarcodeScanner';
 
 // Tipos locales
 interface Customer {
@@ -77,6 +78,7 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
   const [error, setError] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
 
   const isEditing = !!vehicle;
 
@@ -154,6 +156,11 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
     }
   };
 
+  const handleScanResult = (scannedVin: string) => {
+    setValue('vin', scannedVin);
+    setShowScanner(false);
+  };
+
   return (
     <div className="card p-6">
       <div className="flex justify-between items-center mb-6">
@@ -183,14 +190,27 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
             <label className="block text-sm font-medium text-gray-700 mb-1">
               VIN *
             </label>
-            <input
-              {...register('vin')}
-              type="text"
-              className="input-field uppercase"
-              placeholder="1N4BL11D85C123456"
-              disabled={isEditing}
-              maxLength={17}
-            />
+            <div className="flex space-x-2">
+              <input
+                {...register('vin')}
+                type="text"
+                className="input-field uppercase flex-1"
+                placeholder="1N4BL11D85C123456"
+                disabled={isEditing}
+                maxLength={17}
+              />
+              {!isEditing && (
+                <button
+                  type="button"
+                  onClick={() => setShowScanner(true)}
+                  className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1 whitespace-nowrap"
+                  title="Escanear código de barras VIN"
+                >
+                  <span>📷</span>
+                  <span className="hidden sm:inline">Escanear VIN</span>
+                </button>
+              )}
+            </div>
             {errors.vin && (
               <p className="mt-1 text-sm text-red-600">{errors.vin.message}</p>
             )}
@@ -403,6 +423,12 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
           </button>
         </div>
       </form>
+
+      <BarcodeScanner
+        isOpen={showScanner}
+        onResult={handleScanResult}
+        onClose={() => setShowScanner(false)}
+      />
     </div>
   );
 };
