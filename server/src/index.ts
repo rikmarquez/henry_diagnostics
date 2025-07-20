@@ -7,6 +7,7 @@ import authRoutes from './routes/auth';
 import vehiclesRoutes from './routes/vehicles';
 import customersRoutes from './routes/customers';
 import opportunitiesRoutes from './routes/opportunities';
+import { usersRouter } from './routes/users';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -56,6 +57,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehiclesRoutes);
 app.use('/api/customers', customersRoutes);
 app.use('/api/opportunities', opportunitiesRoutes);
+app.use('/api/users', usersRouter);
 
 // Middleware para rutas no encontradas
 app.use('*', (req, res) => {
@@ -112,6 +114,15 @@ app.listen(PORT, () => {
   console.log('   GET  /api/opportunities/vehicle/:vin - Oportunidades por VIN');
   console.log('   GET  /api/opportunities/reminders/today - Recordatorios del día');
   console.log('   POST /api/opportunities/:id/notes - Agregar nota de seguimiento');
+  console.log('');
+  console.log('👤 Gestión de Usuarios (Solo Administradores):');
+  console.log('   GET  /api/users/stats - Estadísticas de usuarios');
+  console.log('   GET  /api/users - Lista de usuarios con filtros');
+  console.log('   GET  /api/users/:id - Obtener usuario por ID');
+  console.log('   POST /api/users - Crear nuevo usuario');
+  console.log('   PUT  /api/users/:id - Actualizar usuario');
+  console.log('   POST /api/users/:id/reset-password - Restablecer contraseña');
+  console.log('   GET  /api/users/:id/activity - Log de actividades del usuario');
   console.log('');
   console.log('💾 Para configurar la base de datos:');
   console.log('   npm run db:migrate - Crear tablas');
