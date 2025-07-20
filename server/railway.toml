@@ -1,6 +1,9 @@
 [build]
 builder = "nixpacks"
 
+[build.nixpacksConfig]
+buildCommand = "echo 'Skipping build - using pre-compiled code'"
+
 [deploy]
 startCommand = "node dist/index.js"
 
