@@ -25,7 +25,11 @@
       "Bash(start http://localhost:5173)",
       "Bash(cmd /c start http://localhost:5173)",
       "Bash(npx kill-port:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
