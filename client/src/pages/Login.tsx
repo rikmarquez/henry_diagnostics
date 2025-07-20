@@ -4,7 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { Logo } from '../components/Logo';
-import { LoginRequest } from '../types';
+
+// Tipos locales para evitar problemas de importación
+interface LoginRequest {
+  email: string;
+  password: string;
+}
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),

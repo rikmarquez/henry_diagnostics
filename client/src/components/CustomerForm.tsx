@@ -3,7 +3,21 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { customerService } from '../services/customers';
-import { Customer } from '../types';
+
+// Tipos locales
+interface Customer {
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  whatsapp?: string;
+  email?: string;
+  direccion?: string;
+  codigo_postal?: string;
+  rfc?: string;
+  notas?: string;
+  fecha_registro: string;
+  fecha_actualizacion: string;
+}
 
 const phoneSchema = z.string().regex(/^\+52[0-9]{10}$/, 'Formato: +52 seguido de 10 dígitos');
 const postalCodeSchema = z.string().regex(/^[0-9]{5}$/, 'Código postal debe tener 5 dígitos');
@@ -57,7 +71,6 @@ export const CustomerForm = ({ customer, onSuccess, onCancel }: CustomerFormProp
     },
   });
 
-  const telefono = watch('telefono');
 
   // Auto-completar WhatsApp cuando se escribe el teléfono
   const handleTelefonoChange = (value: string) => {

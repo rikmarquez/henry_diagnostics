@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form';
 import { opportunityService } from '../services/opportunities';
 import { OpportunityCard } from '../components/OpportunityCard';
 import { OpportunityForm } from '../components/OpportunityForm';
-import { Opportunity } from '../types';
 import { useAuth } from '../hooks/useAuth';
+
+import type { Opportunity } from '../types/index';
 
 type ViewMode = 'search' | 'create' | 'edit' | 'detail';
 
@@ -125,7 +126,7 @@ export const Opportunities = () => {
       case 'create':
         return (
           <OpportunityForm
-            onSuccess={handleSuccess}
+            onSuccess={handleSuccess as any}
             onCancel={handleCancel}
           />
         );
@@ -133,8 +134,8 @@ export const Opportunities = () => {
       case 'edit':
         return (
           <OpportunityForm
-            opportunity={selectedOpportunity!}
-            onSuccess={handleSuccess}
+            opportunity={selectedOpportunity as any}
+            onSuccess={handleSuccess as any}
             onCancel={handleCancel}
           />
         );
@@ -165,7 +166,7 @@ export const Opportunities = () => {
                       selectedOpportunity?.estado === 'completado' ? 'bg-green-100 text-green-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
-                      {selectedOpportunity?.estado.charAt(0).toUpperCase() + selectedOpportunity?.estado.slice(1)}
+                      {selectedOpportunity?.estado ? selectedOpportunity.estado.charAt(0).toUpperCase() + selectedOpportunity.estado.slice(1) : ''}
                     </span>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       selectedOpportunity?.prioridad === 'alta' ? 'bg-red-100 text-red-800' :
@@ -376,7 +377,7 @@ export const Opportunities = () => {
 
             {isLoading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                 <p className="mt-4 text-gray-600">Cargando oportunidades...</p>
               </div>
             ) : opportunities.length > 0 ? (

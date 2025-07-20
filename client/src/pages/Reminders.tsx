@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { opportunityService } from '../services/opportunities';
 import { OpportunityCard } from '../components/OpportunityCard';
-import { Opportunity } from '../types';
+import type { Opportunity } from '../types/index';
 import { useAuth } from '../hooks/useAuth';
 
 export const Reminders = () => {
@@ -75,9 +75,6 @@ export const Reminders = () => {
     return `https://wa.me/52${cleanPhone}`;
   };
 
-  const getTabCount = (tab: string) => {
-    return reminders.length;
-  };
 
   const getTodayStats = () => {
     if (selectedTab !== 'today') return null;
@@ -170,13 +167,13 @@ export const Reminders = () => {
                   onClick={() => setSelectedTab('today')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     selectedTab === 'today'
-                      ? 'border-primary-500 text-primary-600'
+                      ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   Hoy
                   {selectedTab === 'today' && (
-                    <span className="bg-primary-100 text-primary-600 ml-2 py-0.5 px-2 rounded-full text-xs">
+                    <span className="bg-blue-100 text-blue-600 ml-2 py-0.5 px-2 rounded-full text-xs">
                       {reminders.length}
                     </span>
                   )}
@@ -186,13 +183,13 @@ export const Reminders = () => {
                   onClick={() => setSelectedTab('upcoming')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     selectedTab === 'upcoming'
-                      ? 'border-primary-500 text-primary-600'
+                      ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   Próximos 7 días
                   {selectedTab === 'upcoming' && (
-                    <span className="bg-primary-100 text-primary-600 ml-2 py-0.5 px-2 rounded-full text-xs">
+                    <span className="bg-blue-100 text-blue-600 ml-2 py-0.5 px-2 rounded-full text-xs">
                       {reminders.length}
                     </span>
                   )}
@@ -226,7 +223,7 @@ export const Reminders = () => {
 
               {isLoading ? (
                 <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                   <p className="mt-4 text-gray-600">Cargando recordatorios...</p>
                 </div>
               ) : reminders.length > 0 ? (

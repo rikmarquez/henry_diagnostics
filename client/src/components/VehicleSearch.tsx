@@ -3,7 +3,35 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { vehicleService } from '../services/vehicles';
-import { Vehicle } from '../types';
+
+// Tipos locales
+interface Customer {
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  whatsapp?: string;
+  email?: string;
+}
+
+interface Vehicle {
+  vehicle_id: number;
+  vin: string;
+  marca: string;
+  modelo: string;
+  año: number;
+  placa_actual?: string;
+  customer_id?: number;
+  kilometraje_actual: number;
+  color?: string;
+  numero_motor?: string;
+  tipo_combustible: 'gasolina' | 'diesel' | 'hibrido' | 'electrico';
+  transmision: 'manual' | 'automatica';
+  fecha_registro: string;
+  fecha_actualizacion: string;
+  notas?: string;
+  activo: boolean;
+  customer?: Customer;
+}
 
 const searchSchema = z.object({
   searchType: z.enum(['placa', 'vin', 'cliente']),
@@ -143,16 +171,23 @@ export const VehicleSearch = ({ onVehicleSelect, onCreateNew }: VehicleSearchPro
           </div>
         </form>
 
-        {onCreateNew && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+        {/* ALWAYS SHOW BUTTON FOR DEBUGGING */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
             <button
-              onClick={onCreateNew}
+              onClick={() => {
+                console.log('🔘 VehicleSearch button clicked');
+                console.log('onCreateNew function:', onCreateNew);
+                if (onCreateNew) {
+                  onCreateNew();
+                } else {
+                  console.log('❌ onCreateNew is undefined');
+                }
+              }}
               className="btn-secondary"
             >
               + Registrar Nuevo Vehículo
             </button>
           </div>
-        )}
       </div>
 
       {/* Resultados de búsqueda */}

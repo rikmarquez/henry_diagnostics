@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { opportunityService } from '../services/opportunities';
-import { vehicleService } from '../services/vehicles';
 
-export const Dashboard = () => {
+interface DashboardProps {
+  onNavigate: (page: string) => void;
+  onNavigateToVehicleForm: () => void;
+}
+
+export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProps) => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
     vehiclesCount: 0,
@@ -11,7 +15,6 @@ export const Dashboard = () => {
     remindersToday: 0,
     servicesThisMonth: 0,
   });
-  const [recentReminders, setRecentReminders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -33,7 +36,6 @@ export const Dashboard = () => {
         servicesThisMonth: 0, // TODO: implement when services are tracked
       });
 
-      setRecentReminders(remindersResult.reminders?.slice(0, 3) || []);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -145,13 +147,31 @@ export const Dashboard = () => {
             <div className="card p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
               <div className="space-y-3">
-                <button className="w-full btn-secondary text-sm">
+                <button 
+                  onClick={() => {
+                    console.log('🚗 Dashboard: Using direct vehicle form navigation');
+                    onNavigateToVehicleForm();
+                  }}
+                  className="w-full btn-secondary text-sm"
+                >
                   Registrar Nuevo Vehículo
                 </button>
-                <button className="w-full btn-secondary text-sm">
+                <button 
+                  onClick={() => {
+                    console.log('💼 Dashboard: Navigating to opportunities');
+                    onNavigate('opportunities');
+                  }}
+                  className="w-full btn-secondary text-sm"
+                >
                   Crear Oportunidad
                 </button>
-                <button className="w-full btn-secondary text-sm">
+                <button 
+                  onClick={() => {
+                    console.log('⏰ Dashboard: Navigating to reminders');
+                    onNavigate('reminders');
+                  }}
+                  className="w-full btn-secondary text-sm"
+                >
                   Ver Recordatorios
                 </button>
               </div>

@@ -52,7 +52,7 @@ export const login = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { userId: user.user_id },
       process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+      { expiresIn: '24h' }
     );
 
     // No enviar el hash de la contraseña

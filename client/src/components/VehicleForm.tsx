@@ -4,7 +4,41 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { vehicleService } from '../services/vehicles';
 import { customerService } from '../services/customers';
-import { Vehicle, Customer } from '../types';
+
+// Tipos locales
+interface Customer {
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  whatsapp?: string;
+  email?: string;
+  direccion?: string;
+  codigo_postal?: string;
+  rfc?: string;
+  notas?: string;
+  fecha_registro: string;
+  fecha_actualizacion: string;
+}
+
+interface Vehicle {
+  vehicle_id: number;
+  vin: string;
+  marca: string;
+  modelo: string;
+  año: number;
+  placa_actual?: string;
+  customer_id?: number;
+  kilometraje_actual: number;
+  color?: string;
+  numero_motor?: string;
+  tipo_combustible: 'gasolina' | 'diesel' | 'hibrido' | 'electrico';
+  transmision: 'manual' | 'automatica';
+  fecha_registro: string;
+  fecha_actualizacion: string;
+  notas?: string;
+  activo: boolean;
+  customer?: Customer;
+}
 
 const vehicleSchema = z.object({
   vin: z.string()
@@ -17,11 +51,11 @@ const vehicleSchema = z.object({
     .regex(/^[A-Z]{3}-[0-9]{3}-[A-Z]$/, 'Formato de placa inválido (ABC-123-A)')
     .optional(),
   customer_id: z.number().optional(),
-  kilometraje_actual: z.number().min(0, 'Kilometraje no puede ser negativo').default(0),
+  kilometraje_actual: z.number().min(0, 'Kilometraje no puede ser negativo'),
   color: z.string().optional(),
   numero_motor: z.string().optional(),
-  tipo_combustible: z.enum(['gasolina', 'diesel', 'hibrido', 'electrico']).default('gasolina'),
-  transmision: z.enum(['manual', 'automatica']).default('manual'),
+  tipo_combustible: z.enum(['gasolina', 'diesel', 'hibrido', 'electrico']),
+  transmision: z.enum(['manual', 'automatica']),
   notas: z.string().optional(),
 });
 
@@ -142,7 +176,7 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
         {/* Información principal del vehículo */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>

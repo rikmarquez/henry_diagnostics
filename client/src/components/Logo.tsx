@@ -21,7 +21,7 @@ export const Logo = ({ className = '', size = 'md' }: LogoProps) => {
           e.currentTarget.nextElementSibling?.classList.remove('hidden');
         }}
       />
-      <span className="hidden text-xl font-bold text-primary-600">
+      <span className="hidden text-xl font-bold text-blue-600">
         HENRY DIAGNOSTICS
       </span>
     </div>

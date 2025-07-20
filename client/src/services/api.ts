@@ -1,5 +1,32 @@
 import axios from 'axios';
-import { LoginRequest, LoginResponse, ApiResponse } from '../types';
+
+interface User {
+  user_id: number;
+  email: string;
+  nombre: string;
+  rol: 'administrador' | 'mecanico' | 'seguimiento';
+  telefono?: string;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+}
+
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+interface LoginResponse {
+  message: string;
+  user: User;
+  token: string;
+}
+
+interface ApiResponse<T = any> {
+  message: string;
+  data?: T;
+  errors?: string[];
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 

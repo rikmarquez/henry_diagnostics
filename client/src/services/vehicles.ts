@@ -1,5 +1,42 @@
 import api from './api';
-import { Vehicle, VehicleSearchParams, ApiResponse } from '../types';
+
+// Tipos locales
+interface Customer {
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  email?: string;
+}
+
+interface Vehicle {
+  vehicle_id: number;
+  vin: string;
+  marca: string;
+  modelo: string;
+  año: number;
+  placa_actual?: string;
+  customer_id?: number;
+  kilometraje_actual: number;
+  color?: string;
+  numero_motor?: string;
+  tipo_combustible: 'gasolina' | 'diesel' | 'hibrido' | 'electrico';
+  transmision: 'manual' | 'automatica';
+  fecha_registro: string;
+  fecha_actualizacion: string;
+  notas?: string;
+  activo: boolean;
+  customer?: Customer;
+}
+
+interface VehicleSearchParams {
+  placa?: string;
+  vin?: string;
+  customer_name?: string;
+  marca?: string;
+  modelo?: string;
+  año?: number;
+}
+
 
 export const vehicleService = {
   // Buscar vehículos

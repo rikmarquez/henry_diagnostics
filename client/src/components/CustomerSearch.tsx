@@ -3,7 +3,21 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { customerService } from '../services/customers';
-import { Customer } from '../types';
+
+// Tipos locales
+interface Customer {
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  whatsapp?: string;
+  email?: string;
+  direccion?: string;
+  codigo_postal?: string;
+  rfc?: string;
+  notas?: string;
+  fecha_registro: string;
+  fecha_actualizacion: string;
+}
 
 const searchSchema = z.object({
   searchType: z.enum(['nombre', 'telefono', 'email']),
@@ -83,6 +97,25 @@ export const CustomerSearch = ({ onCustomerSelect, onCreateNew }: CustomerSearch
     }
   };
 
+  const loadAllCustomers = async () => {
+    setIsLoading(true);
+    setError(null);
+    setCustomers([]);
+
+    try {
+      const result = await customerService.getAll(100); // Cargar hasta 100 clientes
+      setCustomers(result.customers || []);
+      
+      if (result.customers?.length === 0) {
+        setError('No hay clientes registrados en el sistema');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al cargar clientes');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const formatPhoneForWhatsApp = (phone: string) => {
     const cleanPhone = phone.replace(/^\+52/, '');
     return `https://wa.me/52${cleanPhone}`;
@@ -134,6 +167,14 @@ export const CustomerSearch = ({ onCustomerSelect, onCreateNew }: CustomerSearch
                   className="btn-primary px-6 disabled:opacity-50"
                 >
                   {isLoading ? 'Buscando...' : 'Buscar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={loadAllCustomers}
+                  disabled={isLoading}
+                  className="btn-secondary px-6 disabled:opacity-50"
+                >
+                  Ver Todos
                 </button>
               </div>
               {errors.searchValue && (

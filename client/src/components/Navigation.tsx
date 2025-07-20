@@ -58,7 +58,7 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
                   onClick={() => onPageChange(item.id)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     currentPage === item.id
-                      ? 'bg-primary-100 text-primary-700'
+                      ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
@@ -93,7 +93,7 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
               onClick={() => onPageChange(item.id)}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 currentPage === item.id
-                  ? 'bg-primary-100 text-primary-700'
+                  ? 'bg-blue-100 text-blue-700'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >

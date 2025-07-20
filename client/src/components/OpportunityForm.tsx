@@ -5,8 +5,76 @@ import { z } from 'zod';
 import { opportunityService } from '../services/opportunities';
 import { vehicleService } from '../services/vehicles';
 import { customerService } from '../services/customers';
-import { Opportunity, Vehicle, Customer, User } from '../types';
 import { useAuth } from '../hooks/useAuth';
+
+// Tipos locales
+interface User {
+  user_id: number;
+  email: string;
+  nombre: string;
+  rol: 'administrador' | 'mecanico' | 'seguimiento';
+  telefono?: string;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+}
+
+interface Customer {
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  whatsapp?: string;
+  email?: string;
+  direccion?: string;
+  codigo_postal?: string;
+  rfc?: string;
+  notas?: string;
+  fecha_registro: string;
+  fecha_actualizacion: string;
+}
+
+interface Vehicle {
+  vehicle_id: number;
+  vin: string;
+  marca: string;
+  modelo: string;
+  año: number;
+  placa_actual?: string;
+  customer_id?: number;
+  kilometraje_actual: number;
+  color?: string;
+  numero_motor?: string;
+  tipo_combustible: 'gasolina' | 'diesel' | 'hibrido' | 'electrico';
+  transmision: 'manual' | 'automatica';
+  fecha_registro: string;
+  fecha_actualizacion: string;
+  notas?: string;
+  activo: boolean;
+  customer?: Customer;
+}
+
+interface Opportunity {
+  opportunity_id: number;
+  vin: string;
+  customer_id: number;
+  usuario_creador?: number;
+  usuario_asignado?: number;
+  tipo_oportunidad: string;
+  titulo: string;
+  descripcion: string;
+  servicio_sugerido?: string;
+  precio_estimado?: number;
+  fecha_sugerida?: string;
+  fecha_contacto_sugerida?: string;
+  estado: 'pendiente' | 'contactado' | 'agendado' | 'en_proceso' | 'completado' | 'perdido';
+  prioridad: 'alta' | 'media' | 'baja';
+  origen: 'manual' | 'automatico' | 'historial' | 'kilometraje';
+  kilometraje_referencia?: number;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  vehicle?: Vehicle;
+  customer?: Customer;
+}
 
 const opportunitySchema = z.object({
   vin: z.string().length(17, 'VIN debe tener exactamente 17 caracteres'),
@@ -18,7 +86,7 @@ const opportunitySchema = z.object({
   servicio_sugerido: z.string().optional(),
   precio_estimado: z.number().positive('Precio debe ser positivo').optional(),
   fecha_sugerida: z.string().optional(),
-  prioridad: z.enum(['alta', 'media', 'baja']).default('media'),
+  prioridad: z.enum(['alta', 'media', 'baja']),
   kilometraje_referencia: z.number().min(0, 'Kilometraje no puede ser negativo').optional(),
 });
 
@@ -75,7 +143,6 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
     setValue,
     watch,
     formState: { errors },
-    reset,
   } = useForm<OpportunityFormData>({
     resolver: zodResolver(opportunitySchema),
     defaultValues: opportunity ? {
@@ -97,7 +164,6 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
   });
 
   const selectedVin = watch('vin');
-  const selectedCustomerId = watch('customer_id');
 
   // Cargar vehículo preseleccionado
   useEffect(() => {
@@ -258,7 +324,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
         {/* Selección de vehículo */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Vehículo</h3>

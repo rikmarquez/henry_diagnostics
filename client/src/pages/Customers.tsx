@@ -1,9 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CustomerSearch } from '../components/CustomerSearch';
 import { CustomerForm } from '../components/CustomerForm';
 import { vehicleService } from '../services/vehicles';
-import { Customer, Vehicle } from '../types';
 import { useAuth } from '../hooks/useAuth';
+
+// Tipos locales
+interface Customer {
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  whatsapp?: string;
+  email?: string;
+  direccion?: string;
+  codigo_postal?: string;
+  rfc?: string;
+  notas?: string;
+  fecha_registro: string;
+  fecha_actualizacion: string;
+}
+
+interface Vehicle {
+  vehicle_id: number;
+  vin: string;
+  marca: string;
+  modelo: string;
+  año: number;
+  placa_actual?: string;
+  customer_id?: number;
+  kilometraje_actual: number;
+  color?: string;
+  numero_motor?: string;
+  tipo_combustible: 'gasolina' | 'diesel' | 'hibrido' | 'electrico';
+  transmision: 'manual' | 'automatica';
+  fecha_registro: string;
+  fecha_actualizacion: string;
+  notas?: string;
+  activo: boolean;
+  customer?: Customer;
+}
 
 type ViewMode = 'search' | 'create' | 'edit' | 'detail';
 
@@ -225,7 +259,7 @@ export const Customers = () => {
 
               {isLoadingVehicles ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                   <p className="mt-2 text-gray-600">Cargando vehículos...</p>
                 </div>
               ) : customerVehicles.length > 0 ? (

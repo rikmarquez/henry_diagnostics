@@ -1,5 +1,20 @@
 import api from './api';
-import { Customer, ApiResponse } from '../types';
+
+// Tipos locales
+interface Customer {
+  customer_id: number;
+  nombre: string;
+  telefono: string;
+  whatsapp?: string;
+  email?: string;
+  direccion?: string;
+  codigo_postal?: string;
+  rfc?: string;
+  notas?: string;
+  fecha_registro: string;
+  fecha_actualizacion: string;
+}
+
 
 interface CustomerSearchParams {
   nombre?: string;
@@ -10,6 +25,14 @@ interface CustomerSearchParams {
 }
 
 export const customerService = {
+  // Obtener todos los clientes
+  getAll: async (limit = 50) => {
+    const response = await api.get('/customers/search', { 
+      params: { nombre: '', limit } 
+    });
+    return response.data;
+  },
+
   // Buscar clientes
   search: async (params: CustomerSearchParams) => {
     const response = await api.get('/customers/search', { params });

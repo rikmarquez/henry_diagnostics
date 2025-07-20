@@ -53,16 +53,16 @@ async function seedDatabase() {
 
     // Insertar catálogo de servicios comunes en México
     const servicios = [
-      ['Cambio de aceite y filtro', 'Cambio de aceite motor 5W-30 y filtro de aceite', 450.00, 30, 'mantenimiento', 5000, 3],
-      ['Afinación menor', 'Cambio de bujías, filtros de aire y combustible', 850.00, 90, 'mantenimiento', 10000, 6],
-      ['Afinación mayor', 'Afinación completa con cambio de cables, bobinas y limpieza de inyectores', 1500.00, 150, 'mantenimiento', 20000, 12],
-      ['Balanceo y rotación', 'Balanceo de 4 llantas y rotación por desgaste', 300.00, 45, 'mantenimiento', 10000, 6],
-      ['Cambio de frenos delanteros', 'Cambio de balatas delanteras y revisión de discos', 800.00, 60, 'reparacion', null, null],
-      ['Cambio de frenos traseros', 'Cambio de balatas traseras y revisión de tambores', 600.00, 45, 'reparacion', null, null],
-      ['Servicio de transmisión', 'Cambio de aceite ATF y filtro de transmisión', 900.00, 75, 'mantenimiento', 40000, 24],
-      ['Revisión de suspensión', 'Diagnóstico completo de amortiguadores y resortes', 400.00, 60, 'diagnostico', null, null],
-      ['Cambio de banda de distribución', 'Cambio de banda/cadena de distribución con tensores', 2500.00, 240, 'reparacion', 80000, null],
-      ['Servicio de aire acondicionado', 'Carga de gas refrigerante y revisión del sistema', 650.00, 45, 'mantenimiento', null, 12]
+      ['Cambio de aceite y filtro', 'Cambio de aceite motor 5W-30 y filtro de aceite', 450.00, 30, 'mantenimiento', 5000, 3, true],
+      ['Afinación menor', 'Cambio de bujías, filtros de aire y combustible', 850.00, 90, 'mantenimiento', 10000, 6, true],
+      ['Afinación mayor', 'Afinación completa con cambio de cables, bobinas y limpieza de inyectores', 1500.00, 150, 'mantenimiento', 20000, 12, true],
+      ['Balanceo y rotación', 'Balanceo de 4 llantas y rotación por desgaste', 300.00, 45, 'mantenimiento', 10000, 6, true],
+      ['Cambio de frenos delanteros', 'Cambio de balatas delanteras y revisión de discos', 800.00, 60, 'reparacion', null, null, true],
+      ['Cambio de frenos traseros', 'Cambio de balatas traseras y revisión de tambores', 600.00, 45, 'reparacion', null, null, true],
+      ['Servicio de transmisión', 'Cambio de aceite ATF y filtro de transmisión', 900.00, 75, 'mantenimiento', 40000, 24, true],
+      ['Revisión de suspensión', 'Diagnóstico completo de amortiguadores y resortes', 400.00, 60, 'diagnostico', null, null, true],
+      ['Cambio de banda de distribución', 'Cambio de banda/cadena de distribución con tensores', 2500.00, 240, 'reparacion', 80000, null, true],
+      ['Servicio de aire acondicionado', 'Carga de gas refrigerante y revisión del sistema', 650.00, 45, 'mantenimiento', null, 12, true]
     ];
 
     for (const servicio of servicios) {

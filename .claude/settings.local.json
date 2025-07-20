@@ -10,7 +10,22 @@
       "Bash(npx tailwindcss:*)",
       "Bash(npm exec:*)",
       "Bash(cp:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(psql:*)",
+      "Bash(where psql)",
+      "Bash(pg_config:*)",
+      "Bash(createdb:*)",
+      "Bash(npm run install:all:*)",
+      "Bash(npm run:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(rm:*)",
+      "Bash(npm start)",
+      "Bash(mv:*)",
+      "Bash(start http://localhost:5173)",
+      "Bash(cmd /c start http://localhost:5173)",
+      "Bash(npx kill-port:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

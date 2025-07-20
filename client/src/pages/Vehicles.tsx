@@ -1,18 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { VehicleSearch } from '../components/VehicleSearch';
 import { VehicleForm } from '../components/VehicleForm';
 import { OpportunityForm } from '../components/OpportunityForm';
-import { Vehicle, Opportunity } from '../types';
 import { useAuth } from '../hooks/useAuth';
+
+import type { Vehicle } from '../types/index';
 
 type ViewMode = 'search' | 'create' | 'edit' | 'detail' | 'create-opportunity';
 
-export const Vehicles = () => {
+interface VehiclesProps {
+  initialMode?: ViewMode;
+  onModeUsed?: () => void;
+}
+
+export const Vehicles = ({ initialMode = 'search', onModeUsed }: VehiclesProps) => {
+  console.log('🚗 VEHICLES COMPONENT LOADED with initialMode:', initialMode);
   const { user } = useAuth();
-  const [viewMode, setViewMode] = useState<ViewMode>('search');
+  const [viewMode, setViewMode] = useState<ViewMode>(initialMode);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
-  const canModifyVehicles = user?.rol === 'administrador' || user?.rol === 'mecanico';
+  // Llamar onModeUsed cuando se monta el componente para limpiar el estado en MainApp
+  useEffect(() => {
+    if (initialMode === 'create' && onModeUsed) {
+      console.log('🧹 Cleaning up initialMode in parent');
+      onModeUsed();
+    }
+  }, [initialMode, onModeUsed]);
+
+  const canModifyVehicles = true; // Permitir a todos los usuarios crear vehículos
+
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
@@ -20,8 +36,11 @@ export const Vehicles = () => {
   };
 
   const handleCreateNew = () => {
+    console.log('🚗 handleCreateNew called');
+    console.log('Current viewMode:', viewMode);
     setSelectedVehicle(null);
     setViewMode('create');
+    console.log('ViewMode set to: create');
   };
 
   const handleEdit = () => {
@@ -35,7 +54,7 @@ export const Vehicles = () => {
     setViewMode('detail');
   };
 
-  const handleOpportunitySuccess = (opportunity: Opportunity) => {
+  const handleOpportunitySuccess = () => {
     // Regresar al detalle del vehículo después de crear la oportunidad
     setViewMode('detail');
   };
@@ -51,6 +70,7 @@ export const Vehicles = () => {
   };
 
   const renderContent = () => {
+    console.log('📱 Rendering Vehicles with viewMode:', viewMode);
     switch (viewMode) {
       case 'create':
         return (
@@ -218,9 +238,11 @@ export const Vehicles = () => {
         );
 
       default:
+        console.log('🔍 Rendering VehicleSearch with canModifyVehicles:', canModifyVehicles);
+        console.log('🔍 handleCreateNew function:', handleCreateNew);
         return (
           <VehicleSearch
-            onVehicleSelect={handleVehicleSelect}
+            onVehicleSelect={handleVehicleSelect as any}
             onCreateNew={canModifyVehicles ? handleCreateNew : undefined}
           />
         );
@@ -229,6 +251,7 @@ export const Vehicles = () => {
 
   return (
     <div className="bg-gray-50">
+
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {renderContent()}

@@ -18,10 +18,19 @@ export const MainApp = () => {
     return () => window.removeEventListener('navigate', handleNavigate);
   }, []);
 
+  // Estado para controlar si queremos crear un vehículo directamente
+  const [shouldCreateVehicle, setShouldCreateVehicle] = useState(false);
+
+  const navigateToVehicleForm = () => {
+    console.log('🎯 MainApp: Navigating to vehicle creation form');
+    setShouldCreateVehicle(true);
+    setCurrentPage('vehicles');
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'vehicles':
-        return <Vehicles />;
+        return <Vehicles initialMode={shouldCreateVehicle ? 'create' : 'search'} onModeUsed={() => setShouldCreateVehicle(false)} />;
       case 'customers':
         return <Customers />;
       case 'opportunities':
@@ -29,7 +38,7 @@ export const MainApp = () => {
       case 'reminders':
         return <Reminders />;
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigate={setCurrentPage} onNavigateToVehicleForm={navigateToVehicleForm} />;
     }
   };
 

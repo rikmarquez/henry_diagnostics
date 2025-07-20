@@ -1,5 +1,35 @@
 import api from './api';
-import { Opportunity, OpportunityFilters, ApiResponse } from '../types';
+
+// Tipos locales
+
+interface Opportunity {
+  opportunity_id: number;
+  vin: string;
+  customer_id: number;
+  usuario_creador?: number;
+  usuario_asignado?: number;
+  tipo_oportunidad: string;
+  titulo: string;
+  descripcion: string;
+  servicio_sugerido?: string;
+  precio_estimado?: number;
+  fecha_sugerida?: string;
+  fecha_contacto_sugerida?: string;
+  estado: 'pendiente' | 'contactado' | 'agendado' | 'en_proceso' | 'completado' | 'perdido';
+  prioridad: 'alta' | 'media' | 'baja';
+  origen: 'manual' | 'automatico' | 'historial' | 'kilometraje';
+  kilometraje_referencia?: number;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+}
+
+interface OpportunityFilters {
+  estado?: string;
+  fecha_desde?: string;
+  fecha_hasta?: string;
+  usuario_asignado?: number;
+  prioridad?: string;
+}
 
 export const opportunityService = {
   // Buscar oportunidades

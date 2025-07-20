@@ -1,6 +1,21 @@
-import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User, LoginRequest } from '../types';
+import { useState, useEffect, createContext, useContext, type ReactNode } from 'react';
 import { authService } from '../services/api';
+
+interface User {
+  user_id: number;
+  email: string;
+  nombre: string;
+  rol: 'administrador' | 'mecanico' | 'seguimiento';
+  telefono?: string;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+}
+
+interface LoginRequest {
+  email: string;
+  password: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -71,7 +86,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAuthenticated: !!user,
   };
 
-  return React.createElement(AuthContext.Provider, { value }, children);
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

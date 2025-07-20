@@ -1,4 +1,4 @@
-import { Opportunity } from '../types';
+import type { Opportunity } from '../types/index';
 
 interface OpportunityCardProps {
   opportunity: Opportunity;
@@ -125,7 +125,7 @@ export const OpportunityCard = ({
                 e.stopPropagation();
                 onStatusChange(opportunity.opportunity_id, e.target.value);
               }}
-              className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="pendiente">Pendiente</option>
               <option value="contactado">Contactado</option>
