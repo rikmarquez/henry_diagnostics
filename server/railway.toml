@@ -2,10 +2,10 @@
 builder = "nixpacks"
 
 [build.nixpacksConfig]
-buildCommand = "echo 'Skipping build - using pre-compiled code'"
+buildCommand = "npm run build"
 
 [deploy]
-startCommand = "npx tsx src/index.ts"
+startCommand = "npm start"
 
 [env]
 NODE_ENV = "production"

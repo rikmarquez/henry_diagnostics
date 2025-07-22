@@ -1,11 +1,23 @@
 -- Migration: User Management Enhancement
 -- This script adds fields and tables needed for user management functionality
 
--- Add fields to users table for management
+-- Add fields to users table for management (adjust for existing columns)
 ALTER TABLE users 
 ADD COLUMN IF NOT EXISTS ultimo_login TIMESTAMP,
 ADD COLUMN IF NOT EXISTS password_temp BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS fecha_password_temp TIMESTAMP;
+
+-- Update existing columns if they have different names
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'ultimo_acceso') THEN
+        ALTER TABLE users RENAME COLUMN ultimo_acceso TO ultimo_login;
+    END IF;
+    
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'password_temporal') THEN
+        ALTER TABLE users RENAME COLUMN password_temporal TO password_temp;
+    END IF;
+END $$;
 
 -- Create user activity log table
 CREATE TABLE IF NOT EXISTS user_activity_log (

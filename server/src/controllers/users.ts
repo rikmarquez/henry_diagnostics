@@ -52,7 +52,7 @@ const logActivity = async (
     const userAgent = req?.get('User-Agent');
 
     await query(
-      'SELECT log_user_activity($1, $2, $3, $4, $5, $6)',
+      'INSERT INTO user_activity_log (user_id, accion, detalles, ip_address, user_agent, realizado_por) VALUES ($1, $2, $3, $4, $5, $6)',
       [userId, action, JSON.stringify(details), ipAddress, userAgent, performedBy]
     );
   } catch (error) {
@@ -61,9 +61,13 @@ const logActivity = async (
 };
 
 // Generate temporary password
-const generateTempPassword = async (): Promise<string> => {
-  const result = await query('SELECT generate_temp_password() as password');
-  return result.rows[0].password;
+const generateTempPassword = (): string => {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 };
 
 // Get user statistics
@@ -235,7 +239,7 @@ export const createUser = async (req: AuthRequest, res: Response) => {
     }
 
     // Generate temporary password
-    const tempPassword = await generateTempPassword();
+    const tempPassword = generateTempPassword();
     const passwordHash = await bcrypt.hash(tempPassword, 12);
 
     // Create user
@@ -448,7 +452,7 @@ export const resetUserPassword = async (req: AuthRequest, res: Response) => {
     }
 
     // Generate new temporary password
-    const tempPassword = await generateTempPassword();
+    const tempPassword = generateTempPassword();
     const passwordHash = await bcrypt.hash(tempPassword, 12);
 
     // Update user password
@@ -499,9 +503,9 @@ export const getUserActivity = async (req: AuthRequest, res: Response) => {
         ual.*,
         u.nombre as performed_by_name
       FROM user_activity_log ual
-      LEFT JOIN users u ON ual.performed_by = u.user_id
+      LEFT JOIN users u ON ual.realizado_por = u.user_id
       WHERE ual.user_id = $1
-      ORDER BY ual.timestamp DESC
+      ORDER BY ual.fecha DESC
       LIMIT $2 OFFSET $3
     `;
 

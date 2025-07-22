@@ -107,4 +107,46 @@ export interface OpportunityFilters {
     usuario_asignado?: number;
     prioridad?: string;
 }
+export interface UserManagementView extends User {
+    ultimo_login?: Date;
+    password_temp?: boolean;
+    fecha_password_temp?: Date;
+    servicios_asignados?: number;
+    oportunidades_asignadas?: number;
+    ultima_actividad?: Date;
+}
+export interface CreateUserRequest {
+    email: string;
+    nombre: string;
+    rol: 'administrador' | 'mecanico' | 'seguimiento';
+    telefono?: string;
+}
+export interface UpdateUserRequest {
+    nombre?: string;
+    email?: string;
+    rol?: 'administrador' | 'mecanico' | 'seguimiento';
+    telefono?: string;
+    activo?: boolean;
+}
+export interface ResetPasswordResponse {
+    message: string;
+    temporary_password: string;
+}
+export interface UserActivity {
+    log_id: number;
+    user_id: number;
+    action: string;
+    details?: any;
+    ip_address?: string;
+    user_agent?: string;
+    performed_by?: number;
+    timestamp: Date;
+}
+export interface UserFilters {
+    search?: string;
+    rol?: string;
+    activo?: boolean;
+    page?: number;
+    limit?: number;
+}
 //# sourceMappingURL=index.d.ts.map
