@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [build.nixpacksConfig]
-buildCommand = "npm run build"
+buildCommand = "echo 'Using pre-compiled code from dist/ directory'"
 
 [deploy]
 startCommand = "npm start"
