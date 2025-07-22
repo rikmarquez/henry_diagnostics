@@ -36,6 +36,7 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
     { id: 'customers', label: 'Clientes', icon: '👥' },
     { id: 'opportunities', label: 'Oportunidades', icon: '💼' },
     { id: 'reminders', label: 'Recordatorios', icon: '⏰' },
+    ...(user?.rol === 'administrador' ? [{ id: 'users', label: 'Usuarios', icon: '👤' }] : []),
   ];
 
   return (

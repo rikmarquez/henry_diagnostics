@@ -5,6 +5,7 @@ import { Vehicles } from './Vehicles';
 import { Customers } from './Customers';
 import { Opportunities } from './Opportunities';
 import { Reminders } from './Reminders';
+import Users from './Users';
 
 export const MainApp = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -37,6 +38,8 @@ export const MainApp = () => {
         return <Opportunities />;
       case 'reminders':
         return <Reminders />;
+      case 'users':
+        return <Users />;
       default:
         return <Dashboard onNavigate={setCurrentPage} onNavigateToVehicleForm={navigateToVehicleForm} />;
     }
