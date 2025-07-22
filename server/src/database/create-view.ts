@@ -15,7 +15,7 @@ async function createCompatibleView() {
           u.fecha_actualizacion,
           u.ultimo_acceso as ultimo_login,
           u.password_temporal as password_temp,
-          NULL::timestamp as fecha_password_temp,
+          u.cambiar_password_proximo_login as fecha_password_temp,
           0 as servicios_asignados,
           0 as oportunidades_asignadas,
           COALESCE(a.ultima_actividad, u.fecha_actualizacion) as ultima_actividad

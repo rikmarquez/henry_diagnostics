@@ -1,10 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const connection_1 = require("./connection");
-async function createCompatibleView() {
-    try {
-        await (0, connection_1.query)(`
-      CREATE OR REPLACE VIEW user_management_view AS
+import { query } from './connection';
+
+async function recreateView() {
+  try {
+    console.log('Eliminando vista existente...');
+    await query('DROP VIEW IF EXISTS user_management_view');
+    
+    console.log('Creando nueva vista...');
+    await query(`
+      CREATE VIEW user_management_view AS
       SELECT 
           u.user_id,
           u.email,
@@ -27,13 +30,13 @@ async function createCompatibleView() {
           GROUP BY user_id
       ) a ON u.user_id = a.user_id;
     `);
-        console.log('✅ Vista user_management_view creada exitosamente');
-        process.exit(0);
-    }
-    catch (error) {
-        console.error('Error:', error);
-        process.exit(1);
-    }
+    
+    console.log('✅ Vista recreada exitosamente');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error:', error);
+    process.exit(1);
+  }
 }
-createCompatibleView();
-//# sourceMappingURL=create-view.js.map
+
+recreateView();

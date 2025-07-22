@@ -81,8 +81,8 @@ export const getUserStats = async (req: AuthRequest, res: Response) => {
         COUNT(*) FILTER (WHERE rol = 'administrador') as administradores,
         COUNT(*) FILTER (WHERE rol = 'mecanico') as mecanicos,
         COUNT(*) FILTER (WHERE rol = 'seguimiento') as seguimiento,
-        COUNT(*) FILTER (WHERE password_temp = true) as passwords_temporales,
-        COUNT(*) FILTER (WHERE ultimo_login > CURRENT_DATE - INTERVAL '30 days') as activos_mes
+        COUNT(*) FILTER (WHERE password_temporal = true) as passwords_temporales,
+        COUNT(*) FILTER (WHERE ultimo_acceso > CURRENT_DATE - INTERVAL '30 days') as activos_mes
       FROM users
     `;
 
