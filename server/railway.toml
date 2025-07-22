@@ -1,9 +1,3 @@
-[build]
-builder = "nixpacks"
-
-[build.nixpacksConfig]
-buildCommand = "echo 'Using pre-compiled code from dist/ directory'"
-
 [deploy]
 startCommand = "npm start"
 
