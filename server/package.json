@@ -5,10 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "compile": "tsc",
     "start": "node dist/index.js",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed.ts"
   },
+  "deploymentNotes": "IMPORTANTE: Railway requiere código pre-compilado. Ejecutar 'npm run compile' antes de cada deploy. NO agregar script 'build' - causa errores de permisos en Railway.",
   "keywords": ["express", "postgresql", "typescript"],
   "author": "Henry Diagnostics",
   "license": "MIT",
