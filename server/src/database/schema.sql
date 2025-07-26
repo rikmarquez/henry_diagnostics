@@ -29,14 +29,14 @@ CREATE TABLE customers (
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla principal de vehículos (centrada en VIN)
+-- Tabla principal de vehículos (centrada en placas como identificador único)
 CREATE TABLE vehicles (
     vehicle_id SERIAL PRIMARY KEY,
-    vin VARCHAR(17) UNIQUE NOT NULL, -- VIN único permanente (17 caracteres)
+    vin TEXT, -- VIN del vehículo (opcional, permite cualquier longitud)
     marca VARCHAR(100) NOT NULL, -- Nissan, Volkswagen, Chevrolet, etc.
     modelo VARCHAR(100) NOT NULL, -- Tsuru, Jetta, Aveo, etc.
     año INTEGER NOT NULL CHECK (año >= 1900 AND año <= EXTRACT(YEAR FROM CURRENT_DATE) + 1),
-    placa_actual VARCHAR(10), -- Placas mexicanas actuales (ABC-123-D)
+    placa_actual VARCHAR(20) NOT NULL, -- Placas actuales (requeridas, únicas)
     customer_id INTEGER REFERENCES customers(customer_id), -- Propietario actual
     kilometraje_actual INTEGER DEFAULT 0,
     color VARCHAR(50),
@@ -46,14 +46,15 @@ CREATE TABLE vehicles (
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     notas TEXT,
-    activo BOOLEAN DEFAULT true
+    activo BOOLEAN DEFAULT true,
+    CONSTRAINT chk_placa_required CHECK (placa_actual IS NOT NULL AND placa_actual != '')
 );
 
 -- Historial de placas por vehículo (para rastrear cambios de propietario/placas)
 CREATE TABLE vehicle_plate_history (
     history_id SERIAL PRIMARY KEY,
-    vin VARCHAR(17) NOT NULL REFERENCES vehicles(vin),
-    placa_anterior VARCHAR(10) NOT NULL,
+    vehicle_id INTEGER NOT NULL REFERENCES vehicles(vehicle_id),
+    placa_anterior VARCHAR(20) NOT NULL,
     fecha_cambio TIMESTAMP NOT NULL,
     motivo_cambio VARCHAR(50) NOT NULL CHECK (motivo_cambio IN ('cambio_propietario', 'perdida', 'robo', 'renovacion', 'otro')),
     customer_anterior INTEGER REFERENCES customers(customer_id),
@@ -74,10 +75,10 @@ CREATE TABLE service_catalog (
     activo BOOLEAN DEFAULT true
 );
 
--- Servicios realizados (vinculados a VIN)
+-- Servicios realizados (vinculados a vehicle_id)
 CREATE TABLE services (
     service_id SERIAL PRIMARY KEY,
-    vin VARCHAR(17) NOT NULL REFERENCES vehicles(vin),
+    vehicle_id INTEGER NOT NULL REFERENCES vehicles(vehicle_id),
     customer_id INTEGER NOT NULL REFERENCES customers(customer_id), -- Cliente al momento del servicio
     usuario_mecanico INTEGER REFERENCES users(user_id),
     fecha_servicio DATE NOT NULL,
@@ -97,7 +98,7 @@ CREATE TABLE services (
 -- Oportunidades de venta por vehículo
 CREATE TABLE opportunities (
     opportunity_id SERIAL PRIMARY KEY,
-    vin VARCHAR(17) NOT NULL REFERENCES vehicles(vin),
+    vehicle_id INTEGER NOT NULL REFERENCES vehicles(vehicle_id),
     customer_id INTEGER NOT NULL REFERENCES customers(customer_id), -- Propietario actual
     usuario_creador INTEGER REFERENCES users(user_id),
     usuario_asignado INTEGER REFERENCES users(user_id), -- Personal de seguimiento
@@ -225,3 +226,23 @@ BEGIN
     RETURN fecha_servicio - INTERVAL '%s days' % dias_antes;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Índices para optimizar consultas
+-- Índice único para placas (solo para placas activas no nulas)
+CREATE UNIQUE INDEX idx_vehicles_placa_unique 
+ON vehicles (placa_actual) 
+WHERE placa_actual IS NOT NULL AND activo = true;
+
+-- Índice para búsquedas por VIN (para casos donde esté presente)
+CREATE INDEX idx_vehicles_vin_search 
+ON vehicles (vin) 
+WHERE vin IS NOT NULL AND vin != '';
+
+-- Índice compuesto para búsquedas frecuentes
+CREATE INDEX idx_vehicles_search 
+ON vehicles (marca, modelo, año, activo);
+
+-- Índices para tablas relacionadas
+CREATE INDEX idx_services_vehicle_id ON services (vehicle_id);
+CREATE INDEX idx_opportunities_vehicle_id ON opportunities (vehicle_id);
+CREATE INDEX idx_vehicle_plate_history_vehicle_id ON vehicle_plate_history (vehicle_id);

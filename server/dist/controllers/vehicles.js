@@ -3,14 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getVehicleHistory = exports.deleteVehicle = exports.updateVehicle = exports.getVehicleByVin = exports.searchVehicles = exports.createVehicle = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
-const vinSchema = zod_1.z.string().length(17, 'VIN debe tener exactamente 17 caracteres').regex(/^[A-HJ-NPR-Z0-9]{17}$/, 'Formato de VIN inválido');
-const placaSchema = zod_1.z.string().regex(/^[A-Z]{3}-[0-9]{3}-[A-Z]$/, 'Formato de placa inválido (ABC-123-A)');
+const vinSchema = zod_1.z.string().optional();
+const placaSchema = zod_1.z.string().min(1, 'Placa requerida');
 const vehicleSchema = zod_1.z.object({
     vin: vinSchema,
     marca: zod_1.z.string().min(1, 'Marca requerida'),
     modelo: zod_1.z.string().min(1, 'Modelo requerido'),
     año: zod_1.z.number().int().min(1900).max(new Date().getFullYear() + 1, 'Año inválido'),
-    placa_actual: placaSchema.optional(),
+    placa_actual: placaSchema,
     customer_id: zod_1.z.number().int().positive('ID de cliente inválido').optional(),
     kilometraje_actual: zod_1.z.number().int().min(0, 'Kilometraje no puede ser negativo').default(0),
     color: zod_1.z.string().optional(),
@@ -150,8 +150,20 @@ const searchVehicles = async (req, res) => {
       WHERE ${whereConditions.join(' AND ')}
     `;
         const countResult = await (0, connection_1.query)(countQuery, queryParams.slice(0, -2));
+        // Estructurar los datos del cliente como objeto anidado
+        const structuredVehicles = result.rows.map(row => {
+            const { customer_nombre, customer_telefono, customer_email, ...vehicleData } = row;
+            return {
+                ...vehicleData,
+                customer: customer_nombre ? {
+                    nombre: customer_nombre,
+                    telefono: customer_telefono,
+                    email: customer_email
+                } : null
+            };
+        });
         res.json({
-            vehicles: result.rows,
+            vehicles: structuredVehicles,
             total: parseInt(countResult.rows[0].total),
             limit: limitNum,
             offset: offsetNum,
@@ -194,8 +206,18 @@ const getVehicleByVin = async (req, res) => {
       WHERE vin = $1
       ORDER BY fecha_cambio DESC
     `, [vin]);
+        // Estructurar los datos del cliente como objeto anidado
+        const row = result.rows[0];
+        const { customer_nombre, customer_telefono, customer_whatsapp, customer_email, customer_direccion, ...vehicleData } = row;
         const vehicle = {
-            ...result.rows[0],
+            ...vehicleData,
+            customer: customer_nombre ? {
+                nombre: customer_nombre,
+                telefono: customer_telefono,
+                whatsapp: customer_whatsapp,
+                email: customer_email,
+                direccion: customer_direccion
+            } : null,
             plate_history: plateHistory.rows,
         };
         res.json({ vehicle });

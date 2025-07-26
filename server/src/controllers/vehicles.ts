@@ -3,15 +3,15 @@ import { z } from 'zod';
 import { query } from '../database/connection';
 import { AuthRequest } from '../middleware/auth';
 
-const vinSchema = z.string().length(17, 'VIN debe tener exactamente 17 caracteres').regex(/^[A-HJ-NPR-Z0-9]{17}$/, 'Formato de VIN inválido');
-const placaSchema = z.string().regex(/^[A-Z]{3}-[0-9]{3}-[A-Z]$/, 'Formato de placa inválido (ABC-123-A)');
+const vinSchema = z.string().optional();
+const placaSchema = z.string().min(1, 'Placa requerida');
 
 const vehicleSchema = z.object({
   vin: vinSchema,
   marca: z.string().min(1, 'Marca requerida'),
   modelo: z.string().min(1, 'Modelo requerido'),
   año: z.number().int().min(1900).max(new Date().getFullYear() + 1, 'Año inválido'),
-  placa_actual: placaSchema.optional(),
+  placa_actual: placaSchema,
   customer_id: z.number().int().positive('ID de cliente inválido').optional(),
   kilometraje_actual: z.number().int().min(0, 'Kilometraje no puede ser negativo').default(0),
   color: z.string().optional(),
@@ -172,8 +172,21 @@ export const searchVehicles = async (req: AuthRequest, res: Response) => {
 
     const countResult = await query(countQuery, queryParams.slice(0, -2));
 
+    // Estructurar los datos del cliente como objeto anidado
+    const structuredVehicles = result.rows.map(row => {
+      const { customer_nombre, customer_telefono, customer_email, ...vehicleData } = row;
+      return {
+        ...vehicleData,
+        customer: customer_nombre ? {
+          nombre: customer_nombre,
+          telefono: customer_telefono,
+          email: customer_email
+        } : null
+      };
+    });
+
     res.json({
-      vehicles: result.rows,
+      vehicles: structuredVehicles,
       total: parseInt(countResult.rows[0].total),
       limit: limitNum,
       offset: offsetNum,
@@ -219,8 +232,19 @@ export const getVehicleByVin = async (req: AuthRequest, res: Response) => {
       ORDER BY fecha_cambio DESC
     `, [vin]);
 
+    // Estructurar los datos del cliente como objeto anidado
+    const row = result.rows[0];
+    const { customer_nombre, customer_telefono, customer_whatsapp, customer_email, customer_direccion, ...vehicleData } = row;
+    
     const vehicle = {
-      ...result.rows[0],
+      ...vehicleData,
+      customer: customer_nombre ? {
+        nombre: customer_nombre,
+        telefono: customer_telefono,
+        whatsapp: customer_whatsapp,
+        email: customer_email,
+        direccion: customer_direccion
+      } : null,
       plate_history: plateHistory.rows,
     };
 

@@ -118,6 +118,26 @@ export const VehicleSearch = ({ onVehicleSelect, onCreateNew }: VehicleSearchPro
     }
   };
 
+  const listAllVehicles = async () => {
+    setIsLoading(true);
+    setError(null);
+    setVehicles([]);
+
+    try {
+      // Buscar sin filtros para obtener todos los vehículos
+      const result = await vehicleService.search({});
+      setVehicles(result.vehicles || []);
+      
+      if (result.vehicles?.length === 0) {
+        setError('No hay vehículos registrados en el sistema');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al cargar vehículos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const formatPhoneForWhatsApp = (phone: string) => {
     // Remover +52 si existe y formatear para WhatsApp
     const cleanPhone = phone.replace(/^\+52/, '');
@@ -162,6 +182,14 @@ export const VehicleSearch = ({ onVehicleSelect, onCreateNew }: VehicleSearchPro
                   className="btn-primary px-6 disabled:opacity-50"
                 >
                   {isLoading ? 'Buscando...' : 'Buscar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => listAllVehicles()}
+                  disabled={isLoading}
+                  className="btn-secondary px-6 disabled:opacity-50"
+                >
+                  {isLoading ? 'Cargando...' : 'Listar Todos'}
                 </button>
               </div>
               {errors.searchValue && (

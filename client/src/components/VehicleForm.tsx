@@ -42,15 +42,11 @@ interface Vehicle {
 }
 
 const vehicleSchema = z.object({
-  vin: z.string()
-    .length(17, 'VIN debe tener exactamente 17 caracteres')
-    .regex(/^[A-HJ-NPR-Z0-9]{17}$/, 'Formato de VIN inválido'),
+  vin: z.string().optional(),
   marca: z.string().min(1, 'Marca requerida'),
   modelo: z.string().min(1, 'Modelo requerido'),
   año: z.number().int().min(1900).max(new Date().getFullYear() + 1, 'Año inválido'),
-  placa_actual: z.string()
-    .regex(/^[A-Z]{3}-[0-9]{3}-[A-Z]$/, 'Formato de placa inválido (ABC-123-A)')
-    .optional(),
+  placa_actual: z.string().min(1, 'Placa requerida'),
   customer_id: z.number().optional(),
   kilometraje_actual: z.number().min(0, 'Kilometraje no puede ser negativo'),
   color: z.string().optional(),
@@ -188,16 +184,15 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              VIN *
+              VIN
             </label>
             <div className="flex space-x-2">
               <input
                 {...register('vin')}
                 type="text"
                 className="input-field uppercase flex-1"
-                placeholder="1N4BL11D85C123456"
+                placeholder="Número de identificación del vehículo (opcional)"
                 disabled={isEditing}
-                maxLength={17}
               />
               {!isEditing && (
                 <button
@@ -218,14 +213,13 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Placas
+              Placas *
             </label>
             <input
               {...register('placa_actual')}
               type="text"
               className="input-field uppercase"
-              placeholder="ABC-123-A"
-              maxLength={9}
+              placeholder="Placas del vehículo"
             />
             {errors.placa_actual && (
               <p className="mt-1 text-sm text-red-600">{errors.placa_actual.message}</p>
