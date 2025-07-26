@@ -82,9 +82,42 @@ export const createVehicle = async (req: AuthRequest, res: Response) => {
       true
     ]);
 
+    // Si hay customer_id, obtener la información completa del vehículo con el cliente
+    let vehicleWithCustomer = result.rows[0];
+    if (vehicleData.customer_id) {
+      const vehicleWithCustomerResult = await query(`
+        SELECT 
+          v.*,
+          c.nombre as customer_nombre,
+          c.telefono as customer_telefono,
+          c.whatsapp as customer_whatsapp,
+          c.email as customer_email,
+          c.direccion as customer_direccion
+        FROM vehicles v
+        LEFT JOIN customers c ON v.customer_id = c.customer_id
+        WHERE v.vin = $1
+      `, [result.rows[0].vin]);
+
+      if (vehicleWithCustomerResult.rows.length > 0) {
+        const row = vehicleWithCustomerResult.rows[0];
+        const { customer_nombre, customer_telefono, customer_whatsapp, customer_email, customer_direccion, ...vehicleData } = row;
+        
+        vehicleWithCustomer = {
+          ...vehicleData,
+          customer: customer_nombre ? {
+            nombre: customer_nombre,
+            telefono: customer_telefono,
+            whatsapp: customer_whatsapp,
+            email: customer_email,
+            direccion: customer_direccion
+          } : null
+        };
+      }
+    }
+
     res.status(201).json({
       message: 'Vehículo registrado exitosamente',
-      vehicle: result.rows[0],
+      vehicle: vehicleWithCustomer,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -431,6 +464,16 @@ export const getVehicleHistory = async (req: AuthRequest, res: Response) => {
       });
     }
     console.error('Error obteniendo historial:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+export const getVehiclesCount = async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await query('SELECT COUNT(*) as count FROM vehicles WHERE activo = true');
+    res.json({ count: parseInt(result.rows[0].count) });
+  } catch (error) {
+    console.error('Error obteniendo conteo de vehículos:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { opportunityService } from '../services/opportunities';
+import { vehicleService } from '../services/vehicles';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
@@ -24,13 +25,14 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
   const loadDashboardData = async () => {
     try {
       // Cargar estadísticas básicas
-      const [remindersResult, opportunitiesResult] = await Promise.all([
+      const [remindersResult, opportunitiesResult, vehiclesCount] = await Promise.all([
         opportunityService.getRemindersToday(),
         opportunityService.getPending(),
+        vehicleService.getCount(),
       ]);
 
       setStats({
-        vehiclesCount: 4, // From seed data
+        vehiclesCount: vehiclesCount.count,
         opportunitiesPending: opportunitiesResult.opportunities?.length || 0,
         remindersToday: remindersResult.reminders?.length || 0,
         servicesThisMonth: 0, // TODO: implement when services are tracked

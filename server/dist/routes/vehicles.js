@@ -6,6 +6,8 @@ const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 // Todas las rutas requieren autenticación
 router.use(auth_1.authenticateToken);
+// Obtener conteo de vehículos (disponible para todos los usuarios autenticados)
+router.get('/count', vehicles_1.getVehiclesCount);
 // Búsqueda de vehículos (disponible para todos los usuarios autenticados)
 router.get('/search', vehicles_1.searchVehicles);
 // Obtener vehículo por VIN (disponible para todos los usuarios autenticados)

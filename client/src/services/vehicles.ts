@@ -90,4 +90,10 @@ export const vehicleService = {
     });
     return response.data;
   },
+
+  // Obtener conteo de vehículos registrados
+  getCount: async () => {
+    const response = await api.get('/vehicles/count');
+    return response.data;
+  },
 };

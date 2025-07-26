@@ -6,4 +6,5 @@ export declare const getVehicleByVin: (req: AuthRequest, res: Response) => Promi
 export declare const updateVehicle: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const deleteVehicle: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const getVehicleHistory: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getVehiclesCount: (req: AuthRequest, res: Response) => Promise<void>;
 //# sourceMappingURL=vehicles.d.ts.map

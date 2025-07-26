@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVehicleHistory = exports.deleteVehicle = exports.updateVehicle = exports.getVehicleByVin = exports.searchVehicles = exports.createVehicle = void 0;
+exports.getVehiclesCount = exports.getVehicleHistory = exports.deleteVehicle = exports.updateVehicle = exports.getVehicleByVin = exports.searchVehicles = exports.createVehicle = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
 const vinSchema = zod_1.z.string().or(zod_1.z.literal('')).optional();
@@ -73,9 +73,39 @@ const createVehicle = async (req, res) => {
             vehicleData.notas || null,
             true
         ]);
+        // Si hay customer_id, obtener la información completa del vehículo con el cliente
+        let vehicleWithCustomer = result.rows[0];
+        if (vehicleData.customer_id) {
+            const vehicleWithCustomerResult = await (0, connection_1.query)(`
+        SELECT 
+          v.*,
+          c.nombre as customer_nombre,
+          c.telefono as customer_telefono,
+          c.whatsapp as customer_whatsapp,
+          c.email as customer_email,
+          c.direccion as customer_direccion
+        FROM vehicles v
+        LEFT JOIN customers c ON v.customer_id = c.customer_id
+        WHERE v.vin = $1
+      `, [result.rows[0].vin]);
+            if (vehicleWithCustomerResult.rows.length > 0) {
+                const row = vehicleWithCustomerResult.rows[0];
+                const { customer_nombre, customer_telefono, customer_whatsapp, customer_email, customer_direccion, ...vehicleData } = row;
+                vehicleWithCustomer = {
+                    ...vehicleData,
+                    customer: customer_nombre ? {
+                        nombre: customer_nombre,
+                        telefono: customer_telefono,
+                        whatsapp: customer_whatsapp,
+                        email: customer_email,
+                        direccion: customer_direccion
+                    } : null
+                };
+            }
+        }
         res.status(201).json({
             message: 'Vehículo registrado exitosamente',
-            vehicle: result.rows[0],
+            vehicle: vehicleWithCustomer,
         });
     }
     catch (error) {
@@ -388,4 +418,15 @@ const getVehicleHistory = async (req, res) => {
     }
 };
 exports.getVehicleHistory = getVehicleHistory;
+const getVehiclesCount = async (req, res) => {
+    try {
+        const result = await (0, connection_1.query)('SELECT COUNT(*) as count FROM vehicles WHERE activo = true');
+        res.json({ count: parseInt(result.rows[0].count) });
+    }
+    catch (error) {
+        console.error('Error obteniendo conteo de vehículos:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+exports.getVehiclesCount = getVehiclesCount;
 //# sourceMappingURL=vehicles.js.map

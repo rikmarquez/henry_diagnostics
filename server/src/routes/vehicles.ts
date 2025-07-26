@@ -6,6 +6,7 @@ import {
   updateVehicle,
   deleteVehicle,
   getVehicleHistory,
+  getVehiclesCount,
 } from '../controllers/vehicles';
 import { authenticateToken, requireMecanicoOrAdmin } from '../middleware/auth';
 
@@ -13,6 +14,9 @@ const router = Router();
 
 // Todas las rutas requieren autenticación
 router.use(authenticateToken);
+
+// Obtener conteo de vehículos (disponible para todos los usuarios autenticados)
+router.get('/count', getVehiclesCount);
 
 // Búsqueda de vehículos (disponible para todos los usuarios autenticados)
 router.get('/search', searchVehicles);
