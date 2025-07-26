@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRemindersToday = exports.getOpportunitiesByVin = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
-const vinSchema = zod_1.z.string().length(17, 'VIN debe tener exactamente 17 caracteres').regex(/^[A-HJ-NPR-Z0-9]{17}$/, 'Formato de VIN inválido');
+const vinSchema = zod_1.z.string().min(1, 'VIN requerido');
 const opportunitySchema = zod_1.z.object({
     vin: vinSchema,
     customer_id: zod_1.z.number().int().positive('ID de cliente inválido'),

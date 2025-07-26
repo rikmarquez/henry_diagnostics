@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { query } from '../database/connection';
 import { AuthRequest } from '../middleware/auth';
 
-const vinSchema = z.string().length(17, 'VIN debe tener exactamente 17 caracteres').regex(/^[A-HJ-NPR-Z0-9]{17}$/, 'Formato de VIN inválido');
+const vinSchema = z.string().min(1, 'VIN requerido');
 
 const opportunitySchema = z.object({
   vin: vinSchema,
