@@ -25,14 +25,16 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
   const loadDashboardData = async () => {
     try {
       // Cargar estadísticas básicas
-      const [remindersResult, opportunitiesResult, vehiclesCount] = await Promise.all([
+      const [remindersResult, opportunitiesResult, vehiclesCountResult] = await Promise.all([
         opportunityService.getRemindersToday(),
         opportunityService.getPending(),
         vehicleService.getCount(),
       ]);
 
+      console.log('🚗 Dashboard: Vehicle count result:', vehiclesCountResult);
+
       setStats({
-        vehiclesCount: vehiclesCount.count,
+        vehiclesCount: vehiclesCountResult.count || 0,
         opportunitiesPending: opportunitiesResult.opportunities?.length || 0,
         remindersToday: remindersResult.reminders?.length || 0,
         servicesThisMonth: 0, // TODO: implement when services are tracked
@@ -40,6 +42,14 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Fallback en caso de error
+      setStats(prev => ({
+        ...prev,
+        vehiclesCount: 0,
+        opportunitiesPending: 0,
+        remindersToday: 0,
+        servicesThisMonth: 0,
+      }));
     } finally {
       setIsLoading(false);
     }

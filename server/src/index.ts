@@ -93,6 +93,7 @@ app.listen(PORT, () => {
   console.log('   POST /api/auth/register - Registrar usuario (solo admin)');
   console.log('');
   console.log('🚗 Vehículos:');
+  console.log('   GET  /api/vehicles/count - Conteo de vehículos');
   console.log('   GET  /api/vehicles/search - Buscar vehículos');
   console.log('   POST /api/vehicles - Registrar vehículo');
   console.log('   GET  /api/vehicles/:vin - Obtener vehículo por VIN');
