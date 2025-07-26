@@ -19,11 +19,17 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🚀 Dashboard: Component mounted, loading dashboard data...');
     loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
+    console.log('📊 Dashboard: Starting loadDashboardData function...');
+    setIsLoading(true);
+    
     try {
+      console.log('📡 Dashboard: Making API calls...');
+      
       // Cargar estadísticas básicas
       const [remindersResult, opportunitiesResult, vehiclesCountResult] = await Promise.all([
         opportunityService.getRemindersToday(),
@@ -31,17 +37,23 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
         vehicleService.getCount(),
       ]);
 
+      console.log('📊 Dashboard: All API calls completed');
       console.log('🚗 Dashboard: Vehicle count result:', vehiclesCountResult);
+      console.log('💼 Dashboard: Opportunities result:', opportunitiesResult);
+      console.log('⏰ Dashboard: Reminders result:', remindersResult);
 
-      setStats({
+      const newStats = {
         vehiclesCount: vehiclesCountResult.count || 0,
         opportunitiesPending: opportunitiesResult.opportunities?.length || 0,
         remindersToday: remindersResult.reminders?.length || 0,
         servicesThisMonth: 0, // TODO: implement when services are tracked
-      });
+      };
+
+      console.log('📊 Dashboard: Setting new stats:', newStats);
+      setStats(newStats);
 
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      console.error('❌ Dashboard: Error loading dashboard data:', error);
       // Fallback en caso de error
       setStats(prev => ({
         ...prev,
@@ -51,6 +63,7 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
         servicesThisMonth: 0,
       }));
     } finally {
+      console.log('✅ Dashboard: loadDashboardData completed, setting loading to false');
       setIsLoading(false);
     }
   };
