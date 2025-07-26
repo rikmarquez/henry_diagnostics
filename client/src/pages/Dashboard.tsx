@@ -3,17 +3,13 @@ import { useAuth } from '../hooks/useAuth';
 import { opportunityService } from '../services/opportunities';
 import { vehicleService } from '../services/vehicles';
 
-console.log('📦 Dashboard: Module loading, vehicleService:', vehicleService);
-
 interface DashboardProps {
   onNavigate: (page: string) => void;
   onNavigateToVehicleForm: () => void;
 }
 
 export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProps) => {
-  console.log('🔧 Dashboard: Component function called');
   const { user } = useAuth();
-  console.log('👤 Dashboard: User from useAuth:', user);
   const [stats, setStats] = useState({
     vehiclesCount: 0,
     opportunitiesPending: 0,
@@ -23,17 +19,11 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('🚀 Dashboard: Component mounted, loading dashboard data...');
     loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
-    console.log('📊 Dashboard: Starting loadDashboardData function...');
-    setIsLoading(true);
-    
     try {
-      console.log('📡 Dashboard: Making API calls...');
-      
       // Cargar estadísticas básicas
       const [remindersResult, opportunitiesResult, vehiclesCountResult] = await Promise.all([
         opportunityService.getRemindersToday(),
@@ -41,33 +31,16 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
         vehicleService.getCount(),
       ]);
 
-      console.log('📊 Dashboard: All API calls completed');
-      console.log('🚗 Dashboard: Vehicle count result:', vehiclesCountResult);
-      console.log('💼 Dashboard: Opportunities result:', opportunitiesResult);
-      console.log('⏰ Dashboard: Reminders result:', remindersResult);
-
-      const newStats = {
+      setStats({
         vehiclesCount: vehiclesCountResult.count || 0,
         opportunitiesPending: opportunitiesResult.opportunities?.length || 0,
         remindersToday: remindersResult.reminders?.length || 0,
         servicesThisMonth: 0, // TODO: implement when services are tracked
-      };
-
-      console.log('📊 Dashboard: Setting new stats:', newStats);
-      setStats(newStats);
+      });
 
     } catch (error) {
-      console.error('❌ Dashboard: Error loading dashboard data:', error);
-      // Fallback en caso de error
-      setStats(prev => ({
-        ...prev,
-        vehiclesCount: 0,
-        opportunitiesPending: 0,
-        remindersToday: 0,
-        servicesThisMonth: 0,
-      }));
+      console.error('Error loading dashboard data:', error);
     } finally {
-      console.log('✅ Dashboard: loadDashboardData completed, setting loading to false');
       setIsLoading(false);
     }
   };
