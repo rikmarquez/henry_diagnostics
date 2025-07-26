@@ -77,7 +77,7 @@ interface Opportunity {
 }
 
 const opportunitySchema = z.object({
-  vin: z.string().length(17, 'VIN debe tener exactamente 17 caracteres'),
+  vin: z.string().min(1, 'VIN requerido'),
   customer_id: z.number().positive('Seleccione un cliente'),
   usuario_asignado: z.number().positive('Seleccione un usuario').optional(),
   tipo_oportunidad: z.string().min(1, 'Tipo de oportunidad requerido'),
@@ -190,10 +190,10 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
       if (vehicleSearch.length >= 3) {
         try {
           let result;
-          if (vehicleSearch.match(/^[A-Z]{3}-[0-9]{3}-[A-Z]$/)) {
-            // Es una placa
+          if (vehicleSearch.length <= 10 && !vehicleSearch.match(/^[0-9]+$/)) {
+            // Probablemente es una placa
             result = await vehicleService.searchByPlate(vehicleSearch);
-          } else if (vehicleSearch.length === 17) {
+          } else if (vehicleSearch.length >= 10) {
             // Es un VIN
             const vehicleResult = await vehicleService.getByVin(vehicleSearch);
             result = { vehicles: [vehicleResult.vehicle] };
