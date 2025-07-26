@@ -3,13 +3,17 @@ import { useAuth } from '../hooks/useAuth';
 import { opportunityService } from '../services/opportunities';
 import { vehicleService } from '../services/vehicles';
 
+console.log('📦 Dashboard: Module loading, vehicleService:', vehicleService);
+
 interface DashboardProps {
   onNavigate: (page: string) => void;
   onNavigateToVehicleForm: () => void;
 }
 
 export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProps) => {
+  console.log('🔧 Dashboard: Component function called');
   const { user } = useAuth();
+  console.log('👤 Dashboard: User from useAuth:', user);
   const [stats, setStats] = useState({
     vehiclesCount: 0,
     opportunitiesPending: 0,
