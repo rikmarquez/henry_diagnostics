@@ -139,7 +139,7 @@ export const OpportunityCard = ({
       </div>
 
       {/* Vehicle Info */}
-      {showVehicleInfo && opportunity.vehicle && (
+      {showVehicleInfo && (opportunity.vehicle_marca || opportunity.vin) && (
         <div className="bg-gray-50 p-3 rounded-lg mb-4">
           <div className="flex justify-between items-center">
             <div>
@@ -155,7 +155,7 @@ export const OpportunityCard = ({
       )}
 
       {/* Customer Info */}
-      {opportunity.customer && (
+      {opportunity.customer_nombre && (
         <div className="mb-4">
           <h4 className="font-medium text-gray-900 mb-1">
             Cliente: {opportunity.customer_nombre}
