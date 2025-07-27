@@ -17,6 +17,8 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
     servicesThisMonth: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [searchPlate, setSearchPlate] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -42,6 +44,35 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
       console.error('Error loading dashboard data:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleVehicleSearch = async () => {
+    if (!searchPlate.trim()) return;
+    
+    setIsSearching(true);
+    try {
+      const result = await vehicleService.searchByPlate(searchPlate.trim());
+      if (result.vehicles && result.vehicles.length > 0) {
+        // Navigate to vehicles page with search results
+        onNavigate('vehicles');
+        // Store search results in localStorage for the vehicles page to pick up
+        localStorage.setItem('vehicleSearchResults', JSON.stringify(result.vehicles));
+        localStorage.setItem('vehicleSearchQuery', searchPlate.trim());
+      } else {
+        alert('No se encontró ningún vehículo con esas placas');
+      }
+    } catch (error) {
+      console.error('Error searching vehicle:', error);
+      alert('Error al buscar el vehículo');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleVehicleSearch();
     }
   };
 
@@ -137,11 +168,18 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
               <div className="space-y-3">
                 <input
                   type="text"
+                  value={searchPlate}
+                  onChange={(e) => setSearchPlate(e.target.value.toUpperCase())}
+                  onKeyPress={handleSearchKeyPress}
                   placeholder="Buscar por placas (ABC-123-A)"
                   className="input-field text-sm"
                 />
-                <button className="w-full btn-primary text-sm">
-                  Buscar Vehículo
+                <button 
+                  onClick={handleVehicleSearch}
+                  disabled={isSearching || !searchPlate.trim()}
+                  className="w-full btn-primary text-sm disabled:opacity-50"
+                >
+                  {isSearching ? 'Buscando...' : 'Buscar Vehículo'}
                 </button>
               </div>
             </div>

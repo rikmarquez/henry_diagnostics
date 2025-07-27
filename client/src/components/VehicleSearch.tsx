@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -54,6 +54,7 @@ export const VehicleSearch = ({ onVehicleSelect, onCreateNew }: VehicleSearchPro
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<SearchData>({
     resolver: zodResolver(searchSchema),
@@ -61,6 +62,27 @@ export const VehicleSearch = ({ onVehicleSelect, onCreateNew }: VehicleSearchPro
       searchType: 'placa',
     },
   });
+
+  // Check for search results from dashboard
+  useEffect(() => {
+    const savedResults = localStorage.getItem('vehicleSearchResults');
+    const savedQuery = localStorage.getItem('vehicleSearchQuery');
+    
+    if (savedResults && savedQuery) {
+      try {
+        const results = JSON.parse(savedResults);
+        setVehicles(results);
+        setValue('searchType', 'placa');
+        setValue('searchValue', savedQuery);
+        
+        // Clear localStorage after using the data
+        localStorage.removeItem('vehicleSearchResults');
+        localStorage.removeItem('vehicleSearchQuery');
+      } catch (error) {
+        console.error('Error parsing saved search results:', error);
+      }
+    }
+  }, [setValue]);
 
   const searchType = watch('searchType');
 
