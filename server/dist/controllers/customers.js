@@ -4,23 +4,15 @@ exports.getCustomerVehicles = exports.deleteCustomer = exports.updateCustomer = 
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
 const phoneSchema = zod_1.z.string().regex(/^\+52[0-9]{10}$/, 'Formato de teléfono inválido (+5215512345678)');
-const postalCodeSchema = zod_1.z.string().regex(/^[0-9]{5}$/, 'Código postal debe tener 5 dígitos');
-const rfcSchema = zod_1.z.string().regex(/^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/, 'Formato de RFC inválido');
 const customerSchema = zod_1.z.object({
     nombre: zod_1.z.string().min(1, 'Nombre requerido'),
     telefono: phoneSchema,
-    whatsapp: phoneSchema.optional(),
-    email: zod_1.z.string().email('Email inválido').optional(),
-    direccion: zod_1.z.string().optional(),
-    codigo_postal: postalCodeSchema.optional(),
-    rfc: rfcSchema.optional(),
-    notas: zod_1.z.string().optional(),
+    rfc: zod_1.z.string().optional(),
 });
 const updateCustomerSchema = customerSchema.partial();
 const searchSchema = zod_1.z.object({
     nombre: zod_1.z.string().optional(),
     telefono: zod_1.z.string().optional(),
-    email: zod_1.z.string().optional(),
     limit: zod_1.z.string().optional(),
     offset: zod_1.z.string().optional(),
 });
@@ -32,27 +24,16 @@ const createCustomer = async (req, res) => {
         if (existingCustomer.rows.length > 0) {
             return res.status(400).json({ message: 'Ya existe un cliente con este número de teléfono' });
         }
-        // Verificar email si se proporciona
-        if (customerData.email) {
-            const emailExists = await (0, connection_1.query)('SELECT customer_id FROM customers WHERE email = $1', [customerData.email]);
-            if (emailExists.rows.length > 0) {
-                return res.status(400).json({ message: 'Ya existe un cliente con este email' });
-            }
-        }
         const result = await (0, connection_1.query)(`
       INSERT INTO customers (
-        nombre, telefono, whatsapp, email, direccion, codigo_postal, rfc, notas
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        nombre, telefono, whatsapp, rfc
+      ) VALUES ($1, $2, $3, $4)
       RETURNING *
     `, [
             customerData.nombre,
             customerData.telefono,
-            customerData.whatsapp || customerData.telefono, // WhatsApp por defecto igual al teléfono
-            customerData.email || null,
-            customerData.direccion || null,
-            customerData.codigo_postal || null,
+            customerData.telefono, // WhatsApp igual al teléfono
             customerData.rfc || null,
-            customerData.notas || null,
         ]);
         res.status(201).json({
             message: 'Cliente registrado exitosamente',
@@ -73,7 +54,7 @@ const createCustomer = async (req, res) => {
 exports.createCustomer = createCustomer;
 const searchCustomers = async (req, res) => {
     try {
-        const { nombre, telefono, email, limit = '50', offset = '0' } = searchSchema.parse(req.query);
+        const { nombre, telefono, limit = '50', offset = '0' } = searchSchema.parse(req.query);
         let whereConditions = [];
         let queryParams = [];
         let paramIndex = 1;
@@ -85,11 +66,6 @@ const searchCustomers = async (req, res) => {
         if (telefono) {
             whereConditions.push(`telefono ILIKE $${paramIndex}`);
             queryParams.push(`%${telefono}%`);
-            paramIndex++;
-        }
-        if (email) {
-            whereConditions.push(`email ILIKE $${paramIndex}`);
-            queryParams.push(`%${email}%`);
             paramIndex++;
         }
         const limitNum = Math.min(parseInt(limit), 100);
@@ -176,13 +152,6 @@ const updateCustomer = async (req, res) => {
             const phoneExists = await (0, connection_1.query)('SELECT customer_id FROM customers WHERE telefono = $1 AND customer_id != $2', [updateData.telefono, customerId]);
             if (phoneExists.rows.length > 0) {
                 return res.status(400).json({ message: 'Este número de teléfono ya está registrado' });
-            }
-        }
-        // Verificar email si se proporciona
-        if (updateData.email) {
-            const emailExists = await (0, connection_1.query)('SELECT customer_id FROM customers WHERE email = $1 AND customer_id != $2', [updateData.email, customerId]);
-            if (emailExists.rows.length > 0) {
-                return res.status(400).json({ message: 'Este email ya está registrado' });
             }
         }
         // Construir query de actualización dinámicamente

@@ -4,18 +4,11 @@ import { query } from '../database/connection';
 import { AuthRequest } from '../middleware/auth';
 
 const phoneSchema = z.string().regex(/^\+52[0-9]{10}$/, 'Formato de teléfono inválido (+5215512345678)');
-const postalCodeSchema = z.string().regex(/^[0-9]{5}$/, 'Código postal debe tener 5 dígitos');
-const rfcSchema = z.string().regex(/^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/, 'Formato de RFC inválido');
 
 const customerSchema = z.object({
   nombre: z.string().min(1, 'Nombre requerido'),
   telefono: phoneSchema,
-  whatsapp: phoneSchema.optional(),
-  email: z.string().email('Email inválido').optional(),
-  direccion: z.string().optional(),
-  codigo_postal: postalCodeSchema.optional(),
-  rfc: rfcSchema.optional(),
-  notas: z.string().optional(),
+  rfc: z.string().optional(),
 });
 
 const updateCustomerSchema = customerSchema.partial();
@@ -23,7 +16,6 @@ const updateCustomerSchema = customerSchema.partial();
 const searchSchema = z.object({
   nombre: z.string().optional(),
   telefono: z.string().optional(),
-  email: z.string().optional(),
   limit: z.string().optional(),
   offset: z.string().optional(),
 });
@@ -38,28 +30,16 @@ export const createCustomer = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'Ya existe un cliente con este número de teléfono' });
     }
 
-    // Verificar email si se proporciona
-    if (customerData.email) {
-      const emailExists = await query('SELECT customer_id FROM customers WHERE email = $1', [customerData.email]);
-      if (emailExists.rows.length > 0) {
-        return res.status(400).json({ message: 'Ya existe un cliente con este email' });
-      }
-    }
-
     const result = await query(`
       INSERT INTO customers (
-        nombre, telefono, whatsapp, email, direccion, codigo_postal, rfc, notas
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        nombre, telefono, whatsapp, rfc
+      ) VALUES ($1, $2, $3, $4)
       RETURNING *
     `, [
       customerData.nombre,
       customerData.telefono,
-      customerData.whatsapp || customerData.telefono, // WhatsApp por defecto igual al teléfono
-      customerData.email || null,
-      customerData.direccion || null,
-      customerData.codigo_postal || null,
+      customerData.telefono, // WhatsApp igual al teléfono
       customerData.rfc || null,
-      customerData.notas || null,
     ]);
 
     res.status(201).json({
@@ -80,7 +60,7 @@ export const createCustomer = async (req: AuthRequest, res: Response) => {
 
 export const searchCustomers = async (req: AuthRequest, res: Response) => {
   try {
-    const { nombre, telefono, email, limit = '50', offset = '0' } = searchSchema.parse(req.query);
+    const { nombre, telefono, limit = '50', offset = '0' } = searchSchema.parse(req.query);
 
     let whereConditions: string[] = [];
     let queryParams: any[] = [];
@@ -98,11 +78,6 @@ export const searchCustomers = async (req: AuthRequest, res: Response) => {
       paramIndex++;
     }
 
-    if (email) {
-      whereConditions.push(`email ILIKE $${paramIndex}`);
-      queryParams.push(`%${email}%`);
-      paramIndex++;
-    }
 
     const limitNum = Math.min(parseInt(limit), 100);
     const offsetNum = Math.max(parseInt(offset), 0);
@@ -207,16 +182,6 @@ export const updateCustomer = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Verificar email si se proporciona
-    if (updateData.email) {
-      const emailExists = await query(
-        'SELECT customer_id FROM customers WHERE email = $1 AND customer_id != $2',
-        [updateData.email, customerId]
-      );
-      if (emailExists.rows.length > 0) {
-        return res.status(400).json({ message: 'Este email ya está registrado' });
-      }
-    }
 
     // Construir query de actualización dinámicamente
     const updates: string[] = [];

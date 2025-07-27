@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { vehicleService } from '../services/vehicles';
 import { customerService } from '../services/customers';
 import { BarcodeScanner } from './BarcodeScanner';
+import { CustomerForm } from './CustomerForm';
 
 // Tipos locales
 interface Customer {
@@ -75,6 +76,7 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
   const [showScanner, setShowScanner] = useState(false);
+  const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
 
   const isEditing = !!vehicle;
 
@@ -155,6 +157,13 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
   const handleScanResult = (scannedVin: string) => {
     setValue('vin', scannedVin);
     setShowScanner(false);
+  };
+
+  const handleNewCustomerSuccess = (newCustomer: Customer) => {
+    setValue('customer_id', newCustomer.customer_id);
+    setCustomerSearch(newCustomer.nombre);
+    setShowNewCustomerForm(false);
+    setCustomers([]);
   };
 
   return (
@@ -345,9 +354,18 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
 
         {/* Asignación de cliente */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Propietario
-          </label>
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Propietario
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowNewCustomerForm(true)}
+              className="text-sm bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              + Nuevo Cliente
+            </button>
+          </div>
           <div className="space-y-2">
             <input
               type="text"
@@ -423,6 +441,18 @@ export const VehicleForm = ({ vehicle, onSuccess, onCancel }: VehicleFormProps) 
         onResult={handleScanResult}
         onClose={() => setShowScanner(false)}
       />
+
+      {/* Modal para nuevo cliente */}
+      {showNewCustomerForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <CustomerForm
+              onSuccess={handleNewCustomerSuccess}
+              onCancel={() => setShowNewCustomerForm(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
