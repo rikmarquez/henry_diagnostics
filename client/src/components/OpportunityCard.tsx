@@ -45,6 +45,7 @@ export const OpportunityCard = ({
 }: OpportunityCardProps) => {
   
   // Debug temporal
+  console.log('=== OPPORTUNITY CARD RENDERED ===');
   console.log('DEBUG OpportunityCard - Datos de oportunidad:', opportunity);
   
   const formatDate = (dateString: string) => {

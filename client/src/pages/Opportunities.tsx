@@ -18,6 +18,7 @@ interface SearchFilters {
 }
 
 export const Opportunities = () => {
+  console.log('=== COMPONENT OPPORTUNITIES LOADED ===');
   const { user } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('search');
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
