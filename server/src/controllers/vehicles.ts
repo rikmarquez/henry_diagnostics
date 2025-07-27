@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { query } from '../database/connection';
 import { AuthRequest } from '../middleware/auth';
 
-const vinSchema = z.string().or(z.literal('')).optional();
+const vinSchema = z.string().transform(val => val === '' ? undefined : val).optional();
 const placaSchema = z.string().min(1, 'Placa requerida');
 
 const vehicleSchema = z.object({

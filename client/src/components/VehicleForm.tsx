@@ -42,7 +42,7 @@ interface Vehicle {
 }
 
 const vehicleSchema = z.object({
-  vin: z.string().optional().or(z.literal('')),
+  vin: z.string().transform(val => val === '' ? undefined : val).optional(),
   marca: z.string().min(1, 'Marca requerida'),
   modelo: z.string().min(1, 'Modelo requerido'),
   año: z.number().int().min(1900).max(new Date().getFullYear() + 1, 'Año inválido'),

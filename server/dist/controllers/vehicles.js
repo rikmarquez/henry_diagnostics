@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getVehiclesCount = exports.getVehicleHistory = exports.deleteVehicle = exports.updateVehicle = exports.getVehicleByVin = exports.searchVehicles = exports.createVehicle = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
-const vinSchema = zod_1.z.string().or(zod_1.z.literal('')).optional();
+const vinSchema = zod_1.z.string().transform(val => val === '' ? undefined : val).optional();
 const placaSchema = zod_1.z.string().min(1, 'Placa requerida');
 const vehicleSchema = zod_1.z.object({
     vin: vinSchema,
