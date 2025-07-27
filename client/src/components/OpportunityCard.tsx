@@ -44,6 +44,9 @@ export const OpportunityCard = ({
   showVehicleInfo = true 
 }: OpportunityCardProps) => {
   
+  // Debug temporal
+  console.log('DEBUG OpportunityCard - Datos de oportunidad:', opportunity);
+  
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('es-MX', {
