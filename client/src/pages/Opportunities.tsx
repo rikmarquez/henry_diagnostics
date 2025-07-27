@@ -18,7 +18,6 @@ interface SearchFilters {
 }
 
 export const Opportunities = () => {
-  console.log('=== COMPONENT OPPORTUNITIES LOADED ===');
   const { user } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('search');
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
@@ -57,8 +56,6 @@ export const Opportunities = () => {
       );
       
       const result = await opportunityService.search(cleanFilters);
-      console.log('DEBUG - Datos recibidos del backend:', result);
-      console.log('DEBUG - Primera oportunidad:', result.opportunities?.[0]);
       setOpportunities(result.opportunities || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al cargar oportunidades');

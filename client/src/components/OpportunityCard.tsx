@@ -44,10 +44,6 @@ export const OpportunityCard = ({
   showVehicleInfo = true 
 }: OpportunityCardProps) => {
   
-  // Debug temporal
-  console.log('=== OPPORTUNITY CARD RENDERED ===');
-  console.log('DEBUG OpportunityCard - Datos de oportunidad:', opportunity);
-  
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('es-MX', {
@@ -142,45 +138,48 @@ export const OpportunityCard = ({
         )}
       </div>
 
-      {/* Vehicle Info */}
-      {showVehicleInfo && (opportunity.vehicle_marca || opportunity.vin) && (
+      {/* Vehicle and Customer Info */}
+      {(showVehicleInfo && (opportunity.vehicle_marca || opportunity.vin)) || opportunity.customer_nombre ? (
         <div className="bg-gray-50 p-3 rounded-lg mb-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h4 className="font-medium text-gray-900">
-                {opportunity.vehicle_marca} {opportunity.vehicle_modelo} {opportunity.vehicle_año}
-              </h4>
-              <p className="text-sm text-gray-600">
-                Placas: {opportunity.vehicle_placa || 'No asignadas'} • VIN: {opportunity.vin}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Vehicle Info */}
+            {showVehicleInfo && (opportunity.vehicle_marca || opportunity.vin) && (
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">
+                  🚗 {opportunity.vehicle_marca} {opportunity.vehicle_modelo} {opportunity.vehicle_año}
+                </h4>
+                <p className="text-sm text-gray-600">
+                  Placas: {opportunity.vehicle_placa || 'No asignadas'} • VIN: {opportunity.vin}
+                </p>
+              </div>
+            )}
 
-      {/* Customer Info */}
-      {opportunity.customer_nombre && (
-        <div className="mb-4">
-          <h4 className="font-medium text-gray-900 mb-1">
-            Cliente: {opportunity.customer_nombre}
-          </h4>
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
-            <span>📞 {opportunity.customer_telefono}</span>
-            
-            {opportunity.customer_whatsapp && (
-              <a
-                href={formatPhoneForWhatsApp(opportunity.customer_whatsapp)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-green-600 hover:text-green-700 font-medium"
-                onClick={(e) => e.stopPropagation()}
-              >
-                💬 WhatsApp
-              </a>
+            {/* Customer Info */}
+            {opportunity.customer_nombre && (
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">
+                  👤 Cliente: {opportunity.customer_nombre}
+                </h4>
+                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <span>📞 {opportunity.customer_telefono}</span>
+                  
+                  {opportunity.customer_whatsapp && (
+                    <a
+                      href={formatPhoneForWhatsApp(opportunity.customer_whatsapp)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 hover:text-green-700 font-medium"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      💬 WhatsApp
+                    </a>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Description */}
       <div className="mb-4">
