@@ -141,10 +141,10 @@ export const OpportunityCard = ({
       {/* Vehicle and Customer Info */}
       {(showVehicleInfo && (opportunity.vehicle_marca || opportunity.vin)) || opportunity.customer_nombre ? (
         <div className="bg-gray-50 p-3 rounded-lg mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col lg:flex-row lg:gap-6">
             {/* Vehicle Info */}
             {showVehicleInfo && (opportunity.vehicle_marca || opportunity.vin) && (
-              <div>
+              <div className="flex-1 mb-3 lg:mb-0">
                 <h4 className="font-medium text-gray-900 mb-1">
                   🚗 {opportunity.vehicle_marca} {opportunity.vehicle_modelo} {opportunity.vehicle_año}
                 </h4>
@@ -156,11 +156,11 @@ export const OpportunityCard = ({
 
             {/* Customer Info */}
             {opportunity.customer_nombre && (
-              <div>
+              <div className="flex-1">
                 <h4 className="font-medium text-gray-900 mb-1">
                   👤 Cliente: {opportunity.customer_nombre}
                 </h4>
-                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                   <span>📞 {opportunity.customer_telefono}</span>
                   
                   {opportunity.customer_whatsapp && (
