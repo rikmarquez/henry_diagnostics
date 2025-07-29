@@ -134,6 +134,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [vehicleSelected, setVehicleSelected] = useState(false);
 
   const isEditing = !!opportunity;
 
@@ -187,7 +188,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
   // Buscar vehículos cuando se escribe
   useEffect(() => {
     const searchVehicles = async () => {
-      if (vehicleSearch.length >= 2) {
+      if (vehicleSearch.length >= 2 && !vehicleSelected) {
         try {
           console.log('Buscando vehículos con:', vehicleSearch);
           // Buscar solo por placa y nombre del cliente
@@ -208,7 +209,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
 
     const timeoutId = setTimeout(searchVehicles, 300);
     return () => clearTimeout(timeoutId);
-  }, [vehicleSearch]);
+  }, [vehicleSearch, vehicleSelected]);
 
   // Cargar información del vehículo cuando se selecciona
   useEffect(() => {
@@ -328,12 +329,17 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
               <input
                 type="text"
                 value={vehicleSearch}
-                onChange={(e) => setVehicleSearch(e.target.value)}
+                onChange={(e) => {
+                  setVehicleSearch(e.target.value);
+                  if (vehicleSelected) {
+                    setVehicleSelected(false);
+                  }
+                }}
                 className="input-field"
                 placeholder="ABC-123-A o Juan Pérez"
               />
               
-              {vehicleSearch.length >= 2 && (
+              {vehicleSearch.length >= 2 && !vehicleSelected && (
                 <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
                   {vehicles.length > 0 ? (
                     vehicles.map((v) => (
@@ -345,6 +351,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
                           setValue('vin', v.vin);
                           setVehicleSearch(`${v.marca} ${v.modelo} - ${v.placa_actual}`);
                           setVehicles([]);
+                          setVehicleSelected(true);
                         }}
                         className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-200 last:border-b-0"
                       >
