@@ -139,22 +139,32 @@ export const searchVehicles = async (req: AuthRequest, res: Response) => {
     let queryParams: any[] = [];
     let paramIndex = 1;
 
-    if (placa) {
-      whereConditions.push(`v.placa_actual ILIKE $${paramIndex}`);
-      queryParams.push(`%${placa}%`);
-      paramIndex++;
-    }
+    // Para búsquedas combinadas de placa y customer_name (que vienen del frontend)
+    // necesitamos usar OR para que funcione correctamente
+    if (placa && customer_name && placa === customer_name) {
+      // Es una búsqueda desde el frontend que envía el mismo valor para ambos campos
+      whereConditions.push(`(v.placa_actual ILIKE $${paramIndex} OR c.nombre ILIKE $${paramIndex + 1})`);
+      queryParams.push(`%${placa}%`, `%${customer_name}%`);
+      paramIndex += 2;
+    } else {
+      // Búsquedas individuales con AND como antes
+      if (placa) {
+        whereConditions.push(`v.placa_actual ILIKE $${paramIndex}`);
+        queryParams.push(`%${placa}%`);
+        paramIndex++;
+      }
 
-    if (vin) {
-      whereConditions.push(`v.vin ILIKE $${paramIndex}`);
-      queryParams.push(`%${vin}%`);
-      paramIndex++;
-    }
+      if (vin) {
+        whereConditions.push(`v.vin ILIKE $${paramIndex}`);
+        queryParams.push(`%${vin}%`);
+        paramIndex++;
+      }
 
-    if (customer_name) {
-      whereConditions.push(`c.nombre ILIKE $${paramIndex}`);
-      queryParams.push(`%${customer_name}%`);
-      paramIndex++;
+      if (customer_name) {
+        whereConditions.push(`c.nombre ILIKE $${paramIndex}`);
+        queryParams.push(`%${customer_name}%`);
+        paramIndex++;
+      }
     }
 
     if (marca) {
