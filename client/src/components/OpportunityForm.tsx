@@ -187,24 +187,13 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
   // Buscar vehículos cuando se escribe
   useEffect(() => {
     const searchVehicles = async () => {
-      if (vehicleSearch.length >= 3) {
+      if (vehicleSearch.length >= 2) {
         try {
-          let result;
-          if (vehicleSearch.length <= 10 && !vehicleSearch.match(/^[0-9]+$/)) {
-            // Probablemente es una placa
-            result = await vehicleService.searchByPlate(vehicleSearch);
-          } else if (vehicleSearch.length >= 10) {
-            // Es un VIN
-            const vehicleResult = await vehicleService.getByVin(vehicleSearch);
-            result = { vehicles: [vehicleResult.vehicle] };
-          } else {
-            // Búsqueda general
-            result = await vehicleService.search({ 
-              placa: vehicleSearch,
-              vin: vehicleSearch,
-              customer_name: vehicleSearch 
-            });
-          }
+          // Buscar solo por placa y nombre del cliente
+          const result = await vehicleService.search({ 
+            placa: vehicleSearch,
+            customer_name: vehicleSearch 
+          });
           setVehicles(result.vehicles || []);
         } catch (error) {
           console.error('Error buscando vehículos:', error);
@@ -332,14 +321,14 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
           {!preselectedVin && (
             <div className="space-y-2 mb-4">
               <label className="block text-sm font-medium text-gray-700">
-                Buscar vehículo (placas, VIN o cliente)
+                Buscar vehículo (placas o cliente)
               </label>
               <input
                 type="text"
                 value={vehicleSearch}
                 onChange={(e) => setVehicleSearch(e.target.value)}
                 className="input-field"
-                placeholder="ABC-123-A, 1N4BL11D85C123456, o Juan Pérez"
+                placeholder="ABC-123-A o Juan Pérez"
               />
               
               {vehicles.length > 0 && (
