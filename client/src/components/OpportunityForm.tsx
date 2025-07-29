@@ -77,7 +77,7 @@ interface Opportunity {
 }
 
 const opportunitySchema = z.object({
-  vin: z.string().min(1, 'VIN requerido'),
+  vin: z.string().min(1, 'Seleccione un vehículo'),
   customer_id: z.number().positive('Seleccione un cliente'),
   usuario_asignado: z.number().positive('Seleccione un usuario').optional(),
   tipo_oportunidad: z.string().min(1, 'Tipo de oportunidad requerido'),
@@ -189,11 +189,13 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
     const searchVehicles = async () => {
       if (vehicleSearch.length >= 2) {
         try {
+          console.log('Buscando vehículos con:', vehicleSearch);
           // Buscar solo por placa y nombre del cliente
           const result = await vehicleService.search({ 
             placa: vehicleSearch,
             customer_name: vehicleSearch 
           });
+          console.log('Resultado de búsqueda:', result);
           setVehicles(result.vehicles || []);
         } catch (error) {
           console.error('Error buscando vehículos:', error);
@@ -331,25 +333,32 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
                 placeholder="ABC-123-A o Juan Pérez"
               />
               
-              {vehicles.length > 0 && (
+              {vehicleSearch.length >= 2 && (
                 <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto">
-                  {vehicles.map((v) => (
-                    <button
-                      key={v.vin}
-                      type="button"
-                      onClick={() => {
-                        setValue('vin', v.vin);
-                        setVehicleSearch(`${v.marca} ${v.modelo} - ${v.placa_actual}`);
-                        setVehicles([]);
-                      }}
-                      className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-200 last:border-b-0"
-                    >
-                      <div className="font-medium">{v.marca} {v.modelo} {v.año}</div>
-                      <div className="text-sm text-gray-600">
-                        {v.placa_actual} • VIN: {v.vin} • {v.customer?.nombre}
-                      </div>
-                    </button>
-                  ))}
+                  {vehicles.length > 0 ? (
+                    vehicles.map((v) => (
+                      <button
+                        key={v.vin}
+                        type="button"
+                        onClick={() => {
+                          console.log('Seleccionando vehículo:', v);
+                          setValue('vin', v.vin);
+                          setVehicleSearch(`${v.marca} ${v.modelo} - ${v.placa_actual}`);
+                          setVehicles([]);
+                        }}
+                        className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-200 last:border-b-0"
+                      >
+                        <div className="font-medium">{v.marca} {v.modelo} {v.año}</div>
+                        <div className="text-sm text-gray-600">
+                          {v.placa_actual} • VIN: {v.vin} • {v.customer?.nombre}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-3 text-center text-gray-500 text-sm">
+                      No se encontraron vehículos con "{vehicleSearch}"
+                    </div>
+                  )}
                 </div>
               )}
             </div>
