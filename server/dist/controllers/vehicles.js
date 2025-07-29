@@ -171,7 +171,12 @@ const searchVehicles = async (req, res) => {
       ORDER BY v.fecha_actualizacion DESC
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
+        console.log('🔍 Search Query:', searchQuery);
+        console.log('🔍 Query Params:', queryParams);
+        console.log('🔍 Where Conditions:', whereConditions);
         const result = await (0, connection_1.query)(searchQuery, queryParams);
+        console.log('🔍 Search Result Rows:', result.rows.length);
+        console.log('🔍 First few results:', result.rows.slice(0, 3));
         // Contar total de resultados
         const countQuery = `
       SELECT COUNT(*) as total

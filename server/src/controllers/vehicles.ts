@@ -193,7 +193,13 @@ export const searchVehicles = async (req: AuthRequest, res: Response) => {
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
+    console.log('🔍 Search Query:', searchQuery);
+    console.log('🔍 Query Params:', queryParams);
+    console.log('🔍 Where Conditions:', whereConditions);
+
     const result = await query(searchQuery, queryParams);
+    console.log('🔍 Search Result Rows:', result.rows.length);
+    console.log('🔍 First few results:', result.rows.slice(0, 3));
 
     // Contar total de resultados
     const countQuery = `
