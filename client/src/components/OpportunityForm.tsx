@@ -97,16 +97,12 @@ interface OpportunityFormProps {
 }
 
 const TIPOS_OPORTUNIDAD = [
-  'mantenimiento_programado',
-  'reparacion_diferida',
-  'servicio_estacional',
-  'afinacion',
+  'afinacion_mayor',
   'cambio_aceite',
-  'frenos',
+  'servicio_frenos',
   'suspension',
-  'aire_acondicionado',
-  'transmision',
-  'otro',
+  'direccion',
+  'alineacion',
 ];
 
 
