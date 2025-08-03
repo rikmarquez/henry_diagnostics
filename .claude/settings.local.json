@@ -34,7 +34,8 @@
       "Bash(npx tsc:*)",
       "Bash(npx tsx:*)",
       "Bash(chmod:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(timeout 10 npm start)"
     ],
     "deny": []
   }
