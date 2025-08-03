@@ -36,7 +36,8 @@
       "Bash(chmod:*)",
       "Bash(pkill:*)",
       "Bash(timeout 10 npm start)",
-      "Bash(timeout 8 npm start)"
+      "Bash(timeout 8 npm start)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

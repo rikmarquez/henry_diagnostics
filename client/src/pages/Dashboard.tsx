@@ -9,7 +9,7 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProps) => {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [stats, setStats] = useState({
     vehiclesCount: 0,
     opportunitiesPending: 0,
@@ -21,17 +21,28 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    // Solo cargar datos cuando la autenticación esté lista y el usuario esté autenticado
+    if (!authLoading && user) {
+      loadDashboardData();
+    }
+  }, [authLoading, user]);
 
   const loadDashboardData = async () => {
     try {
+      console.log('🔄 Dashboard: Iniciando carga de datos...');
+      
       // Cargar estadísticas básicas
       const [remindersResult, opportunitiesResult, vehiclesCountResult] = await Promise.all([
         opportunityService.getRemindersToday(),
         opportunityService.getPending(),
         vehicleService.getCount(),
       ]);
+
+      console.log('📊 Dashboard: Datos recibidos', {
+        vehicles: vehiclesCountResult,
+        opportunities: opportunitiesResult,
+        reminders: remindersResult
+      });
 
       setStats({
         vehiclesCount: vehiclesCountResult.count || 0,
@@ -41,7 +52,7 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
       });
 
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      console.error('❌ Dashboard: Error loading dashboard data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -75,6 +86,18 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
       handleVehicleSearch();
     }
   };
+
+  // Mostrar loading mientras la autenticación se inicializa
+  if (authLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50">

@@ -11,27 +11,32 @@
     "db:seed": "tsx src/database/seed.ts"
   },
   "deploymentNotes": "IMPORTANTE: Railway requiere código pre-compilado. Ejecutar 'npm run compile' antes de cada deploy. NO agregar script 'build' - causa errores de permisos en Railway.",
-  "keywords": ["express", "postgresql", "typescript"],
+  "keywords": [
+    "express",
+    "postgresql",
+    "typescript"
+  ],
   "author": "Henry Diagnostics",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
+    "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.3",
-    "zod": "^3.22.4",
-    "dotenv": "^16.3.1",
-    "express-rate-limit": "^7.1.5"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/cors": "^2.8.17",
     "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
-    "@types/pg": "^8.10.9",
     "@types/node": "^20.10.5",
+    "@types/pg": "^8.10.9",
     "tsx": "^4.6.2",
     "typescript": "^5.3.3"
   }
