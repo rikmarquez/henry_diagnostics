@@ -10,8 +10,8 @@ const opportunitySchema = z.object({
   customer_id: z.number().int().positive('ID de cliente inválido'),
   usuario_asignado: z.number().int().positive('ID de usuario asignado inválido').optional(),
   tipo_oportunidad: z.string().min(1, 'Tipo de oportunidad requerido'),
-  titulo: z.string().min(1, 'Título requerido'),
-  descripcion: z.string().min(1, 'Descripción requerida'),
+  titulo: z.string().optional(), // Ya no requerido
+  descripcion: z.string().min(1, 'Nota requerida'),
   servicio_sugerido: z.string().optional(),
   precio_estimado: z.number().positive('Precio debe ser positivo').optional(),
   fecha_sugerida: z.string().optional(),
@@ -86,7 +86,7 @@ export const createOpportunity = async (req: AuthRequest, res: Response) => {
       req.user?.user_id,
       opportunityData.usuario_asignado || null,
       opportunityData.tipo_oportunidad,
-      opportunityData.titulo,
+      opportunityData.titulo || opportunityData.tipo_oportunidad.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Usar tipo como título por defecto
       opportunityData.descripcion,
       opportunityData.servicio_sugerido || null,
       opportunityData.precio_estimado || null,

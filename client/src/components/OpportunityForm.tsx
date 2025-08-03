@@ -79,11 +79,8 @@ interface Opportunity {
 const opportunitySchema = z.object({
   vin: z.string().min(1, 'Seleccione un vehículo'),
   customer_id: z.number().positive('Seleccione un cliente'),
-  usuario_asignado: z.number().positive('Seleccione un usuario').optional(),
   tipo_oportunidad: z.string().min(1, 'Tipo de oportunidad requerido'),
-  titulo: z.string().min(1, 'Título requerido'),
-  descripcion: z.string().min(1, 'Descripción requerida'),
-  servicio_sugerido: z.string().optional(),
+  descripcion: z.string().min(1, 'Nota requerida'),
   precio_estimado: z.number().positive('Precio debe ser positivo').optional(),
   fecha_sugerida: z.string().optional(),
   prioridad: z.enum(['alta', 'media', 'baja']),
@@ -112,18 +109,6 @@ const TIPOS_OPORTUNIDAD = [
   'otro',
 ];
 
-const SERVICIOS_COMUNES = [
-  'Cambio de aceite y filtro',
-  'Afinación menor',
-  'Afinación mayor',
-  'Balanceo y rotación',
-  'Cambio de frenos delanteros',
-  'Cambio de frenos traseros',
-  'Servicio de transmisión',
-  'Revisión de suspensión',
-  'Servicio de aire acondicionado',
-  'Cambio de banda de distribución',
-];
 
 export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCancel }: OpportunityFormProps) => {
   const { user } = useAuth();
@@ -149,11 +134,8 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
     defaultValues: opportunity ? {
       vin: opportunity.vin,
       customer_id: opportunity.customer_id,
-      usuario_asignado: opportunity.usuario_asignado || undefined,
       tipo_oportunidad: opportunity.tipo_oportunidad,
-      titulo: opportunity.titulo,
       descripcion: opportunity.descripcion,
-      servicio_sugerido: opportunity.servicio_sugerido || '',
       precio_estimado: opportunity.precio_estimado || undefined,
       fecha_sugerida: opportunity.fecha_sugerida ? opportunity.fecha_sugerida.split('T')[0] : '',
       prioridad: opportunity.prioridad,
@@ -444,22 +426,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Título *
-            </label>
-            <input
-              {...register('titulo')}
-              type="text"
-              className="input-field"
-              placeholder="Cambio de aceite programado, reparación de frenos, etc."
-            />
-            {errors.titulo && (
-              <p className="mt-1 text-sm text-red-600">{errors.titulo.message}</p>
-            )}
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción *
+              Nota *
             </label>
             <textarea
               {...register('descripcion')}
@@ -480,27 +447,6 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Servicio sugerido
-              </label>
-              <select 
-                {...register('servicio_sugerido')}
-                className="input-field"
-                onChange={(e) => {
-                  if (e.target.value && !watch('titulo')) {
-                    setValue('titulo', e.target.value);
-                  }
-                }}
-              >
-                <option value="">Seleccionar servicio</option>
-                {SERVICIOS_COMUNES.map(servicio => (
-                  <option key={servicio} value={servicio}>{servicio}</option>
-                ))}
-                <option value="otro">Otro (especificar en título)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Precio estimado (MXN)
               </label>
               <input
@@ -515,9 +461,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
                 <p className="mt-1 text-sm text-red-600">{errors.precio_estimado.message}</p>
               )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Fecha sugerida para el servicio
@@ -529,57 +473,41 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
                 min={new Date().toISOString().split('T')[0]}
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kilometraje de referencia
-              </label>
-              <input
-                {...register('kilometraje_referencia', { valueAsNumber: true })}
-                type="number"
-                className="input-field"
-                placeholder={vehicle?.kilometraje_actual?.toString() || '0'}
-                min="0"
-              />
-            </div>
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Kilometraje sugerido
+            </label>
+            <input
+              {...register('kilometraje_referencia', { valueAsNumber: true })}
+              type="number"
+              className="input-field"
+              placeholder={vehicle?.kilometraje_actual?.toString() || '0'}
+              min="0"
+            />
           </div>
         </div>
 
-        {/* Asignación */}
+        {/* Cliente */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Asignación</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Cliente</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cliente *
-              </label>
-              <select {...register('customer_id', { valueAsNumber: true })} className="input-field">
-                <option value="">Seleccionar cliente</option>
-                {customers.map(customer => (
-                  <option key={customer.customer_id} value={customer.customer_id}>
-                    {customer.nombre} - {customer.telefono}
-                  </option>
-                ))}
-              </select>
-              {errors.customer_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.customer_id.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Asignar a
-              </label>
-              <select {...register('usuario_asignado', { valueAsNumber: true })} className="input-field">
-                <option value="">Sin asignar</option>
-                {users.map(u => (
-                  <option key={u.user_id} value={u.user_id}>
-                    {u.nombre} ({u.rol})
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Cliente *
+            </label>
+            <select {...register('customer_id', { valueAsNumber: true })} className="input-field">
+              <option value="">Seleccionar cliente</option>
+              {customers.map(customer => (
+                <option key={customer.customer_id} value={customer.customer_id}>
+                  {customer.nombre} - {customer.telefono}
+                </option>
+              ))}
+            </select>
+            {errors.customer_id && (
+              <p className="mt-1 text-sm text-red-600">{errors.customer_id.message}</p>
+            )}
           </div>
         </div>
 
