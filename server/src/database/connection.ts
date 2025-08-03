@@ -13,6 +13,9 @@ const pool = new Pool({
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
+  // Configuración para manejar correctamente UTF-8
+  application_name: 'henrys_diagnostics',
+  client_encoding: 'UTF8',
 });
 
 export const query = async (text: string, params?: any[]) => {
