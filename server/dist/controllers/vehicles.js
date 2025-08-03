@@ -163,7 +163,7 @@ const searchVehicles = async (req, res) => {
             paramIndex++;
         }
         if (año) {
-            whereConditions.push(`v.año = $${paramIndex}`);
+            whereConditions.push(`v."año" = $${paramIndex}`);
             queryParams.push(parseInt(año));
             paramIndex++;
         }

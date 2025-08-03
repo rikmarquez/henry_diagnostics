@@ -156,7 +156,7 @@ const searchOpportunities = async (req, res) => {
         c.whatsapp as customer_whatsapp,
         v.marca as vehicle_marca,
         v.modelo as vehicle_modelo,
-        v.año as vehicle_año,
+        v."año" as vehicle_año,
         v.placa_actual as vehicle_placa,
         u_creador.nombre as usuario_creador_nombre,
         u_asignado.nombre as usuario_asignado_nombre
@@ -220,7 +220,7 @@ const getOpportunityById = async (req, res) => {
         c.email as customer_email,
         v.marca as vehicle_marca,
         v.modelo as vehicle_modelo,
-        v.año as vehicle_año,
+        v."año" as vehicle_año,
         v.placa_actual as vehicle_placa,
         v.kilometraje_actual as vehicle_kilometraje,
         u_creador.nombre as usuario_creador_nombre,
