@@ -126,4 +126,39 @@ cd client && npm run build && cd .. && git add . && git commit -m "Update fronte
 
 ---
 
+## 🚗 ESTRATEGIA DE IDENTIFICACIÓN DE VEHÍCULOS - ACUERDO CRÍTICO
+
+### ✅ VIN NO ES CLAVE PRIMARIA:
+
+**ACUERDO ESTABLECIDO:** El campo VIN dejó de ser la clave principal para identificar vehículos.
+
+1. **Campo VIN:**
+   - ✅ VIN es opcional (puede estar en blanco/NULL)
+   - ✅ Muy probable que siempre quede vacío
+   - ✅ NUNCA vamos a buscar por VIN
+   - ✅ NO es campo requerido para crear vehículos
+
+2. **Identificación real de vehículos:**
+   - ✅ **PLACAS** son el identificador principal único
+   - ✅ Búsquedas se hacen por PLACAS, no por VIN
+   - ✅ Las placas SÍ son requeridas y únicas
+   - ✅ Índice único en `placa_actual` donde está activo
+
+3. **Implicaciones en el código:**
+   - ✅ Las consultas de búsqueda usan `placa_actual`
+   - ✅ Los JOINs entre tablas pueden usar placas como referencia alternativa
+   - ✅ VIN solo se usa si el cliente específicamente lo proporciona
+   - ✅ Formularios NO requieren VIN como campo obligatorio
+
+### ⚠️ IMPORTANTE - NO ASUMIR VIN:
+- ❌ NO hacer VIN campo obligatorio
+- ❌ NO usar VIN como clave foránea principal
+- ❌ NO crear lógica que dependa de que VIN exista
+- ✅ SIEMPRE usar PLACAS como identificador principal
+
+**Migración aplicada:** `vehicles.vin` permite NULL y cualquier longitud  
+**Identificador único:** `vehicles.placa_actual` (requerido, único por vehículo activo)
+
+---
+
 **Última actualización:** Agosto 2025 - Sistema funcionando correctamente con código pre-compilado BACKEND Y FRONTEND
