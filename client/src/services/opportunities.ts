@@ -21,6 +21,13 @@ interface Opportunity {
   kilometraje_referencia?: number;
   fecha_creacion: string;
   fecha_actualizacion: string;
+  // Campos de cita preliminar
+  cita_fecha?: string;
+  cita_hora?: string;
+  cita_descripcion_breve?: string;
+  cita_telefono_contacto?: string;
+  cita_nombre_contacto?: string;
+  tiene_cita?: boolean;
 }
 
 interface OpportunityFilters {
@@ -29,6 +36,7 @@ interface OpportunityFilters {
   fecha_hasta?: string;
   usuario_asignado?: number;
   prioridad?: string;
+  tiene_cita?: string;
 }
 
 export const opportunityService = {
@@ -104,6 +112,15 @@ export const opportunityService = {
   getByPriority: async (prioridad: 'alta' | 'media' | 'baja') => {
     const response = await api.get('/opportunities/search', { 
       params: { prioridad, limit: 50 } 
+    });
+    return response.data;
+  },
+
+  // Obtener citas de hoy (función de conveniencia)
+  getAppointmentsToday: async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const response = await api.get('/opportunities/search', { 
+      params: { tiene_cita: 'true', fecha_desde: today, fecha_hasta: today, limit: 50 } 
     });
     return response.data;
   },

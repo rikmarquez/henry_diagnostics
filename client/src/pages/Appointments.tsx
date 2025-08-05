@@ -40,7 +40,7 @@ export const Appointments = () => {
 
   const loadAppointments = async () => {
     try {
-      const response = await fetch('/api/opportunities?tiene_cita=true', {
+      const response = await fetch('/api/opportunities/search?tiene_cita=true', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -48,7 +48,7 @@ export const Appointments = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setAppointments(data);
+        setAppointments(data.opportunities || []);
       }
     } catch (error) {
       console.error('Error al cargar citas:', error);

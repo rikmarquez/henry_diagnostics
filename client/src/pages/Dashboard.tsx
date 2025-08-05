@@ -38,7 +38,7 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
         opportunityService.getRemindersToday(),
         opportunityService.getPending(),
         vehicleService.getCount(),
-        opportunityService.search({ tiene_cita: 'true', fecha_desde: today, fecha_hasta: today }),
+        opportunityService.getAppointmentsToday(),
       ]);
 
       console.log('📊 Dashboard: Datos recibidos', {
