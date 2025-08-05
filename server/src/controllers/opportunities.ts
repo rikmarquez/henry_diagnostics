@@ -57,7 +57,7 @@ export const createOpportunity = async (req: AuthRequest, res: Response) => {
     const opportunityData = opportunitySchema.parse(req.body);
 
     // Verificar que el vehículo existe
-    const vehicleExists = await query('SELECT vin, vehicle_id FROM vehicles WHERE vin = $1 AND activo = true', [opportunityData.vin]);
+    const vehicleExists = await query('SELECT vin FROM vehicles WHERE vin = $1 AND activo = true', [opportunityData.vin]);
     if (vehicleExists.rows.length === 0) {
       return res.status(404).json({ message: 'Vehículo no encontrado' });
     }
@@ -86,13 +86,13 @@ export const createOpportunity = async (req: AuthRequest, res: Response) => {
 
     const result = await query(`
       INSERT INTO opportunities (
-        vehicle_id, customer_id, usuario_creador, usuario_asignado, tipo_oportunidad, titulo, descripcion,
+        vin, customer_id, usuario_creador, usuario_asignado, tipo_oportunidad, titulo, descripcion,
         servicio_sugerido, precio_estimado, fecha_sugerida, fecha_contacto_sugerida, prioridad,
         kilometraje_referencia, origen
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `, [
-      vehicleExists.rows[0].vehicle_id,
+      opportunityData.vin,
       opportunityData.customer_id,
       req.user?.user_id,
       opportunityData.usuario_asignado || null,
@@ -220,7 +220,7 @@ export const searchOpportunities = async (req: AuthRequest, res: Response) => {
         u_asignado.nombre as usuario_asignado_nombre
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
+      LEFT JOIN vehicles v ON o.vin = v.vin
       LEFT JOIN users u_creador ON o.usuario_creador = u_creador.user_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
       ${whereClause}
@@ -242,7 +242,7 @@ export const searchOpportunities = async (req: AuthRequest, res: Response) => {
       SELECT COUNT(*) as total
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
+      LEFT JOIN vehicles v ON o.vin = v.vin
       ${whereClause}
     `;
 
@@ -289,7 +289,7 @@ export const getOpportunityById = async (req: AuthRequest, res: Response) => {
         u_asignado.nombre as usuario_asignado_nombre
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
+      LEFT JOIN vehicles v ON o.vin = v.vin
       LEFT JOIN users u_creador ON o.usuario_creador = u_creador.user_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
       WHERE o.opportunity_id = $1
@@ -471,8 +471,7 @@ export const getOpportunitiesByVin = async (req: AuthRequest, res: Response) => 
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
-      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
-      WHERE v.vin = $1
+      WHERE o.vin = $1
       ORDER BY o.fecha_creacion DESC
     `, [vin]);
 
@@ -507,7 +506,7 @@ export const getRemindersToday = async (req: AuthRequest, res: Response) => {
         v.placa_actual as vehicle_placa
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
+      LEFT JOIN vehicles v ON o.vin = v.vin
       WHERE o.fecha_contacto_sugerida <= $1 
         AND o.estado IN ('pendiente', 'contactado')
       ORDER BY o.prioridad = 'alta' DESC, o.fecha_contacto_sugerida ASC
@@ -561,13 +560,13 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
     // Crear la oportunidad/cita
     const result = await query(`
       INSERT INTO opportunities (
-        vehicle_id, customer_id, usuario_creador, tipo_oportunidad, titulo, descripcion,
+        vin, customer_id, usuario_creador, tipo_oportunidad, titulo, descripcion,
         estado, prioridad, origen, tiene_cita, cita_fecha, cita_hora, 
         cita_descripcion_breve, cita_telefono_contacto, cita_nombre_contacto
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING *
     `, [
-      tempVehicle.rows[0].vehicle_id,
+      vinTemp, // Usar VIN directamente
       tempCustomer.rows[0].customer_id,
       req.user?.user_id,
       'cita_agendada',
