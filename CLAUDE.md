@@ -91,4 +91,39 @@ cd client && npm run build && cd .. && git add . && git commit -m "Update fronte
 
 ---
 
-**Última actualización:** Julio 2025 - Sistema funcionando correctamente con código pre-compilado BACKEND Y FRONTEND
+## 📅 MÓDULO DE CITAS - ACUERDOS DE DISEÑO
+
+### ✅ CÓMO FUNCIONAN LAS CITAS RÁPIDAS:
+
+**ACUERDO ESTABLECIDO:** Las citas son registros rápidos que NO requieren crear vehículos ni clientes.
+
+1. **Al crear una cita:**
+   - ✅ Solo se guardan datos básicos: fecha, hora, nombre contacto, teléfono, descripción del vehículo
+   - ✅ Se crea registro en tabla `opportunities` con `tiene_cita = true`
+   - ✅ NO se crean registros en tablas `vehicles` ni `customers`
+   - ✅ Los campos `vehicle_id` y `customer_id` quedan NULL
+
+2. **Cuando llega el cliente (día de la cita):**
+   - ✅ Con la información completa se puede crear vehículo y cliente si es necesario
+   - ✅ Se actualiza la oportunidad con `vehicle_id` y `customer_id` reales
+   - ✅ Se cambia el estado de la oportunidad según corresponda
+
+3. **Estructura en base de datos:**
+   ```sql
+   -- Campos de cita en tabla opportunities:
+   tiene_cita BOOLEAN DEFAULT false
+   cita_fecha DATE
+   cita_hora TIME  
+   cita_descripcion_breve TEXT
+   cita_telefono_contacto VARCHAR(20)
+   cita_nombre_contacto VARCHAR(100)
+   ```
+
+### ⚠️ IMPORTANTE - NO CAMBIAR:
+- ❌ NO crear vehículos/clientes temporales al agendar cita
+- ❌ NO requerir VIN o datos completos del vehículo
+- ✅ Mantener proceso de "citas rápidas" simple y directo
+
+---
+
+**Última actualización:** Agosto 2025 - Sistema funcionando correctamente con código pre-compilado BACKEND Y FRONTEND
