@@ -470,44 +470,16 @@ exports.getRemindersToday = getRemindersToday;
 const createAppointment = async (req, res) => {
     try {
         const appointmentData = appointmentSchema.parse(req.body);
-        // Crear un cliente temporal y vehículo temporal para la cita
-        // Esto permitirá que la cita exista hasta que llegue el cliente real
-        // Primero crear cliente temporal
-        const tempCustomer = await (0, connection_1.query)(`
-      INSERT INTO customers (nombre, telefono, notas)
-      VALUES ($1, $2, $3)
-      RETURNING customer_id
-    `, [
-            appointmentData.cita_nombre_contacto,
-            appointmentData.cita_telefono_contacto,
-            `Cliente temporal para cita - ${appointmentData.cita_descripcion_breve}`
-        ]);
-        // Crear vehículo temporal
-        const vinTemp = 'TEMP-' + Date.now();
-        const tempVehicle = await (0, connection_1.query)(`
-      INSERT INTO vehicles (vin, marca, modelo, año, customer_id, notas, activo)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING vehicle_id
-    `, [
-            vinTemp,
-            'TEMPORAL',
-            appointmentData.cita_descripcion_breve || 'Vehículo por identificar',
-            new Date().getFullYear(),
-            tempCustomer.rows[0].customer_id,
-            `Vehículo temporal para cita - se completará cuando llegue el cliente`,
-            true
-        ]);
-        // Crear la oportunidad/cita
+        // Crear la cita como oportunidad SIN crear vehículo o cliente
+        // Solo guardamos los datos básicos en los campos de cita
         const result = await (0, connection_1.query)(`
       INSERT INTO opportunities (
-        vehicle_id, customer_id, usuario_creador, tipo_oportunidad, titulo, descripcion,
+        usuario_creador, tipo_oportunidad, titulo, descripcion,
         estado, prioridad, origen, tiene_cita, cita_fecha, cita_hora, 
         cita_descripcion_breve, cita_telefono_contacto, cita_nombre_contacto
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `, [
-            tempVehicle.rows[0].vehicle_id,
-            tempCustomer.rows[0].customer_id,
             req.user?.user_id,
             'cita_agendada',
             appointmentData.titulo || `Cita - ${appointmentData.cita_descripcion_breve}`,
