@@ -50,7 +50,7 @@ const createOpportunity = async (req, res) => {
     try {
         const opportunityData = opportunitySchema.parse(req.body);
         // Verificar que el vehículo existe
-        const vehicleExists = await (0, connection_1.query)('SELECT vin FROM vehicles WHERE vin = $1 AND activo = true', [opportunityData.vin]);
+        const vehicleExists = await (0, connection_1.query)('SELECT vin, vehicle_id FROM vehicles WHERE vin = $1 AND activo = true', [opportunityData.vin]);
         if (vehicleExists.rows.length === 0) {
             return res.status(404).json({ message: 'Vehículo no encontrado' });
         }
@@ -75,13 +75,13 @@ const createOpportunity = async (req, res) => {
         }
         const result = await (0, connection_1.query)(`
       INSERT INTO opportunities (
-        vin, customer_id, usuario_creador, usuario_asignado, tipo_oportunidad, titulo, descripcion,
+        vehicle_id, customer_id, usuario_creador, usuario_asignado, tipo_oportunidad, titulo, descripcion,
         servicio_sugerido, precio_estimado, fecha_sugerida, fecha_contacto_sugerida, prioridad,
         kilometraje_referencia, origen
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `, [
-            opportunityData.vin,
+            vehicleExists.rows[0].vehicle_id,
             opportunityData.customer_id,
             req.user?.user_id,
             opportunityData.usuario_asignado || null,
@@ -120,7 +120,7 @@ const searchOpportunities = async (req, res) => {
         let queryParams = [];
         let paramIndex = 1;
         if (vin) {
-            whereConditions.push(`o.vin = $${paramIndex}`);
+            whereConditions.push(`v.vin = $${paramIndex}`);
             queryParams.push(vin);
             paramIndex++;
         }
@@ -187,7 +187,7 @@ const searchOpportunities = async (req, res) => {
         u_asignado.nombre as usuario_asignado_nombre
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vin = v.vin
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
       LEFT JOIN users u_creador ON o.usuario_creador = u_creador.user_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
       ${whereClause}
@@ -207,7 +207,7 @@ const searchOpportunities = async (req, res) => {
       SELECT COUNT(*) as total
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vin = v.vin
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
       ${whereClause}
     `;
         const countResult = await (0, connection_1.query)(countQuery, queryParams.slice(0, -2));
@@ -252,7 +252,7 @@ const getOpportunityById = async (req, res) => {
         u_asignado.nombre as usuario_asignado_nombre
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vin = v.vin
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
       LEFT JOIN users u_creador ON o.usuario_creador = u_creador.user_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
       WHERE o.opportunity_id = $1
@@ -416,7 +416,8 @@ const getOpportunitiesByVin = async (req, res) => {
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
-      WHERE o.vin = $1
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
+      WHERE v.vin = $1
       ORDER BY o.fecha_creacion DESC
     `, [vin]);
         res.json({
@@ -450,7 +451,7 @@ const getRemindersToday = async (req, res) => {
         v.placa_actual as vehicle_placa
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vin = v.vin
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
       WHERE o.fecha_contacto_sugerida <= $1 
         AND o.estado IN ('pendiente', 'contactado')
       ORDER BY o.prioridad = 'alta' DESC, o.fecha_contacto_sugerida ASC
