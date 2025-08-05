@@ -527,16 +527,48 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
   try {
     const appointmentData = appointmentSchema.parse(req.body);
     
-    // Crear la cita como oportunidad SIN crear vehículo o cliente
-    // Solo guardamos los datos básicos en los campos de cita
+    // TEMPORAL: Crear registros mínimos hasta que se ejecute migración para nullable fields
+    // Crear cliente mínimo
+    const tempCustomer = await query(`
+      INSERT INTO customers (nombre, telefono, notas)
+      VALUES ($1, $2, $3)
+      RETURNING customer_id
+    `, [
+      appointmentData.cita_nombre_contacto,
+      appointmentData.cita_telefono_contacto,
+      `Cita agendada - ${appointmentData.cita_descripcion_breve}`
+    ]);
+
+    // Crear vehículo mínimo
+    const vinTemp = 'CITA-' + Date.now();
+    const tempVehicle = await query(`
+      INSERT INTO vehicles (vin, marca, modelo, año, customer_id, kilometraje_actual, tipo_combustible, transmision, notas, activo)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING vehicle_id
+    `, [
+      vinTemp,
+      'POR_DEFINIR',
+      appointmentData.cita_descripcion_breve || 'Por definir',
+      new Date().getFullYear(),
+      tempCustomer.rows[0].customer_id,
+      0,
+      'gasolina',
+      'manual',
+      `Registro temporal para cita - se actualizará cuando llegue el vehículo`,
+      true
+    ]);
+
+    // Crear la oportunidad/cita
     const result = await query(`
       INSERT INTO opportunities (
-        usuario_creador, tipo_oportunidad, titulo, descripcion,
+        vehicle_id, customer_id, usuario_creador, tipo_oportunidad, titulo, descripcion,
         estado, prioridad, origen, tiene_cita, cita_fecha, cita_hora, 
         cita_descripcion_breve, cita_telefono_contacto, cita_nombre_contacto
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING *
     `, [
+      tempVehicle.rows[0].vehicle_id,
+      tempCustomer.rows[0].customer_id,
       req.user?.user_id,
       'cita_agendada',
       appointmentData.titulo || `Cita - ${appointmentData.cita_descripcion_breve}`,
