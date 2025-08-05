@@ -7,6 +7,7 @@ import {
   addOpportunityNote,
   getOpportunitiesByVin,
   getRemindersToday,
+  createAppointment,
 } from '../controllers/opportunities';
 import { authenticateToken, requireMecanicoOrAdmin, requireSeguimientoOrAdmin } from '../middleware/auth';
 
@@ -29,6 +30,9 @@ router.get('/:id', getOpportunityById);
 
 // Solo mecánicos y administradores pueden crear oportunidades
 router.post('/', requireMecanicoOrAdmin, createOpportunity);
+
+// Crear citas rápidas (disponible para todos los usuarios autenticados)
+router.post('/appointments', createAppointment);
 
 // Solo personal de seguimiento y administradores pueden actualizar oportunidades
 router.put('/:id', requireSeguimientoOrAdmin, updateOpportunity);

@@ -81,6 +81,13 @@ export interface Opportunity {
   kilometraje_referencia?: number;
   fecha_creacion: Date;
   fecha_actualizacion: Date;
+  // Campos de cita preliminar
+  cita_fecha?: Date;
+  cita_hora?: string;
+  cita_descripcion_breve?: string;
+  cita_telefono_contacto?: string;
+  cita_nombre_contacto?: string;
+  tiene_cita?: boolean;
 }
 
 export interface AuthRequest extends Request {
@@ -115,6 +122,17 @@ export interface OpportunityFilters {
   fecha_hasta?: string;
   usuario_asignado?: number;
   prioridad?: string;
+  tiene_cita?: boolean;
+}
+
+export interface CreateAppointmentRequest {
+  cita_fecha: string; // YYYY-MM-DD
+  cita_hora: string; // HH:MM
+  cita_descripcion_breve: string; // "Honda HRV 2022"
+  cita_telefono_contacto: string;
+  cita_nombre_contacto: string;
+  titulo?: string;
+  descripcion?: string;
 }
 
 // User Management Types

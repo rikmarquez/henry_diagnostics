@@ -77,6 +77,12 @@ export interface Opportunity {
     kilometraje_referencia?: number;
     fecha_creacion: Date;
     fecha_actualizacion: Date;
+    cita_fecha?: Date;
+    cita_hora?: string;
+    cita_descripcion_breve?: string;
+    cita_telefono_contacto?: string;
+    cita_nombre_contacto?: string;
+    tiene_cita?: boolean;
 }
 export interface AuthRequest extends Request {
     user?: User;
@@ -106,6 +112,16 @@ export interface OpportunityFilters {
     fecha_hasta?: string;
     usuario_asignado?: number;
     prioridad?: string;
+    tiene_cita?: boolean;
+}
+export interface CreateAppointmentRequest {
+    cita_fecha: string;
+    cita_hora: string;
+    cita_descripcion_breve: string;
+    cita_telefono_contacto: string;
+    cita_nombre_contacto: string;
+    titulo?: string;
+    descripcion?: string;
 }
 export interface UserManagementView extends User {
     ultimo_login?: Date;

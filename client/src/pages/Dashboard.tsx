@@ -15,6 +15,7 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
     opportunitiesPending: 0,
     remindersToday: 0,
     servicesThisMonth: 0,
+    appointmentsToday: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [searchPlate, setSearchPlate] = useState('');
@@ -32,16 +33,19 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
       console.log('🔄 Dashboard: Iniciando carga de datos...');
       
       // Cargar estadísticas básicas
-      const [remindersResult, opportunitiesResult, vehiclesCountResult] = await Promise.all([
+      const today = new Date().toISOString().split('T')[0];
+      const [remindersResult, opportunitiesResult, vehiclesCountResult, appointmentsResult] = await Promise.all([
         opportunityService.getRemindersToday(),
         opportunityService.getPending(),
         vehicleService.getCount(),
+        opportunityService.search({ tiene_cita: 'true', fecha_desde: today, fecha_hasta: today }),
       ]);
 
       console.log('📊 Dashboard: Datos recibidos', {
         vehicles: vehiclesCountResult,
         opportunities: opportunitiesResult,
-        reminders: remindersResult
+        reminders: remindersResult,
+        appointments: appointmentsResult
       });
 
       setStats({
@@ -49,6 +53,7 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
         opportunitiesPending: opportunitiesResult.opportunities?.length || 0,
         remindersToday: remindersResult.reminders?.length || 0,
         servicesThisMonth: 0, // TODO: implement when services are tracked
+        appointmentsToday: appointmentsResult.opportunities?.length || 0,
       });
 
     } catch (error) {
@@ -114,7 +119,7 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <div className="card p-6">
               <div className="flex items-center">
                 <div className="flex-1">
@@ -127,6 +132,32 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
                   <span className="text-blue-600 text-xl">🚗</span>
                 </div>
               </div>
+            </div>
+
+            <div className={`card p-6 ${stats.appointmentsToday > 0 ? 'ring-2 ring-blue-200 bg-blue-50' : ''}`}>
+              <div className="flex items-center">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600">Citas Hoy</p>
+                  <p className={`text-2xl font-bold ${stats.appointmentsToday > 0 ? 'text-blue-600' : 'text-gray-900'}`}>
+                    {isLoading ? '--' : stats.appointmentsToday}
+                  </p>
+                </div>
+                <div className={`p-3 rounded-full ${stats.appointmentsToday > 0 ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                  <span className={`text-xl ${stats.appointmentsToday > 0 ? 'text-blue-600' : 'text-gray-600'}`}>
+                    📅
+                  </span>
+                </div>
+              </div>
+              {stats.appointmentsToday > 0 && (
+                <div className="mt-3">
+                  <button 
+                    onClick={() => onNavigate('appointments')}
+                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full font-medium"
+                  >
+                    Ver Citas
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="card p-6">
@@ -210,6 +241,15 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
             <div className="card p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
               <div className="space-y-3">
+                <button 
+                  onClick={() => {
+                    console.log('📅 Dashboard: Navigating to appointments');
+                    onNavigate('appointments');
+                  }}
+                  className="w-full btn-primary text-sm"
+                >
+                  📅 Agendar Cita Rápida
+                </button>
                 <button 
                   onClick={() => {
                     console.log('🚗 Dashboard: Using direct vehicle form navigation');

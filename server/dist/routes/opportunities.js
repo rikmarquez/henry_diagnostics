@@ -16,6 +16,8 @@ router.get('/vehicle/:vin', opportunities_1.getOpportunitiesByVin);
 router.get('/:id', opportunities_1.getOpportunityById);
 // Solo mecánicos y administradores pueden crear oportunidades
 router.post('/', auth_1.requireMecanicoOrAdmin, opportunities_1.createOpportunity);
+// Crear citas rápidas (disponible para todos los usuarios autenticados)
+router.post('/appointments', opportunities_1.createAppointment);
 // Solo personal de seguimiento y administradores pueden actualizar oportunidades
 router.put('/:id', auth_1.requireSeguimientoOrAdmin, opportunities_1.updateOpportunity);
 // Solo personal de seguimiento y administradores pueden agregar notas

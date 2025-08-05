@@ -12,6 +12,7 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const vehicles_1 = __importDefault(require("./routes/vehicles"));
 const customers_1 = __importDefault(require("./routes/customers"));
 const opportunities_1 = __importDefault(require("./routes/opportunities"));
+const appointments_1 = __importDefault(require("./routes/appointments"));
 const users_1 = require("./routes/users");
 // Cargar variables de entorno
 dotenv_1.default.config();
@@ -53,6 +54,7 @@ app.use('/api/auth', auth_1.default);
 app.use('/api/vehicles', vehicles_1.default);
 app.use('/api/customers', customers_1.default);
 app.use('/api/opportunities', opportunities_1.default);
+app.use('/api/appointments', appointments_1.default);
 app.use('/api/users', users_1.usersRouter);
 // Middleware para rutas no encontradas
 app.use('*', (req, res) => {
@@ -107,6 +109,9 @@ app.listen(PORT, () => {
     console.log('   GET  /api/opportunities/vehicle/:vin - Oportunidades por VIN');
     console.log('   GET  /api/opportunities/reminders/today - Recordatorios del día');
     console.log('   POST /api/opportunities/:id/notes - Agregar nota de seguimiento');
+    console.log('');
+    console.log('📅 Citas:');
+    console.log('   POST /api/appointments - Agendar cita rápida');
     console.log('');
     console.log('👤 Gestión de Usuarios (Solo Administradores):');
     console.log('   GET  /api/users/stats - Estadísticas de usuarios');

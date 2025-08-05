@@ -7,4 +7,5 @@ export declare const updateOpportunity: (req: AuthRequest, res: Response) => Pro
 export declare const addOpportunityNote: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const getOpportunitiesByVin: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const getRemindersToday: (req: AuthRequest, res: Response) => Promise<void>;
+export declare const createAppointment: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 //# sourceMappingURL=opportunities.d.ts.map

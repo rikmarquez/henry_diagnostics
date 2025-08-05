@@ -7,6 +7,7 @@ import authRoutes from './routes/auth';
 import vehiclesRoutes from './routes/vehicles';
 import customersRoutes from './routes/customers';
 import opportunitiesRoutes from './routes/opportunities';
+import appointmentsRoutes from './routes/appointments';
 import { usersRouter } from './routes/users';
 
 // Cargar variables de entorno
@@ -57,6 +58,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehiclesRoutes);
 app.use('/api/customers', customersRoutes);
 app.use('/api/opportunities', opportunitiesRoutes);
+app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/users', usersRouter);
 
 // Middleware para rutas no encontradas
@@ -115,6 +117,9 @@ app.listen(PORT, () => {
   console.log('   GET  /api/opportunities/vehicle/:vin - Oportunidades por VIN');
   console.log('   GET  /api/opportunities/reminders/today - Recordatorios del día');
   console.log('   POST /api/opportunities/:id/notes - Agregar nota de seguimiento');
+  console.log('');
+  console.log('📅 Citas:');
+  console.log('   POST /api/appointments - Agendar cita rápida');
   console.log('');
   console.log('👤 Gestión de Usuarios (Solo Administradores):');
   console.log('   GET  /api/users/stats - Estadísticas de usuarios');

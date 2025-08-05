@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
 import { Dashboard } from './Dashboard';
+import { Appointments } from './Appointments';
 import { Vehicles } from './Vehicles';
 import { Customers } from './Customers';
 import { Opportunities } from './Opportunities';
@@ -30,6 +31,8 @@ export const MainApp = () => {
 
   const renderPage = () => {
     switch (currentPage) {
+      case 'appointments':
+        return <Appointments />;
       case 'vehicles':
         return <Vehicles initialMode={shouldCreateVehicle ? 'create' : 'search'} onModeUsed={() => setShouldCreateVehicle(false)} />;
       case 'customers':

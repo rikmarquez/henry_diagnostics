@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRemindersToday = exports.getOpportunitiesByVin = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
+exports.createAppointment = exports.getRemindersToday = exports.getOpportunitiesByVin = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
 const vinSchema = zod_1.z.string().min(1, 'VIN requerido');
@@ -26,8 +26,18 @@ const searchSchema = zod_1.z.object({
     fecha_hasta: zod_1.z.string().optional(),
     usuario_asignado: zod_1.z.string().optional(),
     prioridad: zod_1.z.string().optional(),
+    tiene_cita: zod_1.z.string().optional(),
     limit: zod_1.z.string().optional(),
     offset: zod_1.z.string().optional(),
+});
+const appointmentSchema = zod_1.z.object({
+    cita_fecha: zod_1.z.string().min(1, 'Fecha de cita requerida'),
+    cita_hora: zod_1.z.string().min(1, 'Hora de cita requerida'),
+    cita_descripcion_breve: zod_1.z.string().min(1, 'Descripción del vehículo requerida'),
+    cita_telefono_contacto: zod_1.z.string().min(1, 'Teléfono de contacto requerido'),
+    cita_nombre_contacto: zod_1.z.string().min(1, 'Nombre de contacto requerido'),
+    titulo: zod_1.z.string().optional(),
+    descripcion: zod_1.z.string().optional(),
 });
 const noteSchema = zod_1.z.object({
     tipo_contacto: zod_1.z.enum(['llamada', 'whatsapp', 'visita', 'email', 'nota_interna']).optional(),
@@ -105,7 +115,7 @@ const createOpportunity = async (req, res) => {
 exports.createOpportunity = createOpportunity;
 const searchOpportunities = async (req, res) => {
     try {
-        const { vin, customer_id, estado, fecha_desde, fecha_hasta, usuario_asignado, prioridad, limit = '50', offset = '0' } = searchSchema.parse(req.query);
+        const { vin, customer_id, estado, fecha_desde, fecha_hasta, usuario_asignado, prioridad, tiene_cita, limit = '50', offset = '0' } = searchSchema.parse(req.query);
         let whereConditions = [];
         let queryParams = [];
         let paramIndex = 1;
@@ -142,6 +152,11 @@ const searchOpportunities = async (req, res) => {
         if (prioridad) {
             whereConditions.push(`o.prioridad = $${paramIndex}`);
             queryParams.push(prioridad);
+            paramIndex++;
+        }
+        if (tiene_cita) {
+            whereConditions.push(`o.tiene_cita = $${paramIndex}`);
+            queryParams.push(tiene_cita === 'true');
             paramIndex++;
         }
         const limitNum = Math.min(parseInt(limit), 100);
@@ -441,4 +456,48 @@ const getRemindersToday = async (req, res) => {
     }
 };
 exports.getRemindersToday = getRemindersToday;
+const createAppointment = async (req, res) => {
+    try {
+        const appointmentData = appointmentSchema.parse(req.body);
+        const result = await (0, connection_1.query)(`
+      INSERT INTO opportunities (
+        vin, customer_id, usuario_creador, tipo_oportunidad, titulo, descripcion,
+        estado, prioridad, origen, tiene_cita, cita_fecha, cita_hora, 
+        cita_descripcion_breve, cita_telefono_contacto, cita_nombre_contacto
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      RETURNING *
+    `, [
+            'TEMP-' + Date.now(), // VIN temporal hasta que llegue el vehículo
+            0, // customer_id temporal 
+            req.user?.user_id,
+            'cita_agendada',
+            appointmentData.titulo || `Cita - ${appointmentData.cita_descripcion_breve}`,
+            appointmentData.descripcion || `Cita agendada para ${appointmentData.cita_nombre_contacto} - ${appointmentData.cita_descripcion_breve}`,
+            'agendado',
+            'media',
+            'manual',
+            true,
+            appointmentData.cita_fecha,
+            appointmentData.cita_hora,
+            appointmentData.cita_descripcion_breve,
+            appointmentData.cita_telefono_contacto,
+            appointmentData.cita_nombre_contacto
+        ]);
+        res.status(201).json({
+            message: 'Cita creada exitosamente',
+            appointment: result.rows[0],
+        });
+    }
+    catch (error) {
+        if (error instanceof zod_1.z.ZodError) {
+            return res.status(400).json({
+                message: 'Datos inválidos',
+                errors: error.errors.map(e => `${e.path.join('.')}: ${e.message}`),
+            });
+        }
+        console.error('Error creando cita:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+exports.createAppointment = createAppointment;
 //# sourceMappingURL=opportunities.js.map
