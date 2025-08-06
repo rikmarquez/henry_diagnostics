@@ -10,8 +10,8 @@ router.use(auth_1.authenticateToken);
 router.get('/search', opportunities_1.searchOpportunities);
 // Recordatorios del día (disponible para todos los usuarios autenticados)
 router.get('/reminders/today', opportunities_1.getRemindersToday);
-// Obtener oportunidades por VIN (disponible para todos los usuarios autenticados)
-router.get('/vehicle/:vin', opportunities_1.getOpportunitiesByVin);
+// Obtener oportunidades por vehículo (disponible para todos los usuarios autenticados)
+router.get('/vehicle/:vehicleId', opportunities_1.getOpportunitiesByVehicle);
 // Obtener oportunidad por ID (disponible para todos los usuarios autenticados)
 router.get('/:id', opportunities_1.getOpportunityById);
 // Solo mecánicos y administradores pueden crear oportunidades

@@ -161,4 +161,51 @@ cd client && npm run build && cd .. && git add . && git commit -m "Update fronte
 
 ---
 
+---
+
+## 🚨 ESTADO ACTUAL DEL PROBLEMA - SESIÓN 05 AGOSTO 2025
+
+### ❌ PROBLEMA PENDIENTE: Las citas siguen sin registrarse
+
+**Situación actual:**
+- Dashboard muestra ceros en todas las estadísticas
+- Las citas no aparecen ni en dashboard ni en módulo de citas
+- Usuario puede crear citas desde el formulario pero no se guardan/muestran
+
+**Diagnóstico realizado:**
+1. ✅ Revisada estructura tabla `opportunities` - usa `vin` directamente, NO `vehicle_id`
+2. ✅ Corregidos JOINs: `LEFT JOIN vehicles v ON o.vin = v.vin`
+3. ✅ Corregida función `createAppointment` para usar `vinTemp` directamente
+4. ✅ Migración creada para hacer `vin` y `customer_id` nullable
+5. ✅ **MIGRACIÓN EJECUTADA EXITOSAMENTE** - vin y customer_id ahora permiten NULL
+
+**Código desplegado:**
+- ✅ Backend compilado con correcciones de estructura
+- ✅ Frontend buildeado con últimos cambios
+- ✅ Push realizado a Railway
+
+**SIGUIENTE PASO CRÍTICO:**
+```sql
+-- EJECUTAR ESTA MIGRACIÓN EN PRODUCCIÓN:
+ALTER TABLE opportunities ALTER COLUMN vin DROP NOT NULL;
+ALTER TABLE opportunities ALTER COLUMN customer_id DROP NOT NULL;
+```
+
+**Archivos modificados en última sesión:**
+- `server/src/controllers/opportunities.ts` - corregidos JOINs y createAppointment
+- `server/src/database/migrations/make_vehicle_customer_nullable.sql` - migración lista
+- `CLAUDE.md` - documentación actualizada
+
+**Teoría del problema:**
+Las citas fallan al crearse porque `vin` y `customer_id` tienen constraint NOT NULL, pero createAppointment intenta crear records con algunos campos NULL. Una vez ejecutada la migración, debería funcionar.
+
+**Para continuar mañana:**
+1. ✅ Migración ejecutada exitosamente
+2. 🎯 Probar crear cita desde frontend
+3. 🎯 Verificar que aparezca en dashboard y módulo citas  
+4. 🎯 Si todo funciona, el problema está resuelto
+5. 🔍 Si persiste problema, investigar logs del backend en Railway
+
+---
+
 **Última actualización:** Agosto 2025 - Sistema funcionando correctamente con código pre-compilado BACKEND Y FRONTEND

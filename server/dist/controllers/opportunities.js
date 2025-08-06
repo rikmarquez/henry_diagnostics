@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAppointment = exports.getRemindersToday = exports.getOpportunitiesByVin = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
+exports.createAppointment = exports.getRemindersToday = exports.getOpportunitiesByVehicle = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
 const vinSchema = zod_1.z.string().min(1, 'VIN requerido');
 const opportunitySchema = zod_1.z.object({
-    vin: vinSchema,
+    vehicle_id: zod_1.z.number().int().positive('ID de vehículo inválido'),
     customer_id: zod_1.z.number().int().positive('ID de cliente inválido'),
     usuario_asignado: zod_1.z.number().int().positive('ID de usuario asignado inválido').optional(),
     tipo_oportunidad: zod_1.z.string().min(1, 'Tipo de oportunidad requerido'),
@@ -17,9 +17,9 @@ const opportunitySchema = zod_1.z.object({
     prioridad: zod_1.z.enum(['alta', 'media', 'baja']).default('media'),
     kilometraje_referencia: zod_1.z.number().int().min(0, 'Kilometraje no puede ser negativo').optional(),
 });
-const updateOpportunitySchema = opportunitySchema.partial().omit({ vin: true });
+const updateOpportunitySchema = opportunitySchema.partial().omit({ vehicle_id: true });
 const searchSchema = zod_1.z.object({
-    vin: zod_1.z.string().optional(),
+    vehicle_id: zod_1.z.string().optional(),
     customer_id: zod_1.z.string().optional(),
     estado: zod_1.z.string().optional(),
     fecha_desde: zod_1.z.string().optional(),
@@ -50,7 +50,7 @@ const createOpportunity = async (req, res) => {
     try {
         const opportunityData = opportunitySchema.parse(req.body);
         // Verificar que el vehículo existe
-        const vehicleExists = await (0, connection_1.query)('SELECT vin FROM vehicles WHERE vin = $1 AND activo = true', [opportunityData.vin]);
+        const vehicleExists = await (0, connection_1.query)('SELECT vehicle_id FROM vehicles WHERE vehicle_id = $1 AND activo = true', [opportunityData.vehicle_id]);
         if (vehicleExists.rows.length === 0) {
             return res.status(404).json({ message: 'Vehículo no encontrado' });
         }
@@ -75,13 +75,13 @@ const createOpportunity = async (req, res) => {
         }
         const result = await (0, connection_1.query)(`
       INSERT INTO opportunities (
-        vin, customer_id, usuario_creador, usuario_asignado, tipo_oportunidad, titulo, descripcion,
+        vehicle_id, customer_id, usuario_creador, usuario_asignado, tipo_oportunidad, titulo, descripcion,
         servicio_sugerido, precio_estimado, fecha_sugerida, fecha_contacto_sugerida, prioridad,
         kilometraje_referencia, origen
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `, [
-            opportunityData.vin,
+            opportunityData.vehicle_id,
             opportunityData.customer_id,
             req.user?.user_id,
             opportunityData.usuario_asignado || null,
@@ -115,13 +115,13 @@ const createOpportunity = async (req, res) => {
 exports.createOpportunity = createOpportunity;
 const searchOpportunities = async (req, res) => {
     try {
-        const { vin, customer_id, estado, fecha_desde, fecha_hasta, usuario_asignado, prioridad, tiene_cita, limit = '50', offset = '0' } = searchSchema.parse(req.query);
+        const { vehicle_id, customer_id, estado, fecha_desde, fecha_hasta, usuario_asignado, prioridad, tiene_cita, limit = '50', offset = '0' } = searchSchema.parse(req.query);
         let whereConditions = [];
         let queryParams = [];
         let paramIndex = 1;
-        if (vin) {
-            whereConditions.push(`v.vin = $${paramIndex}`);
-            queryParams.push(vin);
+        if (vehicle_id) {
+            whereConditions.push(`o.vehicle_id = $${paramIndex}`);
+            queryParams.push(parseInt(vehicle_id));
             paramIndex++;
         }
         if (customer_id) {
@@ -187,7 +187,7 @@ const searchOpportunities = async (req, res) => {
         u_asignado.nombre as usuario_asignado_nombre
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vin = v.vin
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
       LEFT JOIN users u_creador ON o.usuario_creador = u_creador.user_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
       ${whereClause}
@@ -207,7 +207,7 @@ const searchOpportunities = async (req, res) => {
       SELECT COUNT(*) as total
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vin = v.vin
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
       ${whereClause}
     `;
         const countResult = await (0, connection_1.query)(countQuery, queryParams.slice(0, -2));
@@ -252,7 +252,7 @@ const getOpportunityById = async (req, res) => {
         u_asignado.nombre as usuario_asignado_nombre
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vin = v.vin
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
       LEFT JOIN users u_creador ON o.usuario_creador = u_creador.user_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
       WHERE o.opportunity_id = $1
@@ -405,9 +405,12 @@ const addOpportunityNote = async (req, res) => {
     }
 };
 exports.addOpportunityNote = addOpportunityNote;
-const getOpportunitiesByVin = async (req, res) => {
+const getOpportunitiesByVehicle = async (req, res) => {
     try {
-        const vin = vinSchema.parse(req.params.vin);
+        const vehicleId = parseInt(req.params.vehicleId);
+        if (isNaN(vehicleId)) {
+            return res.status(400).json({ message: 'ID de vehículo inválido' });
+        }
         const result = await (0, connection_1.query)(`
       SELECT 
         o.*,
@@ -416,26 +419,20 @@ const getOpportunitiesByVin = async (req, res) => {
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
       LEFT JOIN users u_asignado ON o.usuario_asignado = u_asignado.user_id
-      WHERE o.vin = $1
+      WHERE o.vehicle_id = $1
       ORDER BY o.fecha_creacion DESC
-    `, [vin]);
+    `, [vehicleId]);
         res.json({
             opportunities: result.rows,
             total: result.rows.length,
         });
     }
     catch (error) {
-        if (error instanceof zod_1.z.ZodError) {
-            return res.status(400).json({
-                message: 'VIN inválido',
-                errors: error.errors.map(e => e.message),
-            });
-        }
-        console.error('Error obteniendo oportunidades por VIN:', error);
+        console.error('Error obteniendo oportunidades por vehículo:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
-exports.getOpportunitiesByVin = getOpportunitiesByVin;
+exports.getOpportunitiesByVehicle = getOpportunitiesByVehicle;
 const getRemindersToday = async (req, res) => {
     try {
         const today = new Date().toISOString().split('T')[0];
@@ -450,7 +447,7 @@ const getRemindersToday = async (req, res) => {
         v.placa_actual as vehicle_placa
       FROM opportunities o
       LEFT JOIN customers c ON o.customer_id = c.customer_id
-      LEFT JOIN vehicles v ON o.vin = v.vin
+      LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id
       WHERE o.fecha_contacto_sugerida <= $1 
         AND o.estado IN ('pendiente', 'contactado')
       ORDER BY o.prioridad = 'alta' DESC, o.fecha_contacto_sugerida ASC
@@ -469,46 +466,18 @@ exports.getRemindersToday = getRemindersToday;
 const createAppointment = async (req, res) => {
     try {
         const appointmentData = appointmentSchema.parse(req.body);
-        // TEMPORAL: Crear registros mínimos hasta que se ejecute migración para nullable fields
-        // Crear cliente mínimo
-        const tempCustomer = await (0, connection_1.query)(`
-      INSERT INTO customers (nombre, telefono, notas)
-      VALUES ($1, $2, $3)
-      RETURNING customer_id
-    `, [
-            appointmentData.cita_nombre_contacto,
-            appointmentData.cita_telefono_contacto,
-            `Cita agendada - ${appointmentData.cita_descripcion_breve}`
-        ]);
-        // Crear vehículo mínimo
-        const vinTemp = 'CITA-' + Date.now();
-        const tempVehicle = await (0, connection_1.query)(`
-      INSERT INTO vehicles (vin, marca, modelo, año, customer_id, kilometraje_actual, tipo_combustible, transmision, notas, activo)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING vehicle_id
-    `, [
-            vinTemp,
-            'POR_DEFINIR',
-            appointmentData.cita_descripcion_breve || 'Por definir',
-            new Date().getFullYear(),
-            tempCustomer.rows[0].customer_id,
-            0,
-            'gasolina',
-            'manual',
-            `Registro temporal para cita - se actualizará cuando llegue el vehículo`,
-            true
-        ]);
-        // Crear la oportunidad/cita
+        // FLUJO CORRECTO: Crear cita rápida SIN vehículo ni cliente
+        // Los campos vehicle_id y customer_id quedan NULL hasta que llegue el cliente
         const result = await (0, connection_1.query)(`
       INSERT INTO opportunities (
-        vin, customer_id, usuario_creador, tipo_oportunidad, titulo, descripcion,
+        vehicle_id, customer_id, usuario_creador, tipo_oportunidad, titulo, descripcion,
         estado, prioridad, origen, tiene_cita, cita_fecha, cita_hora, 
         cita_descripcion_breve, cita_telefono_contacto, cita_nombre_contacto
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING *
     `, [
-            vinTemp, // Usar VIN directamente
-            tempCustomer.rows[0].customer_id,
+            null, // vehicle_id = NULL para citas rápidas
+            null, // customer_id = NULL para citas rápidas  
             req.user?.user_id,
             'cita_agendada',
             appointmentData.titulo || `Cita - ${appointmentData.cita_descripcion_breve}`,

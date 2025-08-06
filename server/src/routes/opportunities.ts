@@ -5,7 +5,7 @@ import {
   getOpportunityById,
   updateOpportunity,
   addOpportunityNote,
-  getOpportunitiesByVin,
+  getOpportunitiesByVehicle,
   getRemindersToday,
   createAppointment,
 } from '../controllers/opportunities';
@@ -22,8 +22,8 @@ router.get('/search', searchOpportunities);
 // Recordatorios del día (disponible para todos los usuarios autenticados)
 router.get('/reminders/today', getRemindersToday);
 
-// Obtener oportunidades por VIN (disponible para todos los usuarios autenticados)
-router.get('/vehicle/:vin', getOpportunitiesByVin);
+// Obtener oportunidades por vehículo (disponible para todos los usuarios autenticados)
+router.get('/vehicle/:vehicleId', getOpportunitiesByVehicle);
 
 // Obtener oportunidad por ID (disponible para todos los usuarios autenticados)
 router.get('/:id', getOpportunityById);
