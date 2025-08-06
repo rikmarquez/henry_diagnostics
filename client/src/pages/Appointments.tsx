@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { opportunityService } from '../services/opportunities';
+import api from '../services/api';
 
 interface Appointment {
   opportunity_id: number;
@@ -40,16 +42,8 @@ export const Appointments = () => {
 
   const loadAppointments = async () => {
     try {
-      const response = await fetch('/api/opportunities/search?tiene_cita=true', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAppointments(data.opportunities || []);
-      }
+      const data = await opportunityService.search({ tiene_cita: 'true' });
+      setAppointments(data.opportunities || []);
     } catch (error) {
       console.error('Error al cargar citas:', error);
     } finally {
@@ -72,16 +66,10 @@ export const Appointments = () => {
         tiene_cita: true
       };
 
-      const response = await fetch('/api/appointments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(appointmentData)
-      });
-
-      if (response.ok) {
+      const response = await api.post('/opportunities/appointments', appointmentData);
+      
+      if (response.status === 201) {
+        // Cita creada exitosamente
         setShowCreateForm(false);
         setFormData({
           cita_fecha: '',
@@ -92,16 +80,14 @@ export const Appointments = () => {
           titulo: '',
           descripcion: ''
         });
-        loadAppointments();
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
+        loadAppointments(); // Recargar la lista
       }
     } catch (error) {
       console.error('Error al crear cita:', error);
-      alert('Error al crear la cita');
+      alert('Error al crear la cita. Por favor, intenta de nuevo.');
     }
   };
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-MX');
