@@ -47,6 +47,13 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
         reminders: remindersResult,
         appointments: appointmentsResult
       });
+      
+      console.log('🔍 Dashboard: Detalle appointments:', {
+        appointmentsResult,
+        appointmentsArray: appointmentsResult?.opportunities,
+        appointmentsLength: appointmentsResult?.opportunities?.length,
+        finalCount: appointmentsResult?.opportunities?.length || 0
+      });
 
       setStats({
         vehiclesCount: vehiclesCountResult.count || 0,

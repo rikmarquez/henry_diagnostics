@@ -123,7 +123,8 @@ export const opportunityService = {
     const response = await api.get('/opportunities/search', { 
       params: { tiene_cita: 'true', fecha_desde: today, fecha_hasta: today, limit: 50 } 
     });
-    console.log('📊 getAppointmentsToday: Resultado:', response.data);
+    console.log('📊 getAppointmentsToday: Resultado completo:', JSON.stringify(response.data, null, 2));
+    console.log('📊 getAppointmentsToday: Total opportunities:', response.data?.opportunities?.length || 0);
     return response.data;
   },
 };
