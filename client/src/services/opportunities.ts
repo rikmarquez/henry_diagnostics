@@ -4,8 +4,8 @@ import api from './api';
 
 interface Opportunity {
   opportunity_id: number;
-  vin: string;
-  customer_id: number;
+  vehicle_id?: number;
+  customer_id?: number;
   usuario_creador?: number;
   usuario_asignado?: number;
   tipo_oportunidad: string;
@@ -64,9 +64,9 @@ export const opportunityService = {
     return response.data;
   },
 
-  // Obtener oportunidades por VIN
-  getByVin: async (vin: string) => {
-    const response = await api.get(`/opportunities/vehicle/${vin}`);
+  // Obtener oportunidades por vehículo
+  getByVehicle: async (vehicleId: number) => {
+    const response = await api.get(`/opportunities/vehicle/${vehicleId}`);
     return response.data;
   },
 
