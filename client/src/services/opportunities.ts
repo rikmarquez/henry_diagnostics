@@ -119,9 +119,11 @@ export const opportunityService = {
   // Obtener citas de hoy (función de conveniencia)
   getAppointmentsToday: async () => {
     const today = new Date().toISOString().split('T')[0];
+    console.log('🗓️ getAppointmentsToday: Buscando citas para fecha:', today);
     const response = await api.get('/opportunities/search', { 
       params: { tiene_cita: 'true', fecha_desde: today, fecha_hasta: today, limit: 50 } 
     });
+    console.log('📊 getAppointmentsToday: Resultado:', response.data);
     return response.data;
   },
 };

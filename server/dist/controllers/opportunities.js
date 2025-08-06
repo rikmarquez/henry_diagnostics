@@ -136,6 +136,7 @@ const searchOpportunities = async (req, res) => {
         }
         if (fecha_desde) {
             if (tiene_cita === 'true') {
+                console.log(`🗓️ Buscando citas desde: ${fecha_desde} (tiene_cita=${tiene_cita})`);
                 whereConditions.push(`o.cita_fecha >= $${paramIndex}`);
             }
             else {
