@@ -91,10 +91,20 @@ const Reception: React.FC = () => {
     
     // Cargar vehículos del cliente
     try {
+      console.log('🚗 Cargando vehículos para cliente:', cliente.customer_id, cliente.nombre);
       const response = await receptionService.getVehiculosCliente(cliente.customer_id);
-      setVehiculosCliente(response.data || []);
+      console.log('📋 Respuesta de vehículos:', response);
+      
+      // El backend devuelve { customer: {...}, vehicles: [...] }
+      const vehiculos = response.vehicles || [];
+      setVehiculosCliente(vehiculos);
+      console.log('✅ Vehículos encontrados:', vehiculos.length);
+      
+      if (vehiculos.length > 0) {
+        console.log('🚙 Lista de vehículos:', vehiculos);
+      }
     } catch (error) {
-      console.error('Error cargando vehículos:', error);
+      console.error('❌ Error cargando vehículos:', error);
       setVehiculosCliente([]);
     }
   };

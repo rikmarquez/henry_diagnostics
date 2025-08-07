@@ -138,7 +138,7 @@ export const getCustomerById = async (req: AuthRequest, res: Response) => {
 
     // Obtener vehículos del cliente
     const vehicles = await query(`
-      SELECT vin, marca, modelo, año, placa_actual, kilometraje_actual, fecha_registro
+      SELECT vehicle_id, vin, marca, modelo, año, placa_actual, kilometraje_actual, fecha_registro
       FROM vehicles
       WHERE customer_id = $1 AND activo = true
       ORDER BY fecha_actualizacion DESC
@@ -275,9 +275,9 @@ export const getCustomerVehicles = async (req: AuthRequest, res: Response) => {
     const vehicles = await query(`
       SELECT 
         v.*,
-        (SELECT COUNT(*) FROM services s WHERE s.vin = v.vin) as total_servicios,
-        (SELECT MAX(fecha_servicio) FROM services s WHERE s.vin = v.vin) as ultimo_servicio,
-        (SELECT COUNT(*) FROM opportunities o WHERE o.vin = v.vin AND o.estado IN ('pendiente', 'contactado', 'agendado')) as oportunidades_pendientes
+        (SELECT COUNT(*) FROM services s WHERE s.vehicle_id = v.vehicle_id) as total_servicios,
+        (SELECT MAX(fecha_servicio) FROM services s WHERE s.vehicle_id = v.vehicle_id) as ultimo_servicio,
+        (SELECT COUNT(*) FROM opportunities o WHERE o.vehicle_id = v.vehicle_id AND o.estado IN ('pendiente', 'contactado', 'agendado')) as oportunidades_pendientes
       FROM vehicles v
       WHERE v.customer_id = $1 AND v.activo = true
       ORDER BY v.fecha_actualizacion DESC

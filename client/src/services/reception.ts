@@ -121,7 +121,7 @@ class ReceptionService {
    */
   async getVehiculosCliente(customerId: number) {
     const response = await api.get(`/customers/${customerId}/vehicles`);
-    return response.data;
+    return response.data; // Backend devuelve { customer: {...}, vehicles: [...] }
   }
 
   /**
