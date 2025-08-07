@@ -33,6 +33,7 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
     { id: 'appointments', label: 'Citas', icon: '📅' },
+    { id: 'reception', label: 'Recepción', icon: '🚪' },
     { id: 'vehicles', label: 'Vehículos', icon: '🚗' },
     { id: 'customers', label: 'Clientes', icon: '👥' },
     { id: 'opportunities', label: 'Oportunidades', icon: '💼' },

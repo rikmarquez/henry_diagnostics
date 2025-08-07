@@ -45,7 +45,7 @@ export interface Vehicle {
 
 export interface Service {
   service_id: number;
-  vin: string;
+  vehicle_id: number;
   customer_id: number;
   usuario_mecanico?: number;
   fecha_servicio: Date;
@@ -64,8 +64,8 @@ export interface Service {
 
 export interface Opportunity {
   opportunity_id: number;
-  vin: string;
-  customer_id: number;
+  vehicle_id?: number; // Puede ser NULL para citas rápidas
+  customer_id?: number; // Puede ser NULL para citas rápidas
   usuario_creador?: number;
   usuario_asignado?: number;
   tipo_oportunidad: string;
@@ -78,10 +78,11 @@ export interface Opportunity {
   estado: 'pendiente' | 'contactado' | 'agendado' | 'en_proceso' | 'completado' | 'perdido';
   prioridad: 'alta' | 'media' | 'baja';
   origen: 'manual' | 'automatico' | 'historial' | 'kilometraje';
+  origen_cita?: 'opportunity' | 'llamada_cliente' | 'walk_in' | 'seguimiento' | 'manual';
   kilometraje_referencia?: number;
   fecha_creacion: Date;
   fecha_actualizacion: Date;
-  // Campos de cita preliminar
+  // Campos de cita
   cita_fecha?: Date;
   cita_hora?: string;
   cita_descripcion_breve?: string;
@@ -133,6 +134,55 @@ export interface CreateAppointmentRequest {
   cita_nombre_contacto: string;
   titulo?: string;
   descripcion?: string;
+  origen_cita?: 'opportunity' | 'llamada_cliente' | 'walk_in' | 'seguimiento' | 'manual';
+}
+
+// Interfaces para recepción de clientes
+export interface ReceptionWalkInRequest {
+  // Datos del cliente (opcional si ya existe)
+  cliente_existente_id?: number;
+  cliente_nuevo?: {
+    nombre: string;
+    telefono: string;
+    whatsapp?: string;
+    email?: string;
+    direccion?: string;
+  };
+  
+  // Datos del vehículo (opcional si ya existe)  
+  vehiculo_existente_id?: number;
+  vehiculo_nuevo?: {
+    marca: string;
+    modelo: string;
+    año: number;
+    placa_actual: string;
+    color?: string;
+    kilometraje_actual?: number;
+  };
+
+  // Qué quiere hacer el cliente
+  accion: 'servicio_inmediato' | 'agendar_cita';
+  
+  // Si es servicio inmediato
+  servicio_inmediato?: {
+    tipo_servicio: string;
+    descripcion: string;
+    precio_estimado?: number;
+  };
+  
+  // Si es agendar cita
+  cita?: {
+    fecha: string;
+    hora: string;
+    descripcion_breve: string;
+  };
+}
+
+export interface ConvertOpportunityToCitaRequest {
+  opportunity_id: number;
+  cita_fecha: string;
+  cita_hora: string;
+  notas?: string;
 }
 
 // User Management Types

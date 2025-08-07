@@ -9,6 +9,7 @@ import customersRoutes from './routes/customers';
 import opportunitiesRoutes from './routes/opportunities';
 import appointmentsRoutes from './routes/appointments';
 import { usersRouter } from './routes/users';
+import { receptionRoutes } from './routes/reception';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -60,6 +61,7 @@ app.use('/api/customers', customersRoutes);
 app.use('/api/opportunities', opportunitiesRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/users', usersRouter);
+app.use('/api/reception', receptionRoutes);
 
 // Middleware para rutas no encontradas
 app.use('*', (req, res) => {
@@ -120,6 +122,12 @@ app.listen(PORT, () => {
   console.log('');
   console.log('📅 Citas:');
   console.log('   POST /api/appointments - Agendar cita rápida');
+  console.log('');
+  console.log('🚪 Recepción:');
+  console.log('   GET  /api/reception/citas - Citas del día para recepción');
+  console.log('   POST /api/reception/walk-in - Procesar cliente walk-in');
+  console.log('   POST /api/reception/convert-opportunity - Convertir opportunity en cita');
+  console.log('   POST /api/reception/recepcionar/:id - Recepcionar cita (crear servicio)');
   console.log('');
   console.log('👤 Gestión de Usuarios (Solo Administradores):');
   console.log('   GET  /api/users/stats - Estadísticas de usuarios');

@@ -14,6 +14,7 @@ const customers_1 = __importDefault(require("./routes/customers"));
 const opportunities_1 = __importDefault(require("./routes/opportunities"));
 const appointments_1 = __importDefault(require("./routes/appointments"));
 const users_1 = require("./routes/users");
+const reception_1 = require("./routes/reception");
 // Cargar variables de entorno
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -56,6 +57,7 @@ app.use('/api/customers', customers_1.default);
 app.use('/api/opportunities', opportunities_1.default);
 app.use('/api/appointments', appointments_1.default);
 app.use('/api/users', users_1.usersRouter);
+app.use('/api/reception', reception_1.receptionRoutes);
 // Middleware para rutas no encontradas
 app.use('*', (req, res) => {
     res.status(404).json({
@@ -112,6 +114,12 @@ app.listen(PORT, () => {
     console.log('');
     console.log('📅 Citas:');
     console.log('   POST /api/appointments - Agendar cita rápida');
+    console.log('');
+    console.log('🚪 Recepción:');
+    console.log('   GET  /api/reception/citas - Citas del día para recepción');
+    console.log('   POST /api/reception/walk-in - Procesar cliente walk-in');
+    console.log('   POST /api/reception/convert-opportunity - Convertir opportunity en cita');
+    console.log('   POST /api/reception/recepcionar/:id - Recepcionar cita (crear servicio)');
     console.log('');
     console.log('👤 Gestión de Usuarios (Solo Administradores):');
     console.log('   GET  /api/users/stats - Estadísticas de usuarios');
