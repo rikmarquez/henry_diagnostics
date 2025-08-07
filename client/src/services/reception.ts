@@ -116,6 +116,14 @@ class ReceptionService {
   }
 
   /**
+   * Obtener vehículos de un cliente
+   */
+  async getVehiculosCliente(customerId: number) {
+    const response = await api.get(`/customers/${customerId}/vehicles`);
+    return response.data;
+  }
+
+  /**
    * Buscar vehículo por placas
    */
   async buscarVehiculo(placas: string) {

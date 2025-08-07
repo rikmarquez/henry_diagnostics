@@ -73,10 +73,6 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              <span className="font-medium">{user?.nombre}</span>
-              <span className="block text-xs">{getRoleDisplayName(user?.rol || '')}</span>
-            </div>
             <button
               onClick={handleLogout}
               className="btn-secondary text-sm"

@@ -11,6 +11,13 @@ const Reception: React.FC = () => {
   const [showReceptionModal, setShowReceptionModal] = useState(false);
   const [selectedCita, setSelectedCita] = useState<CitaRecepcion | null>(null);
 
+  // Estados para búsquedas
+  const [clienteBusqueda, setClienteBusqueda] = useState('');
+  const [clientesEncontrados, setClientesEncontrados] = useState<any[]>([]);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<any>(null);
+  const [vehiculosCliente, setVehiculosCliente] = useState<any[]>([]);
+  const [tipoCliente, setTipoCliente] = useState<'nuevo' | 'existente'>('nuevo');
+
   // Estados para formulario walk-in
   const [walkInForm, setWalkInForm] = useState<ReceptionWalkInRequest>({
     accion: 'servicio_inmediato',
@@ -54,6 +61,46 @@ const Reception: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const buscarClientes = async () => {
+    if (clienteBusqueda.trim().length < 2) {
+      setClientesEncontrados([]);
+      return;
+    }
+    
+    try {
+      const response = await receptionService.buscarCliente(clienteBusqueda);
+      setClientesEncontrados(response.data || []);
+    } catch (error) {
+      console.error('Error buscando clientes:', error);
+      setClientesEncontrados([]);
+    }
+  };
+
+  const seleccionarCliente = async (cliente: any) => {
+    setClienteSeleccionado(cliente);
+    setClienteBusqueda(cliente.nombre);
+    setClientesEncontrados([]);
+    
+    // Cargar vehículos del cliente
+    try {
+      const response = await receptionService.getVehiculosCliente(cliente.customer_id);
+      setVehiculosCliente(response.data || []);
+    } catch (error) {
+      console.error('Error cargando vehículos:', error);
+      setVehiculosCliente([]);
+    }
+  };
+
+  const seleccionarVehiculo = (vehiculo: any) => {
+    setWalkInForm(prev => ({
+      ...prev,
+      cliente_existente_id: clienteSeleccionado.customer_id,
+      vehiculo_existente_id: vehiculo.vehicle_id,
+      cliente_nuevo: undefined,
+      vehiculo_nuevo: undefined
+    }));
   };
 
   useEffect(() => {
@@ -115,6 +162,13 @@ const Reception: React.FC = () => {
         precio_estimado: 0
       }
     });
+    
+    // Reset estados de búsqueda
+    setClienteBusqueda('');
+    setClientesEncontrados([]);
+    setClienteSeleccionado(null);
+    setVehiculosCliente([]);
+    setTipoCliente('nuevo');
   };
 
   const resetReceptionForm = () => {
@@ -272,98 +326,292 @@ const Reception: React.FC = () => {
               <p className="text-sm text-gray-600 mb-6">Procesar cliente que llegó sin cita previa</p>
               
               <form onSubmit={handleWalkInSubmit} className="space-y-6">
-                {/* Datos del Cliente */}
+                {/* Tipo de Cliente */}
                 <div>
-                  <h4 className="text-md font-medium text-gray-900 mb-3">Datos del Cliente</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Nombre *</label>
+                  <h4 className="text-md font-medium text-gray-900 mb-3">Cliente</h4>
+                  <div className="flex space-x-4 mb-4">
+                    <label className="inline-flex items-center">
                       <input
-                        type="text"
-                        required
-                        value={walkInForm.cliente_nuevo?.nombre || ''}
-                        onChange={(e) => setWalkInForm(prev => ({
-                          ...prev,
-                          cliente_nuevo: { ...prev.cliente_nuevo!, nombre: e.target.value }
-                        }))}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        type="radio"
+                        value="nuevo"
+                        checked={tipoCliente === 'nuevo'}
+                        onChange={(e) => setTipoCliente(e.target.value as 'nuevo' | 'existente')}
+                        className="form-radio h-4 w-4 text-blue-600"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Teléfono *</label>
+                      <span className="ml-2 text-sm">Cliente Nuevo</span>
+                    </label>
+                    <label className="inline-flex items-center">
                       <input
-                        type="tel"
-                        required
-                        value={walkInForm.cliente_nuevo?.telefono || ''}
-                        onChange={(e) => setWalkInForm(prev => ({
-                          ...prev,
-                          cliente_nuevo: { ...prev.cliente_nuevo!, telefono: e.target.value }
-                        }))}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        type="radio"
+                        value="existente"
+                        checked={tipoCliente === 'existente'}
+                        onChange={(e) => setTipoCliente(e.target.value as 'nuevo' | 'existente')}
+                        className="form-radio h-4 w-4 text-blue-600"
                       />
-                    </div>
+                      <span className="ml-2 text-sm">Cliente Existente</span>
+                    </label>
                   </div>
+                  
+                  {tipoCliente === 'existente' ? (
+                    <div className="space-y-4">
+                      {/* Búsqueda de Cliente */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Buscar Cliente</label>
+                        <input
+                          type="text"
+                          value={clienteBusqueda}
+                          onChange={(e) => {
+                            setClienteBusqueda(e.target.value);
+                            buscarClientes();
+                          }}
+                          placeholder="Buscar por nombre o teléfono..."
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                        
+                        {/* Resultados de búsqueda */}
+                        {clientesEncontrados.length > 0 && (
+                          <div className="mt-2 border border-gray-300 rounded-md shadow-sm max-h-40 overflow-y-auto">
+                            {clientesEncontrados.map((cliente) => (
+                              <div
+                                key={cliente.customer_id}
+                                onClick={() => seleccionarCliente(cliente)}
+                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              >
+                                <div className="font-medium text-sm">{cliente.nombre}</div>
+                                <div className="text-xs text-gray-600">{cliente.telefono}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Información del cliente seleccionado */}
+                      {clienteSeleccionado && (
+                        <div className="bg-blue-50 p-3 rounded-md">
+                          <div className="text-sm font-medium text-blue-900">Cliente Seleccionado:</div>
+                          <div className="text-sm text-blue-800">{clienteSeleccionado.nombre}</div>
+                          <div className="text-xs text-blue-700">{clienteSeleccionado.telefono}</div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Nombre *</label>
+                        <input
+                          type="text"
+                          required
+                          value={walkInForm.cliente_nuevo?.nombre || ''}
+                          onChange={(e) => setWalkInForm(prev => ({
+                            ...prev,
+                            cliente_nuevo: { ...prev.cliente_nuevo!, nombre: e.target.value }
+                          }))}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Teléfono *</label>
+                        <input
+                          type="tel"
+                          required
+                          value={walkInForm.cliente_nuevo?.telefono || ''}
+                          onChange={(e) => setWalkInForm(prev => ({
+                            ...prev,
+                            cliente_nuevo: { ...prev.cliente_nuevo!, telefono: e.target.value }
+                          }))}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Datos del Vehículo */}
                 <div>
-                  <h4 className="text-md font-medium text-gray-900 mb-3">Datos del Vehículo</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Marca *</label>
-                      <input
-                        type="text"
-                        required
-                        value={walkInForm.vehiculo_nuevo?.marca || ''}
-                        onChange={(e) => setWalkInForm(prev => ({
-                          ...prev,
-                          vehiculo_nuevo: { ...prev.vehiculo_nuevo!, marca: e.target.value }
-                        }))}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
+                  <h4 className="text-md font-medium text-gray-900 mb-3">Vehículo</h4>
+                  
+                  {tipoCliente === 'existente' && clienteSeleccionado ? (
+                    <div className="space-y-4">
+                      {vehiculosCliente.length > 0 ? (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Seleccionar Vehículo del Cliente
+                          </label>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {vehiculosCliente.map((vehiculo) => (
+                              <div
+                                key={vehiculo.vehicle_id}
+                                onClick={() => seleccionarVehiculo(vehiculo)}
+                                className={`p-3 border rounded-md cursor-pointer hover:bg-gray-50 ${
+                                  walkInForm.vehiculo_existente_id === vehiculo.vehicle_id 
+                                    ? 'border-blue-500 bg-blue-50' 
+                                    : 'border-gray-300'
+                                }`}
+                              >
+                                <div className="font-medium text-sm">
+                                  {vehiculo.marca} {vehiculo.modelo} {vehiculo.año}
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  Placas: {vehiculo.placa_actual} • KM: {vehiculo.kilometraje_actual}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <div className="mt-3 pt-3 border-t">
+                            <label className="inline-flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={!walkInForm.vehiculo_existente_id}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setWalkInForm(prev => ({
+                                      ...prev,
+                                      vehiculo_existente_id: undefined,
+                                      vehiculo_nuevo: {
+                                        marca: '',
+                                        modelo: '',
+                                        año: new Date().getFullYear(),
+                                        placa_actual: '',
+                                        color: '',
+                                        kilometraje_actual: 0
+                                      }
+                                    }));
+                                  }
+                                }}
+                                className="form-checkbox h-4 w-4 text-blue-600"
+                              />
+                              <span className="ml-2 text-sm">Es un vehículo nuevo del cliente</span>
+                            </label>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-yellow-50 p-3 rounded-md">
+                          <div className="text-sm text-yellow-800">
+                            Este cliente no tiene vehículos registrados. Se registrará un nuevo vehículo.
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Formulario para vehículo nuevo (cuando no hay vehículos o se marca checkbox) */}
+                      {(vehiculosCliente.length === 0 || !walkInForm.vehiculo_existente_id) && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">Marca *</label>
+                            <input
+                              type="text"
+                              required
+                              value={walkInForm.vehiculo_nuevo?.marca || ''}
+                              onChange={(e) => setWalkInForm(prev => ({
+                                ...prev,
+                                vehiculo_nuevo: { ...prev.vehiculo_nuevo!, marca: e.target.value }
+                              }))}
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">Modelo *</label>
+                            <input
+                              type="text"
+                              required
+                              value={walkInForm.vehiculo_nuevo?.modelo || ''}
+                              onChange={(e) => setWalkInForm(prev => ({
+                                ...prev,
+                                vehiculo_nuevo: { ...prev.vehiculo_nuevo!, modelo: e.target.value }
+                              }))}
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">Año *</label>
+                            <input
+                              type="number"
+                              required
+                              min="1900"
+                              max={new Date().getFullYear() + 1}
+                              value={walkInForm.vehiculo_nuevo?.año || new Date().getFullYear()}
+                              onChange={(e) => setWalkInForm(prev => ({
+                                ...prev,
+                                vehiculo_nuevo: { ...prev.vehiculo_nuevo!, año: parseInt(e.target.value) }
+                              }))}
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">Placas *</label>
+                            <input
+                              type="text"
+                              required
+                              value={walkInForm.vehiculo_nuevo?.placa_actual || ''}
+                              onChange={(e) => setWalkInForm(prev => ({
+                                ...prev,
+                                vehiculo_nuevo: { ...prev.vehiculo_nuevo!, placa_actual: e.target.value.toUpperCase() }
+                              }))}
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Modelo *</label>
-                      <input
-                        type="text"
-                        required
-                        value={walkInForm.vehiculo_nuevo?.modelo || ''}
-                        onChange={(e) => setWalkInForm(prev => ({
-                          ...prev,
-                          vehiculo_nuevo: { ...prev.vehiculo_nuevo!, modelo: e.target.value }
-                        }))}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
+                  ) : (
+                    // Formulario para cliente nuevo
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Marca *</label>
+                        <input
+                          type="text"
+                          required
+                          value={walkInForm.vehiculo_nuevo?.marca || ''}
+                          onChange={(e) => setWalkInForm(prev => ({
+                            ...prev,
+                            vehiculo_nuevo: { ...prev.vehiculo_nuevo!, marca: e.target.value }
+                          }))}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Modelo *</label>
+                        <input
+                          type="text"
+                          required
+                          value={walkInForm.vehiculo_nuevo?.modelo || ''}
+                          onChange={(e) => setWalkInForm(prev => ({
+                            ...prev,
+                            vehiculo_nuevo: { ...prev.vehiculo_nuevo!, modelo: e.target.value }
+                          }))}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Año *</label>
+                        <input
+                          type="number"
+                          required
+                          min="1900"
+                          max={new Date().getFullYear() + 1}
+                          value={walkInForm.vehiculo_nuevo?.año || new Date().getFullYear()}
+                          onChange={(e) => setWalkInForm(prev => ({
+                            ...prev,
+                            vehiculo_nuevo: { ...prev.vehiculo_nuevo!, año: parseInt(e.target.value) }
+                          }))}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Placas *</label>
+                        <input
+                          type="text"
+                          required
+                          value={walkInForm.vehiculo_nuevo?.placa_actual || ''}
+                          onChange={(e) => setWalkInForm(prev => ({
+                            ...prev,
+                            vehiculo_nuevo: { ...prev.vehiculo_nuevo!, placa_actual: e.target.value.toUpperCase() }
+                          }))}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Año *</label>
-                      <input
-                        type="number"
-                        required
-                        min="1900"
-                        max={new Date().getFullYear() + 1}
-                        value={walkInForm.vehiculo_nuevo?.año || new Date().getFullYear()}
-                        onChange={(e) => setWalkInForm(prev => ({
-                          ...prev,
-                          vehiculo_nuevo: { ...prev.vehiculo_nuevo!, año: parseInt(e.target.value) }
-                        }))}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Placas *</label>
-                      <input
-                        type="text"
-                        required
-                        value={walkInForm.vehiculo_nuevo?.placa_actual || ''}
-                        onChange={(e) => setWalkInForm(prev => ({
-                          ...prev,
-                          vehiculo_nuevo: { ...prev.vehiculo_nuevo!, placa_actual: e.target.value.toUpperCase() }
-                        }))}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Tipo de Servicio */}
