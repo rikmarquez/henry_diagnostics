@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { receptionService, CitaRecepcion, ReceptionWalkInRequest } from '../services/reception';
 
 const Reception: React.FC = () => {
@@ -70,10 +70,16 @@ const Reception: React.FC = () => {
     }
     
     try {
-      const response = await receptionService.buscarCliente(clienteBusqueda);
-      setClientesEncontrados(response.data || []);
+      console.log('🔍 Buscando clientes con query:', clienteBusqueda);
+      const response = await receptionService.buscarCliente(clienteBusqueda.trim());
+      console.log('📋 Respuesta de búsqueda:', response);
+      
+      // El backend devuelve { customers: [...], total: ... }
+      const clientes = response.customers || [];
+      setClientesEncontrados(clientes);
+      console.log('✅ Clientes encontrados:', clientes.length);
     } catch (error) {
-      console.error('Error buscando clientes:', error);
+      console.error('❌ Error buscando clientes:', error);
       setClientesEncontrados([]);
     }
   };
@@ -103,9 +109,42 @@ const Reception: React.FC = () => {
     }));
   };
 
+  // Debounce para búsqueda de clientes
+  const debouncedBuscarClientes = useCallback(
+    debounce(() => {
+      buscarClientes();
+    }, 500),
+    [clienteBusqueda]
+  );
+
   useEffect(() => {
     loadCitas();
   }, [selectedDate]);
+
+  // Ejecutar búsqueda con debounce cuando cambia el texto
+  useEffect(() => {
+    if (clienteBusqueda.trim().length >= 2) {
+      debouncedBuscarClientes();
+    } else {
+      setClientesEncontrados([]);
+    }
+    
+    // Cleanup
+    return () => {
+      debouncedBuscarClientes.cancel && debouncedBuscarClientes.cancel();
+    };
+  }, [clienteBusqueda, debouncedBuscarClientes]);
+
+  // Función debounce simple
+  function debounce(func: Function, wait: number) {
+    let timeout: NodeJS.Timeout;
+    const debounced = (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(null, args), wait);
+    };
+    debounced.cancel = () => clearTimeout(timeout);
+    return debounced;
+  }
 
   const handleWalkInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,11 +399,8 @@ const Reception: React.FC = () => {
                         <input
                           type="text"
                           value={clienteBusqueda}
-                          onChange={(e) => {
-                            setClienteBusqueda(e.target.value);
-                            buscarClientes();
-                          }}
-                          placeholder="Buscar por nombre o teléfono..."
+                          onChange={(e) => setClienteBusqueda(e.target.value)}
+                          placeholder="Buscar por nombre o teléfono... (mín. 2 caracteres)"
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                         

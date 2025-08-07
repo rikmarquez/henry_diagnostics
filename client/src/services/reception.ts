@@ -111,7 +111,8 @@ class ReceptionService {
    * Buscar cliente por teléfono o nombre
    */
   async buscarCliente(query: string) {
-    const response = await api.get(`/customers/search?q=${encodeURIComponent(query)}`);
+    // El backend espera 'nombre' como parámetro, no 'q'
+    const response = await api.get(`/customers/search?nombre=${encodeURIComponent(query)}`);
     return response.data;
   }
 
