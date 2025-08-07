@@ -271,13 +271,19 @@ export const getCustomerVehicles = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Cliente no encontrado' });
     }
 
-    // Obtener todos los vehículos del cliente
+    // Obtener todos los vehículos del cliente (simplificado para evitar errores)
     const vehicles = await query(`
       SELECT 
-        v.*,
-        (SELECT COUNT(*) FROM services s WHERE s.vehicle_id = v.vehicle_id) as total_servicios,
-        (SELECT MAX(fecha_servicio) FROM services s WHERE s.vehicle_id = v.vehicle_id) as ultimo_servicio,
-        (SELECT COUNT(*) FROM opportunities o WHERE o.vehicle_id = v.vehicle_id AND o.estado IN ('pendiente', 'contactado', 'agendado')) as oportunidades_pendientes
+        v.vehicle_id,
+        v.vin,
+        v.marca,
+        v.modelo,
+        v.año,
+        v.placa_actual,
+        v.kilometraje_actual,
+        v.color,
+        v.fecha_registro,
+        v.fecha_actualizacion
       FROM vehicles v
       WHERE v.customer_id = $1 AND v.activo = true
       ORDER BY v.fecha_actualizacion DESC
@@ -288,7 +294,13 @@ export const getCustomerVehicles = async (req: AuthRequest, res: Response) => {
       vehicles: vehicles.rows,
     });
   } catch (error) {
-    console.error('Error obteniendo vehículos del cliente:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('❌ Error obteniendo vehículos del cliente:', error);
+    console.error('🔍 Customer ID solicitado:', req.params.id);
+    console.error('📋 Detalle del error:', error instanceof Error ? error.message : 'Error desconocido');
+    
+    res.status(500).json({ 
+      message: 'Error interno del servidor',
+      details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : 'Error desconocido' : undefined
+    });
   }
 };
