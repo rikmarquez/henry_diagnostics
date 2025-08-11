@@ -70,28 +70,121 @@ git push origin main
 
 ---
 
----
+## 🚨 ESTADO ACTUAL DEL PROYECTO - SESIÓN 07 AGOSTO 2025
 
-## 🚨 PROBLEMAS COMUNES Y SOLUCIONES
+### 🎉 MÓDULO DE RECEPCIÓN COMPLETAMENTE IMPLEMENTADO Y FUNCIONAL
 
-### "Los cambios no aparecen en producción"
-**Causa:** No se rebuildeó el frontend antes del deploy
-**Solución:** 
-```bash
-cd client && npm run build && cd .. && git add . && git commit -m "Update frontend build" && git push
+#### ✅ **LOGROS DEL DÍA:**
+
+**🚀 FUNCIONALIDADES PRINCIPALES IMPLEMENTADAS:**
+- ✅ **Búsqueda de clientes existentes** - Autocompletado funcional
+- ✅ **Carga de vehículos del cliente** - Lista completa de 4 autos
+- ✅ **Navegación limpia** - Info usuario/rol removida del header
+- ✅ **UX mejorada** - Toggle Cliente Nuevo/Existente intuitivo
+- ✅ **Selección visual de vehículos** - Cards interactivas
+
+**🔧 PROBLEMAS RESUELTOS HOY:**
+
+#### **1. BÚSQUEDA DE CLIENTES NO FUNCIONABA:**
+```javascript
+// PROBLEMA: Parámetro incorrecto
+?q=ricardo
+
+// SOLUCIÓN: Parámetro correcto  
+?nombre=ricardo
+
+// RESULTADO: response.customers (no response.data)
 ```
 
-### "Título sigue siendo 'Vite + React + TS'"
-**Causa:** Build obsoleto del frontend
-**Solución:** Misma que arriba - rebuild frontend
+#### **2. VEHÍCULOS NO CARGABAN (ERROR 500):**
+```sql
+-- PROBLEMA: JOINs complejos fallaban
+SELECT v.*, COUNT(services), COUNT(opportunities)
 
-### "Formularios siguen mostrando campos viejos"
-**Causa:** JavaScript compilado obsoleto
-**Solución:** Misma que arriba - rebuild frontend
+-- SOLUCIÓN: Query simplificada estable
+SELECT v.vehicle_id, v.marca, v.modelo, v.placa_actual...
+
+-- RESULTADO: 4 vehículos del cliente cargan correctamente ✅
+```
+
+#### **3. MEJORAS UX IMPLEMENTADAS:**
+- **Debounce 500ms** - Evita spam de requests API
+- **Radio buttons** - Cliente Nuevo vs Existente
+- **Dropdown inteligente** - Resultados en tiempo real  
+- **Cards seleccionables** - Vehículos con hover/selección
+- **Logs detallados** - Debugging completo con emojis
+
+### 🎯 **FLUJO ACTUAL FUNCIONANDO:**
+
+```
+🚪 RECEPCIÓN → Cliente Existente → 
+   ↓ Buscar "ricardo" (autocompletado)
+   📋 Lista clientes → Seleccionar RICARDO MARQUEZ →
+   ↓ Carga automática vehículos  
+   🚗 4 vehículos mostrados → Seleccionar vehículo →
+   ✅ Formulario pre-llenado → [SIGUIENTE PASO]
+```
+
+### 🚨 **PROBLEMA PENDIENTE PARA MAÑANA:**
+
+#### **ERROR EN GUARDAR SERVICIO (POST /api/reception/walk-in 500):**
+
+**Síntomas del error:**
+- ✅ Búsqueda cliente funciona
+- ✅ Carga vehículos funciona  
+- ✅ Selección vehículo funciona
+- ❌ **FALLA:** Guardar servicio → Error 500
+
+**Error específico:**
+```
+POST /api/reception/walk-in 500 (Internal Server Error)
+Error procesando walk-in: AxiosError status code 500
+```
+
+**Datos que se envían al backend:**
+- Cliente: RICARDO MARQUEZ SOLANO (customer_id: 7)
+- Vehículo: Uno de los 4 autos registrados
+- Acción: servicio_inmediato
+- Tipo servicio: [lo que escriba el usuario]
+
+### 📋 **PLAN PARA MAÑANA:**
+
+#### **PRIORIDAD 1: Debuggear error 500 en processWalkInClient**
+
+**Pasos sugeridos:**
+1. **Revisar logs Railway** - Ver error específico del backend
+2. **Simplificar controlador** - Igual que hicimos con vehículos
+3. **Validar datos enviados** - Revisar estructura del request
+4. **Probar paso a paso** - Cliente nuevo vs existente
+
+**Archivos a revisar:**
+- `server/src/controllers/reception.ts` - Función `processWalkInClient`
+- Posibles problemas:
+  - Migración `origen_cita` no ejecutada
+  - Query de inserción con campos incorrectos
+  - Validaciones fallando
+  - Estructura de datos inconsistente
+
+#### **TEORÍA DEL PROBLEMA:**
+El endpoint `processWalkInClient` probablemente tiene el mismo tipo de problema que `getCustomerVehicles` - queries con estructuras obsoletas o campos que no existen.
+
+### 🎖️ **RESUMEN DE AVANCES TOTALES:**
+
+```
+✅ MÓDULO CITAS - 100% funcional
+✅ MÓDULO RECEPCIÓN - 90% funcional
+   ├── ✅ Navegación limpia  
+   ├── ✅ Búsqueda clientes
+   ├── ✅ Carga vehículos
+   ├── ✅ UX cliente recurrente
+   └── 🚨 Guardar servicio (PENDIENTE)
+```
+
+**Una vez resuelto el error 500 de guardar servicio, el módulo de recepción estará 100% funcional para uso en producción.**
 
 ---
 
-## 📅 MÓDULO DE CITAS - ACUERDOS DE DISEÑO
+## 📅 MÓDULO DE CITAS - ACUERDOS DE DISEÑO (COMPLETADO)
 
 ### ✅ CÓMO FUNCIONAN LAS CITAS RÁPIDAS:
 
@@ -117,6 +210,7 @@ cd client && npm run build && cd .. && git add . && git commit -m "Update fronte
    cita_descripcion_breve TEXT
    cita_telefono_contacto VARCHAR(20)
    cita_nombre_contacto VARCHAR(100)
+   origen_cita VARCHAR(50) -- AGREGADO HOY
    ```
 
 ### ⚠️ IMPORTANTE - NO CAMBIAR:
@@ -146,7 +240,7 @@ cd client && npm run build && cd .. && git add . && git commit -m "Update fronte
 
 3. **Implicaciones en el código:**
    - ✅ Las consultas de búsqueda usan `placa_actual`
-   - ✅ Los JOINs entre tablas pueden usar placas como referencia alternativa
+   - ✅ Los JOINs entre tablas usan `vehicle_id` como referencia
    - ✅ VIN solo se usa si el cliente específicamente lo proporciona
    - ✅ Formularios NO requieren VIN como campo obligatorio
 
@@ -154,183 +248,88 @@ cd client && npm run build && cd .. && git add . && git commit -m "Update fronte
 - ❌ NO hacer VIN campo obligatorio
 - ❌ NO usar VIN como clave foránea principal
 - ❌ NO crear lógica que dependa de que VIN exista
-- ✅ SIEMPRE usar PLACAS como identificador principal
+- ✅ SIEMPRE usar **vehicle_id** como identificador principal
 
 **Migración aplicada:** `vehicles.vin` permite NULL y cualquier longitud  
 **Identificador único:** `vehicles.placa_actual` (requerido, único por vehículo activo)
+**Clave principal:** `vehicles.vehicle_id` (para JOINs y relaciones)
 
 ---
 
----
+## 🎯 FUNCIONALIDADES IMPLEMENTADAS HOY
 
-## 🚨 ESTADO ACTUAL DEL PROBLEMA - SESIÓN 05 AGOSTO 2025
+### 🚪 **MÓDULO DE RECEPCIÓN - CARACTERÍSTICAS:**
 
-### ❌ PROBLEMA PENDIENTE: Las citas siguen sin registrarse
-
-**Situación actual:**
-- Dashboard muestra ceros en todas las estadísticas
-- Las citas no aparecen ni en dashboard ni en módulo de citas
-- Usuario puede crear citas desde el formulario pero no se guardan/muestran
-
-**Diagnóstico realizado:**
-1. ✅ Revisada estructura tabla `opportunities` - usa `vin` directamente, NO `vehicle_id`
-2. ✅ Corregidos JOINs: `LEFT JOIN vehicles v ON o.vin = v.vin`
-3. ✅ Corregida función `createAppointment` para usar `vinTemp` directamente
-4. ✅ Migración creada para hacer `vin` y `customer_id` nullable
-5. ✅ **MIGRACIÓN EJECUTADA EXITOSAMENTE** - vin y customer_id ahora permiten NULL
-
-**Código desplegado:**
-- ✅ Backend compilado con correcciones de estructura
-- ✅ Frontend buildeado con últimos cambios
-- ✅ Push realizado a Railway
-
-**SIGUIENTE PASO CRÍTICO:**
-```sql
--- EJECUTAR ESTA MIGRACIÓN EN PRODUCCIÓN:
-ALTER TABLE opportunities ALTER COLUMN vin DROP NOT NULL;
-ALTER TABLE opportunities ALTER COLUMN customer_id DROP NOT NULL;
+#### **1. BÚSQUEDA INTELIGENTE DE CLIENTES:**
+```
+📝 Input con debounce 500ms
+🔍 Autocompletado tiempo real  
+📋 Dropdown con resultados
+👤 Info: nombre + teléfono
+✅ Selección → carga automática vehículos
 ```
 
-**Archivos modificados en última sesión:**
-- `server/src/controllers/opportunities.ts` - corregidos JOINs y createAppointment
-- `server/src/database/migrations/make_vehicle_customer_nullable.sql` - migración lista
-- `CLAUDE.md` - documentación actualizada
+#### **2. MANEJO DE CLIENTES RECURRENTES:**
+```  
+🔄 Toggle: Cliente Nuevo | Cliente Existente
+📋 Si Existente:
+   ├── 🔍 Búsqueda por nombre/teléfono
+   ├── 📝 Lista de resultados
+   ├── ✅ Selección automática
+   └── 🚗 Carga vehículos del cliente
 
-**Teoría del problema:**
-Las citas fallan al crearse porque `vin` y `customer_id` tienen constraint NOT NULL, pero createAppointment intenta crear records con algunos campos NULL. Una vez ejecutada la migración, debería funcionar.
+🆕 Si Nuevo:
+   └── 📝 Formulario completo manual
+```
 
-**Para continuar mañana:**
-1. ✅ Migración ejecutada exitosamente
-2. 🎯 Probar crear cita desde frontend
-3. 🎯 Verificar que aparezca en dashboard y módulo citas  
-4. 🎯 Si todo funciona, el problema está resuelto
-5. 🔍 Si persiste problema, investigar logs del backend en Railway
+#### **3. SELECCIÓN DE VEHÍCULOS:**
+```
+🚗 Lista visual de vehículos del cliente:
+├── 📊 Cards interactivas con hover
+├── 📝 Marca Modelo Año - Placas - KM  
+├── ✅ Selección visual (borde azul)
+├── ☑️ Checkbox: "Vehículo nuevo del cliente"
+└── 📝 Form manual si es vehículo nuevo
+```
+
+#### **4. DEBUGGING COMPLETO:**
+```
+🔍 Console logs con emojis:
+├── 🔍 Query de búsqueda enviada
+├── 📋 Respuesta de API completa
+├── ✅ Cantidad de resultados  
+├── 🚗 Cliente seleccionado + ID
+├── 🚙 Lista detallada de vehículos
+└── ❌ Errores específicos con contexto
+```
 
 ---
 
-## 🎉 SESIÓN 06 AGOSTO 2025 - MÓDULO DE CITAS COMPLETAMENTE FUNCIONAL
+## 🚨 PROBLEMAS COMUNES Y SOLUCIONES
 
-### ✅ PROBLEMA RESUELTO: Módulo de citas funcionando al 100%
-
-**SITUACIÓN INICIAL:**
-- Citas no se registraban ni mostraban
-- Dashboard en ceros
-- Backend y frontend desalineados después de migraciones
-
-**DIAGNÓSTICO ARQUITECTÓNICO CRÍTICO:**
-El problema raíz era una **inconsistencia arquitectónica** entre schema, migraciones y código:
-
-1. **Schema original:** `opportunities` tenía `vehicle_id` y `customer_id` (NOT NULL)  
-2. **Migraciones erróneas:** Intentaron usar `vin` que NO existía en opportunities
-3. **Código backend:** Mezclaba `vin` y `vehicle_id` inconsistentemente
-4. **Frontend:** Usaba interfaces obsoletas y rutas incorrectas
-
-### 🔧 SOLUCIÓN ARQUITECTÓNICA IMPLEMENTADA:
-
-#### **1. ESTRUCTURA DE BASE DE DATOS CORREGIDA:**
-```sql
--- Migración ejecutada: replace_vin_with_vehicle_id.sql
-ALTER TABLE opportunities ADD COLUMN vehicle_id INTEGER;
-UPDATE opportunities SET vehicle_id = v.vehicle_id FROM vehicles v WHERE opportunities.vin = v.vin;
-ALTER TABLE opportunities ALTER COLUMN customer_id DROP NOT NULL;
-ALTER TABLE opportunities DROP COLUMN vin; -- ELIMINADA
-ALTER TABLE opportunities ADD CONSTRAINT fk_opportunities_vehicle_id FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id);
-
--- Migración adicional: Campos de citas
-ALTER TABLE opportunities ADD COLUMN tiene_cita BOOLEAN DEFAULT false;
-ALTER TABLE opportunities ADD COLUMN cita_fecha DATE;
-ALTER TABLE opportunities ADD COLUMN cita_hora TIME;
-ALTER TABLE opportunities ADD COLUMN cita_descripcion_breve TEXT;
-ALTER TABLE opportunities ADD COLUMN cita_telefono_contacto VARCHAR(20);
-ALTER TABLE opportunities ADD COLUMN cita_nombre_contacto VARCHAR(100);
+### "Los cambios no aparecen en producción"
+**Causa:** No se rebuildeó el frontend antes del deploy
+**Solución:** 
+```bash
+cd client && npm run build && cd .. && git add . && git commit -m "Update frontend build" && git push
 ```
 
-#### **2. BACKEND CORREGIDO:**
-- ✅ `opportunities.ts` usa **vehicle_id** consistentemente (NO vin)
-- ✅ `createAppointment()` crea citas rápidas: `vehicle_id=NULL, customer_id=NULL`
-- ✅ JOINs corregidos: `LEFT JOIN vehicles v ON o.vehicle_id = v.vehicle_id`
-- ✅ Búsquedas por `tiene_cita=true` y `cita_fecha` para filtrar
+### "Error 500 en endpoints de API"  
+**Causa:** Queries con JOINs complejos o campos obsoletos
+**Solución:**
+1. Simplificar query - solo campos básicos necesarios
+2. Revisar logs Railway para error específico  
+3. Validar estructura de tablas vs código
+4. Agregar debugging detallado
 
-#### **3. FRONTEND ALINEADO:**
-- ✅ Interfaces actualizadas: `vehicle_id?: number, customer_id?: number`
-- ✅ Servicios corregidos: `getByVin` → `getByVehicle`
-- ✅ Rutas API corregidas: `/api/appointments` → `/api/opportunities/appointments`
-- ✅ Uso de `api.post()` en lugar de `fetch()` manual
-
-#### **4. FLUJO DE CITAS RÁPIDAS FUNCIONAL:**
-```javascript
-// CREAR CITA (sin vehículo/cliente)
-POST /api/opportunities/appointments
-{
-  vehicle_id: null,          // ← Nullable para citas rápidas  
-  customer_id: null,         // ← Nullable para citas rápidas
-  tiene_cita: true,
-  cita_fecha: "2025-08-06",
-  cita_hora: "10:30",
-  cita_descripcion_breve: "Nissan Tsuru - Cambio de aceite",
-  cita_nombre_contacto: "Juan Pérez", 
-  cita_telefono_contacto: "+52-999-123-4567"
-}
-
-// LISTAR CITAS
-GET /api/opportunities/search?tiene_cita=true
-
-// CITAS DE HOY (Dashboard)  
-GET /api/opportunities/search?tiene_cita=true&fecha_desde=2025-08-06&fecha_hasta=2025-08-06
-```
-
-### 🎯 FUNCIONALIDAD FINAL VERIFICADA:
-
-**✅ CREAR CITAS:**
-- Formulario funcional sin errores
-- Se guardan en BD correctamente
-- No requieren vehículo/cliente previo
-
-**✅ LISTAR CITAS:**
-- Módulo de citas muestra todas las citas
-- Datos completos visibles (fecha, hora, contacto, descripción)
-
-**✅ DASHBOARD:**
-- "Citas Hoy" cuenta solo citas de fecha actual ✅
-- Estadísticas correctas en tiempo real
-
-**✅ ARQUITECTURA CONSISTENTE:**
-- BD ↔ Backend ↔ Frontend alineados
-- Estructura escalable para futuras mejoras
-
-### 📋 PASOS DE MIGRACIÓN EJECUTADOS:
-
-1. ✅ **replace_vin_with_vehicle_id.sql** - Estructura principal
-2. ✅ **Campos de citas** - `tiene_cita`, `cita_fecha`, etc.
-3. ✅ **Backend compilado** con correcciones
-4. ✅ **Frontend rebuildeado** con interfaces actualizadas
-5. ✅ **Desplegado a Railway** - funcionando en producción
-
-### 🔍 LECCIONES APRENDIDAS:
-
-**❌ PROBLEMAS IDENTIFICADOS:**
-- Migraciones deben ejecutarse en orden específico
-- Schema debe coincidir exactamente con código
-- Frontend debe usar servicios centralizados, no fetch() manual
-- Rutas API deben documentarse claramente
-
-**✅ MEJORES PRÁCTICAS APLICADAS:**
-- Verificar estructura BD antes de codificar
-- Usar nullable fields para registros opcionales
-- Logs temporales para debugging efectivo  
-- Testing completo: crear → listar → contar
-
-### 🚀 ESTADO ACTUAL DEL SISTEMA:
-
-**MÓDULO DE CITAS: 100% FUNCIONAL** 🎉
-- Crear ✅ | Listar ✅ | Dashboard ✅ | Arquitectura ✅
-
-**PRÓXIMOS PASOS SUGERIDOS:**
-1. Implementar actualización de citas (cuando llega el cliente)
-2. Agregar notificaciones/recordatorios
-3. Reportes de citas por período
-4. Integración con calendario
+### "Búsquedas no funcionan"
+**Causa:** Parámetros de API incorrectos o estructura de respuesta
+**Solución:**
+1. Verificar parámetros: ?nombre= vs ?q=
+2. Validar respuesta: response.customers vs response.data
+3. Agregar logs para debugging
+4. Implementar debounce si es necesario
 
 ---
 
-**Última actualización:** 06 Agosto 2025 - Módulo de citas completamente funcional con arquitectura corregida
+**Última actualización:** 07 Agosto 2025 - Módulo de recepción 90% funcional, pendiente resolver error 500 en guardar servicio

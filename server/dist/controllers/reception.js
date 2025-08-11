@@ -9,6 +9,7 @@ const connection_1 = require("../database/connection");
 const processWalkInClient = async (req, res) => {
     const client = await (0, connection_1.getClient)();
     try {
+        console.log('🚪 Procesando cliente walk-in con datos:', JSON.stringify(req.body, null, 2));
         await client.query('BEGIN');
         const data = req.body;
         // 1. PROCESAR CLIENTE
@@ -71,6 +72,20 @@ const processWalkInClient = async (req, res) => {
             if (!data.servicio_inmediato) {
                 throw new Error('Datos de servicio inmediato requeridos');
             }
+            // Validar y limpiar datos antes del INSERT
+            const tipoServicio = data.servicio_inmediato.tipo_servicio?.trim();
+            const descripcion = data.servicio_inmediato.descripcion?.trim() || tipoServicio || 'Servicio general';
+            const precio = data.servicio_inmediato.precio_estimado || 0;
+            if (!tipoServicio) {
+                throw new Error('Tipo de servicio es requerido');
+            }
+            console.log('📝 Creando servicio con datos:', {
+                vehicleId,
+                customerId,
+                tipoServicio,
+                descripcion,
+                precio
+            });
             const serviceResult = await client.query(`
         INSERT INTO services (
           vehicle_id, customer_id, fecha_servicio, tipo_servicio, 
@@ -81,9 +96,9 @@ const processWalkInClient = async (req, res) => {
       `, [
                 vehicleId,
                 customerId,
-                data.servicio_inmediato.tipo_servicio,
-                data.servicio_inmediato.descripcion,
-                data.servicio_inmediato.precio_estimado || 0
+                tipoServicio,
+                descripcion,
+                precio
             ]);
             result = {
                 type: 'servicio_inmediato',
@@ -131,7 +146,14 @@ const processWalkInClient = async (req, res) => {
     }
     catch (error) {
         await client.query('ROLLBACK');
-        console.error('Error procesando cliente walk-in:', error);
+        console.error('❌ Error procesando cliente walk-in:', error);
+        // Log detallado del error
+        if (error instanceof Error) {
+            console.error('📋 Detalle del error:', {
+                message: error.message,
+                stack: error.stack
+            });
+        }
         res.status(500).json({
             error: 'Error procesando cliente walk-in',
             details: error instanceof Error ? error.message : 'Error desconocido'

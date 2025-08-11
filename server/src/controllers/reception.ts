@@ -18,6 +18,8 @@ export const processWalkInClient = async (req: AuthRequest, res: Response) => {
   const client = await getClient();
   
   try {
+    console.log('🚪 Procesando cliente walk-in con datos:', JSON.stringify(req.body, null, 2));
+    
     await client.query('BEGIN');
     
     const data: ReceptionWalkInRequest = req.body;
@@ -89,6 +91,23 @@ export const processWalkInClient = async (req: AuthRequest, res: Response) => {
         throw new Error('Datos de servicio inmediato requeridos');
       }
       
+      // Validar y limpiar datos antes del INSERT
+      const tipoServicio = data.servicio_inmediato.tipo_servicio?.trim();
+      const descripcion = data.servicio_inmediato.descripcion?.trim() || tipoServicio || 'Servicio general';
+      const precio = data.servicio_inmediato.precio_estimado || 0;
+      
+      if (!tipoServicio) {
+        throw new Error('Tipo de servicio es requerido');
+      }
+
+      console.log('📝 Creando servicio con datos:', {
+        vehicleId,
+        customerId, 
+        tipoServicio,
+        descripcion,
+        precio
+      });
+
       const serviceResult = await client.query(`
         INSERT INTO services (
           vehicle_id, customer_id, fecha_servicio, tipo_servicio, 
@@ -99,9 +118,9 @@ export const processWalkInClient = async (req: AuthRequest, res: Response) => {
       `, [
         vehicleId,
         customerId,
-        data.servicio_inmediato.tipo_servicio,
-        data.servicio_inmediato.descripcion,
-        data.servicio_inmediato.precio_estimado || 0
+        tipoServicio,
+        descripcion,
+        precio
       ]);
       
       result = {
@@ -154,7 +173,16 @@ export const processWalkInClient = async (req: AuthRequest, res: Response) => {
     
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error procesando cliente walk-in:', error);
+    console.error('❌ Error procesando cliente walk-in:', error);
+    
+    // Log detallado del error
+    if (error instanceof Error) {
+      console.error('📋 Detalle del error:', {
+        message: error.message,
+        stack: error.stack
+      });
+    }
+    
     res.status(500).json({ 
       error: 'Error procesando cliente walk-in',
       details: error instanceof Error ? error.message : 'Error desconocido'
