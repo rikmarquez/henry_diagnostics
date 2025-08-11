@@ -110,6 +110,8 @@ const Reception: React.FC = () => {
   };
 
   const seleccionarVehiculo = (vehiculo: any) => {
+    console.log('🚗 Vehículo seleccionado:', vehiculo);
+    
     setWalkInForm(prev => ({
       ...prev,
       cliente_existente_id: clienteSeleccionado.customer_id,
@@ -117,6 +119,14 @@ const Reception: React.FC = () => {
       cliente_nuevo: undefined,
       vehiculo_nuevo: undefined
     }));
+    
+    // Feedback visual - scroll hacia los campos de servicio
+    setTimeout(() => {
+      const servicioSection = document.querySelector('h4');
+      if (servicioSection && servicioSection.textContent?.includes('Servicio')) {
+        servicioSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   // Debounce para búsqueda de clientes
@@ -384,7 +394,25 @@ const Reception: React.FC = () => {
                         type="radio"
                         value="nuevo"
                         checked={tipoCliente === 'nuevo'}
-                        onChange={(e) => setTipoCliente(e.target.value as 'nuevo' | 'existente')}
+                        onChange={(e) => {
+                          const nuevoTipo = e.target.value as 'nuevo' | 'existente';
+                          setTipoCliente(nuevoTipo);
+                          
+                          // Limpiar datos de selecciones anteriores
+                          setClienteBusqueda('');
+                          setClientesEncontrados([]);
+                          setClienteSeleccionado(null);
+                          setVehiculosCliente([]);
+                          
+                          // Reset form data
+                          setWalkInForm(prev => ({
+                            ...prev,
+                            cliente_existente_id: undefined,
+                            vehiculo_existente_id: undefined,
+                            cliente_nuevo: nuevoTipo === 'nuevo' ? prev.cliente_nuevo : undefined,
+                            vehiculo_nuevo: prev.vehiculo_nuevo
+                          }));
+                        }}
                         className="form-radio h-4 w-4 text-blue-600"
                       />
                       <span className="ml-2 text-sm">Cliente Nuevo</span>
@@ -394,7 +422,25 @@ const Reception: React.FC = () => {
                         type="radio"
                         value="existente"
                         checked={tipoCliente === 'existente'}
-                        onChange={(e) => setTipoCliente(e.target.value as 'nuevo' | 'existente')}
+                        onChange={(e) => {
+                          const nuevoTipo = e.target.value as 'nuevo' | 'existente';
+                          setTipoCliente(nuevoTipo);
+                          
+                          // Limpiar datos de selecciones anteriores
+                          setClienteBusqueda('');
+                          setClientesEncontrados([]);
+                          setClienteSeleccionado(null);
+                          setVehiculosCliente([]);
+                          
+                          // Reset form data
+                          setWalkInForm(prev => ({
+                            ...prev,
+                            cliente_existente_id: undefined,
+                            vehiculo_existente_id: undefined,
+                            cliente_nuevo: nuevoTipo === 'nuevo' ? prev.cliente_nuevo : undefined,
+                            vehiculo_nuevo: prev.vehiculo_nuevo
+                          }));
+                        }}
                         className="form-radio h-4 w-4 text-blue-600"
                       />
                       <span className="ml-2 text-sm">Cliente Existente</span>
@@ -535,6 +581,30 @@ const Reception: React.FC = () => {
                         <div className="bg-yellow-50 p-3 rounded-md">
                           <div className="text-sm text-yellow-800">
                             Este cliente no tiene vehículos registrados. Se registrará un nuevo vehículo.
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Mostrar vehículo seleccionado */}
+                      {walkInForm.vehiculo_existente_id && (
+                        <div className="bg-green-50 p-4 rounded-md border border-green-200">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                              <svg className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <div className="ml-3">
+                              <div className="text-sm font-medium text-green-800">Vehículo Seleccionado:</div>
+                              {(() => {
+                                const vehiculoSel = vehiculosCliente.find(v => v.vehicle_id === walkInForm.vehiculo_existente_id);
+                                return vehiculoSel ? (
+                                  <div className="text-sm text-green-700">
+                                    {vehiculoSel.marca} {vehiculoSel.modelo} {vehiculoSel.año} - Placas: {vehiculoSel.placa_actual}
+                                  </div>
+                                ) : null;
+                              })()}
+                            </div>
                           </div>
                         </div>
                       )}
