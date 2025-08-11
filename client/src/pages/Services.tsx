@@ -346,26 +346,53 @@ export const Services = () => {
             {/* Detalle del servicio */}
             <div className="card p-6">
               <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
                     Servicio #{selectedService?.service_id}
                   </h2>
-                  <div className="flex items-center space-x-3">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedService?.estado || '')}`}>
-                      {getStatusLabel(selectedService?.estado || '')}
-                    </span>
-                    <span className="text-lg font-semibold text-green-600">
-                      {selectedService?.precio ? formatCurrency(selectedService.precio) : ''}
-                    </span>
+                  
+                  {/* Estado prominente con icono */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-4">
+                      <div className={`px-6 py-3 rounded-xl text-lg font-bold shadow-lg transform transition-all duration-200 hover:scale-105 ${
+                        selectedService?.estado === 'cotizado' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900' :
+                        selectedService?.estado === 'autorizado' ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-blue-900' :
+                        selectedService?.estado === 'en_proceso' ? 'bg-gradient-to-r from-purple-400 to-purple-500 text-purple-900' :
+                        selectedService?.estado === 'completado' ? 'bg-gradient-to-r from-green-400 to-green-500 text-green-900' :
+                        selectedService?.estado === 'cancelado' ? 'bg-gradient-to-r from-red-400 to-red-500 text-red-900' :
+                        'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-900'
+                      }`}>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-2xl">
+                            {selectedService?.estado === 'cotizado' ? '📋' :
+                             selectedService?.estado === 'autorizado' ? '✅' :
+                             selectedService?.estado === 'en_proceso' ? '🔧' :
+                             selectedService?.estado === 'completado' ? '🎉' :
+                             selectedService?.estado === 'cancelado' ? '❌' : '❓'}
+                          </span>
+                          <span className="uppercase tracking-wide">
+                            {getStatusLabel(selectedService?.estado || '')}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-r from-green-50 to-green-100 px-4 py-3 rounded-lg border-l-4 border-green-500">
+                        <div className="text-sm text-green-700 font-medium">Total Facturado</div>
+                        <div className="text-2xl font-bold text-green-800">
+                          {selectedService?.precio ? formatCurrency(selectedService.precio) : '$0.00'}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
                 {canUpdateServices && (
                   <button
                     onClick={handleEditService}
-                    className="btn-secondary"
+                    className="btn-primary flex items-center space-x-2"
                   >
-                    ✏️ Editar Servicio
+                    <span>✏️</span>
+                    <span>Editar Servicio</span>
                   </button>
                 )}
               </div>
@@ -576,32 +603,70 @@ export const Services = () => {
                 {/* Lista de servicios */}
                 <div className="space-y-4">
                   {services.map((service) => (
-                    <div key={service.service_id} className="card p-6 hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleServiceSelect(service)}>
+                    <div key={service.service_id} className="card p-6 hover:shadow-lg hover:border-blue-200 transition-all duration-200 cursor-pointer transform hover:-translate-y-1" onClick={() => handleServiceSelect(service)}>
                       <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">
-                            Servicio #{service.service_id} - {service.tipo_servicio}
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-2">{service.descripcion}</p>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <h3 className="text-lg font-medium text-gray-900">
+                              Servicio #{service.service_id} - {service.tipo_servicio}
+                            </h3>
+                            {/* Estado colorido con icono */}
+                            <div className={`px-4 py-2 rounded-lg font-semibold text-sm shadow-md ${
+                              service.estado === 'cotizado' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900' :
+                              service.estado === 'autorizado' ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-blue-900' :
+                              service.estado === 'en_proceso' ? 'bg-gradient-to-r from-purple-400 to-purple-500 text-purple-900' :
+                              service.estado === 'completado' ? 'bg-gradient-to-r from-green-400 to-green-500 text-green-900' :
+                              service.estado === 'cancelado' ? 'bg-gradient-to-r from-red-400 to-red-500 text-red-900' :
+                              'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-900'
+                            }`}>
+                              <span className="flex items-center space-x-1">
+                                <span>
+                                  {service.estado === 'cotizado' ? '📋' :
+                                   service.estado === 'autorizado' ? '✅' :
+                                   service.estado === 'en_proceso' ? '🔧' :
+                                   service.estado === 'completado' ? '🎉' :
+                                   service.estado === 'cancelado' ? '❌' : '❓'}
+                                </span>
+                                <span className="uppercase tracking-wide">
+                                  {getStatusLabel(service.estado)}
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <p className="text-sm text-gray-600 mb-3">{service.descripcion}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            <span>📅 {new Date(service.fecha_servicio).toLocaleDateString('es-MX')}</span>
-                            <span>👤 {service.cliente_nombre || 'Cliente no disponible'}</span>
-                            <span>🚗 {service.vehiculo_marca} {service.vehiculo_modelo}</span>
+                            <span className="flex items-center space-x-1">
+                              <span>📅</span>
+                              <span>{new Date(service.fecha_servicio).toLocaleDateString('es-MX')}</span>
+                            </span>
+                            <span className="flex items-center space-x-1">
+                              <span>👤</span>
+                              <span>{service.cliente_nombre || 'Cliente no disponible'}</span>
+                            </span>
+                            <span className="flex items-center space-x-1">
+                              <span>🚗</span>
+                              <span>{service.vehiculo_marca} {service.vehiculo_modelo}</span>
+                            </span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-2 ${getStatusColor(service.estado)}`}>
-                            {getStatusLabel(service.estado)}
-                          </span>
-                          <p className="text-lg font-semibold text-green-600">
-                            {formatCurrency(service.precio)}
-                          </p>
+                        
+                        <div className="text-right ml-4">
+                          <div className="bg-gradient-to-r from-green-50 to-green-100 px-4 py-3 rounded-lg border border-green-200">
+                            <div className="text-xs text-green-700 font-medium mb-1">Total</div>
+                            <div className="text-xl font-bold text-green-800">
+                              {formatCurrency(service.precio)}
+                            </div>
+                          </div>
                         </div>
                       </div>
                       
                       {service.notas && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
-                          <span className="font-medium">Notas:</span> {service.notas}
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                          <div className="flex items-start space-x-2">
+                            <span className="text-blue-500 font-medium text-sm">💬 Notas:</span>
+                            <span className="text-sm text-blue-700">{service.notas}</span>
+                          </div>
                         </div>
                       )}
                     </div>
