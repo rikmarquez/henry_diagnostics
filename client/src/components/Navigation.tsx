@@ -34,6 +34,7 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
     { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
     { id: 'appointments', label: 'Citas', icon: '📅' },
     { id: 'reception', label: 'Recepción', icon: '🚪' },
+    { id: 'services', label: 'Servicios', icon: '🔧' },
     { id: 'vehicles', label: 'Vehículos', icon: '🚗' },
     { id: 'customers', label: 'Clientes', icon: '👥' },
     { id: 'opportunities', label: 'Oportunidades', icon: '💼' },
@@ -54,19 +55,20 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
             </div>
             
             {/* Navigation Menu */}
-            <nav className="hidden md:flex space-x-6">
+            <nav className="hidden lg:flex space-x-4 xl:space-x-6">
               {menuItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => onPageChange(item.id)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center space-x-1 xl:space-x-2 px-2 xl:px-3 py-2 rounded-lg text-xs xl:text-sm font-medium transition-colors whitespace-nowrap ${
                     currentPage === item.id
                       ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   <span>{item.icon}</span>
-                  <span>{item.label}</span>
+                  <span className="hidden xl:inline">{item.label}</span>
+                  <span className="xl:hidden text-xs">{item.label.length > 8 ? item.label.substring(0, 6) + '.' : item.label}</span>
                 </button>
               ))}
             </nav>
@@ -83,21 +85,42 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
-      <div className="md:hidden border-t border-gray-200 bg-gray-50">
-        <nav className="flex overflow-x-auto px-4 py-2 space-x-4">
+      {/* Tablet Navigation - Icons only */}
+      <div className="hidden md:block lg:hidden border-t border-gray-200 bg-gray-50">
+        <nav className="flex justify-center px-4 py-2 space-x-6">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => onPageChange(item.id)}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`flex flex-col items-center p-2 rounded-lg text-xs font-medium transition-colors ${
+                currentPage === item.id
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+              title={item.label}
+            >
+              <span className="text-lg mb-1">{item.icon}</span>
+              <span className="text-xs">{item.label.length > 6 ? item.label.substring(0, 4) + '.' : item.label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Mobile Navigation - Horizontal scroll */}
+      <div className="md:hidden border-t border-gray-200 bg-gray-50">
+        <nav className="flex overflow-x-auto px-4 py-2 space-x-3" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => onPageChange(item.id)}
+              className={`flex flex-col items-center p-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors min-w-0 flex-shrink-0 ${
                 currentPage === item.id
                   ? 'bg-blue-100 text-blue-700'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
+              <span className="text-base mb-1">{item.icon}</span>
+              <span className="text-xs">{item.label.length > 7 ? item.label.substring(0, 5) + '.' : item.label}</span>
             </button>
           ))}
         </nav>

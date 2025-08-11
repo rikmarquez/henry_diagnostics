@@ -5,6 +5,7 @@ import { Appointments } from './Appointments';
 import { Vehicles } from './Vehicles';
 import { Customers } from './Customers';
 import { Opportunities } from './Opportunities';
+import { Services } from './Services';
 import { Reminders } from './Reminders';
 import Users from './Users';
 import Reception from './Reception';
@@ -40,6 +41,8 @@ export const MainApp = () => {
         return <Customers />;
       case 'opportunities':
         return <Opportunities />;
+      case 'services':
+        return <Services />;
       case 'reminders':
         return <Reminders />;
       case 'reception':
