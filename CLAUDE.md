@@ -332,4 +332,36 @@ cd client && npm run build && cd .. && git add . && git commit -m "Update fronte
 
 ---
 
-**Última actualización:** 07 Agosto 2025 - Módulo de recepción 90% funcional, pendiente resolver error 500 en guardar servicio
+**Última actualización:** 11 Agosto 2025 - Módulo de recepción 100% funcional, error 500 resuelto, migración DB aplicada
+
+## 🔄 **INFORMACIÓN CRÍTICA DE CONEXIÓN:**
+
+### **Base de Datos PostgreSQL (Railway):**
+```
+Conexión: postgresql://postgres:uFXiUmoRNqxdKctJesvlRiLiOXuWTQac@shortline.proxy.rlwy.net:52806/railway
+Host: shortline.proxy.rlwy.net
+Puerto: 52806
+Base: railway
+Usuario: postgres
+Password: uFXiUmoRNqxdKctJesvlRiLiOXuWTQac
+```
+
+### **Estado de Migraciones Aplicadas:**
+- ✅ `add_appointment_fields.sql` - Campos de cita en opportunities
+- ✅ `add_origen_cita_field.sql` - Campo origen_cita
+- ✅ `replace_vin_with_vehicle_id.sql` - VIN → vehicle_id en opportunities  
+- ✅ **`update_services_to_vehicle_id.sql`** - VIN → vehicle_id en services (APLICADA)
+
+### **Estructura Final services:**
+```sql
+service_id INTEGER NOT NULL (PK)
+customer_id INTEGER NOT NULL (FK → customers)
+vehicle_id INTEGER NOT NULL (FK → vehicles)  -- ✅ MIGRADO
+usuario_mecanico INTEGER (FK → users)
+fecha_servicio DATE NOT NULL
+tipo_servicio VARCHAR(255) NOT NULL  
+descripcion TEXT NOT NULL
+precio DECIMAL(10,2) NOT NULL
+estado VARCHAR(50) DEFAULT 'completado'
+-- ... otros campos
+```

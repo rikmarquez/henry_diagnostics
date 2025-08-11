@@ -15,6 +15,7 @@ const opportunities_1 = __importDefault(require("./routes/opportunities"));
 const appointments_1 = __importDefault(require("./routes/appointments"));
 const users_1 = require("./routes/users");
 const reception_1 = require("./routes/reception");
+const services_1 = __importDefault(require("./routes/services"));
 // Cargar variables de entorno
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -58,6 +59,7 @@ app.use('/api/opportunities', opportunities_1.default);
 app.use('/api/appointments', appointments_1.default);
 app.use('/api/users', users_1.usersRouter);
 app.use('/api/reception', reception_1.receptionRoutes);
+app.use('/api/services', services_1.default);
 // Middleware para rutas no encontradas
 app.use('*', (req, res) => {
     res.status(404).json({

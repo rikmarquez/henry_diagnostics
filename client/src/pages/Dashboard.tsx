@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { opportunityService } from '../services/opportunities';
 import { vehicleService } from '../services/vehicles';
+import { serviceService } from '../services/services';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
@@ -34,18 +35,20 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
       
       // Cargar estadísticas básicas
       const today = new Date().toISOString().split('T')[0];
-      const [remindersResult, opportunitiesResult, vehiclesCountResult, appointmentsResult] = await Promise.all([
+      const [remindersResult, opportunitiesResult, vehiclesCountResult, appointmentsResult, servicesCountResult] = await Promise.all([
         opportunityService.getRemindersToday(),
         opportunityService.getPending(),
         vehicleService.getCount(),
         opportunityService.getAppointmentsToday(),
+        serviceService.getCountThisMonth(),
       ]);
 
       console.log('📊 Dashboard: Datos recibidos', {
         vehicles: vehiclesCountResult,
         opportunities: opportunitiesResult,
         reminders: remindersResult,
-        appointments: appointmentsResult
+        appointments: appointmentsResult,
+        services: servicesCountResult
       });
       
       console.log('🔍 Dashboard: Detalle appointments:', {
@@ -59,7 +62,7 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
         vehiclesCount: vehiclesCountResult.count || 0,
         opportunitiesPending: opportunitiesResult.opportunities?.length || 0,
         remindersToday: remindersResult.reminders?.length || 0,
-        servicesThisMonth: 0, // TODO: implement when services are tracked
+        servicesThisMonth: servicesCountResult.count || 0,
         appointmentsToday: appointmentsResult.opportunities?.length || 0,
       });
 
@@ -181,18 +184,32 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
               </div>
             </div>
 
-            <div className="card p-6">
+            <div className={`card p-6 cursor-pointer hover:shadow-lg transition-shadow ${stats.servicesThisMonth > 0 ? 'ring-2 ring-green-200 bg-green-50' : ''}`}
+                 onClick={() => onNavigate('services')}>
               <div className="flex items-center">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600">Servicios del Mes</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className={`text-2xl font-bold ${stats.servicesThisMonth > 0 ? 'text-green-600' : 'text-gray-900'}`}>
                     {isLoading ? '--' : stats.servicesThisMonth}
                   </p>
                 </div>
-                <div className="bg-green-100 p-3 rounded-full">
-                  <span className="text-green-600 text-xl">✅</span>
+                <div className={`p-3 rounded-full ${stats.servicesThisMonth > 0 ? 'bg-green-100' : 'bg-gray-100'}`}>
+                  <span className={`text-xl ${stats.servicesThisMonth > 0 ? 'text-green-600' : 'text-gray-600'}`}>✅</span>
                 </div>
               </div>
+              {stats.servicesThisMonth > 0 && (
+                <div className="mt-3">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigate('services');
+                    }}
+                    className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full font-medium"
+                  >
+                    Ver Servicios
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className={`card p-6 ${stats.remindersToday > 0 ? 'ring-2 ring-red-200 bg-red-50' : ''}`}>
