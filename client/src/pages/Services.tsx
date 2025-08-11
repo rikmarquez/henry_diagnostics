@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 
 import type { Service, ServiceFilters } from '../services/services';
 
-type ViewMode = 'list' | 'detail';
+type ViewMode = 'list' | 'detail' | 'edit';
 
 export const Services = () => {
   const { user } = useAuth();
@@ -26,6 +26,8 @@ export const Services = () => {
 
   const { register, watch, reset } = useForm<ServiceFilters>();
   const filters = watch();
+
+  const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, formState: { isSubmitting } } = useForm<Partial<Service>>();
 
   // Cargar servicios al iniciar
   useEffect(() => {
@@ -70,6 +72,13 @@ export const Services = () => {
     setViewMode('detail');
   };
 
+  const handleEditService = () => {
+    if (selectedService) {
+      resetEdit(selectedService);
+      setViewMode('edit');
+    }
+  };
+
   const handleStatusChange = async (serviceId: number, newStatus: Service['estado']) => {
     try {
       await serviceService.updateServiceStatus(serviceId, newStatus);
@@ -80,6 +89,33 @@ export const Services = () => {
     } catch (err: any) {
       console.error('Error cambiando estado:', err);
       setError(err.response?.data?.message || 'Error al cambiar estado');
+    }
+  };
+
+  const handleSaveService = async (data: Partial<Service>) => {
+    if (!selectedService) return;
+    
+    try {
+      setError(null);
+      const response = await serviceService.updateService(selectedService.service_id, {
+        tipo_servicio: data.tipo_servicio,
+        descripcion: data.descripcion,
+        precio: data.precio ? Number(data.precio) : undefined,
+        estado: data.estado,
+        notas: data.notas,
+        kilometraje_servicio: data.kilometraje_servicio ? Number(data.kilometraje_servicio) : undefined,
+        refacciones_usadas: data.refacciones_usadas,
+        proximo_servicio_km: data.proximo_servicio_km ? Number(data.proximo_servicio_km) : undefined,
+        proximo_servicio_fecha: data.proximo_servicio_fecha,
+        garantia_meses: data.garantia_meses ? Number(data.garantia_meses) : undefined,
+      });
+      
+      setSelectedService(response.service);
+      setViewMode('detail');
+      loadServices(pagination.page);
+    } catch (err: any) {
+      console.error('Error actualizando servicio:', err);
+      setError(err.response?.data?.message || 'Error al actualizar servicio');
     }
   };
 
@@ -120,6 +156,182 @@ export const Services = () => {
 
   const renderContent = () => {
     switch (viewMode) {
+      case 'edit':
+        return (
+          <div className="space-y-6">
+            {/* Botón de regreso */}
+            <button
+              onClick={() => setViewMode('detail')}
+              className="flex items-center text-gray-600 hover:text-gray-800"
+            >
+              ← Regresar a detalle
+            </button>
+
+            {/* Formulario de edición */}
+            <div className="card p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                Editar Servicio #{selectedService?.service_id}
+              </h2>
+
+              <form onSubmit={handleSubmitEdit(handleSaveService)} className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Información del servicio */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900">Información del Servicio</h3>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tipo de Servicio *
+                      </label>
+                      <input
+                        {...registerEdit('tipo_servicio')}
+                        type="text"
+                        className="input-field"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Descripción *
+                      </label>
+                      <textarea
+                        {...registerEdit('descripcion')}
+                        className="input-field"
+                        rows={3}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Precio ($)
+                      </label>
+                      <input
+                        {...registerEdit('precio')}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        className="input-field"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Estado
+                      </label>
+                      <select {...registerEdit('estado')} className="input-field">
+                        <option value="cotizado">Cotizado</option>
+                        <option value="autorizado">Autorizado</option>
+                        <option value="en_proceso">En Proceso</option>
+                        <option value="completado">Completado</option>
+                        <option value="cancelado">Cancelado</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Detalles adicionales */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900">Detalles Adicionales</h3>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Kilometraje del Servicio
+                      </label>
+                      <input
+                        {...registerEdit('kilometraje_servicio')}
+                        type="number"
+                        min="0"
+                        className="input-field"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Refacciones Usadas
+                      </label>
+                      <textarea
+                        {...registerEdit('refacciones_usadas')}
+                        className="input-field"
+                        rows={2}
+                        placeholder="Lista de refacciones utilizadas..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Próximo Servicio (KM)
+                      </label>
+                      <input
+                        {...registerEdit('proximo_servicio_km')}
+                        type="number"
+                        min="0"
+                        className="input-field"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Próximo Servicio (Fecha)
+                      </label>
+                      <input
+                        {...registerEdit('proximo_servicio_fecha')}
+                        type="date"
+                        className="input-field"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Garantía (meses)
+                      </label>
+                      <input
+                        {...registerEdit('garantia_meses')}
+                        type="number"
+                        min="0"
+                        max="60"
+                        className="input-field"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notas */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notas
+                  </label>
+                  <textarea
+                    {...registerEdit('notas')}
+                    className="input-field"
+                    rows={3}
+                    placeholder="Notas adicionales sobre el servicio..."
+                  />
+                </div>
+
+                {/* Botones de acción */}
+                <div className="flex justify-end space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('detail')}
+                    className="btn-secondary"
+                    disabled={isSubmitting}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
+
       case 'detail':
         return (
           <div className="space-y-6">
@@ -147,6 +359,15 @@ export const Services = () => {
                     </span>
                   </div>
                 </div>
+                
+                {canUpdateServices && (
+                  <button
+                    onClick={handleEditService}
+                    className="btn-secondary"
+                  >
+                    ✏️ Editar Servicio
+                  </button>
+                )}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -204,52 +425,58 @@ export const Services = () => {
                 </div>
               )}
 
-              {/* Cambio de estado */}
-              {canUpdateServices && selectedService?.estado !== 'completado' && selectedService?.estado !== 'cancelado' && (
+              {/* Cambio de estado manual */}
+              {canUpdateServices && (
                 <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-3">Cambiar Estado</h3>
+                  <h3 className="font-medium text-gray-900 mb-3">Cambiar Estado Manualmente</h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Puedes cambiar el estado a cualquier valor, incluso revertir cambios accidentales.
+                  </p>
                   <div className="flex flex-wrap gap-2">
-                    {selectedService?.estado === 'cotizado' && (
-                      <>
-                        <button
-                          onClick={() => handleStatusChange(selectedService.service_id, 'autorizado')}
-                          className="btn-primary text-sm"
-                        >
-                          Autorizar
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange(selectedService.service_id, 'cancelado')}
-                          className="btn-secondary text-sm"
-                        >
-                          Cancelar
-                        </button>
-                      </>
+                    {selectedService?.estado !== 'cotizado' && (
+                      <button
+                        onClick={() => handleStatusChange(selectedService.service_id, 'cotizado')}
+                        className="px-3 py-2 text-sm bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-lg transition-colors"
+                      >
+                        → Cotizado
+                      </button>
                     )}
-                    {selectedService?.estado === 'autorizado' && (
-                      <>
-                        <button
-                          onClick={() => handleStatusChange(selectedService.service_id, 'en_proceso')}
-                          className="btn-primary text-sm"
-                        >
-                          Iniciar Trabajo
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange(selectedService.service_id, 'cancelado')}
-                          className="btn-secondary text-sm"
-                        >
-                          Cancelar
-                        </button>
-                      </>
+                    {selectedService?.estado !== 'autorizado' && (
+                      <button
+                        onClick={() => handleStatusChange(selectedService.service_id, 'autorizado')}
+                        className="px-3 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg transition-colors"
+                      >
+                        → Autorizado
+                      </button>
                     )}
-                    {selectedService?.estado === 'en_proceso' && (
+                    {selectedService?.estado !== 'en_proceso' && (
+                      <button
+                        onClick={() => handleStatusChange(selectedService.service_id, 'en_proceso')}
+                        className="px-3 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-lg transition-colors"
+                      >
+                        → En Proceso
+                      </button>
+                    )}
+                    {selectedService?.estado !== 'completado' && (
                       <button
                         onClick={() => handleStatusChange(selectedService.service_id, 'completado')}
-                        className="btn-primary text-sm"
+                        className="px-3 py-2 text-sm bg-green-100 hover:bg-green-200 text-green-800 rounded-lg transition-colors"
                       >
-                        Completar
+                        → Completado
+                      </button>
+                    )}
+                    {selectedService?.estado !== 'cancelado' && (
+                      <button
+                        onClick={() => handleStatusChange(selectedService.service_id, 'cancelado')}
+                        className="px-3 py-2 text-sm bg-red-100 hover:bg-red-200 text-red-800 rounded-lg transition-colors"
+                      >
+                        → Cancelado
                       </button>
                     )}
                   </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Estado actual: <strong>{getStatusLabel(selectedService?.estado || '')}</strong>
+                  </p>
                 </div>
               )}
             </div>

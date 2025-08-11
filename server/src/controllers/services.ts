@@ -339,3 +339,122 @@ export const updateServiceStatus = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+// Actualizar servicio completo
+export const updateService = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { 
+      tipo_servicio,
+      descripcion,
+      precio,
+      estado,
+      notas,
+      kilometraje_servicio,
+      refacciones_usadas,
+      proximo_servicio_km,
+      proximo_servicio_fecha,
+      garantia_meses
+    } = req.body;
+
+    // Validar estado si se proporciona
+    if (estado) {
+      const validStates = ['cotizado', 'autorizado', 'en_proceso', 'completado', 'cancelado'];
+      if (!validStates.includes(estado)) {
+        return res.status(400).json({ error: 'Estado de servicio inválido' });
+      }
+    }
+
+    // Construir campos a actualizar dinámicamente
+    let updateFields: string[] = [];
+    let queryParams: any[] = [id];
+    let paramIndex = 2;
+
+    if (tipo_servicio !== undefined) {
+      updateFields.push(`tipo_servicio = $${paramIndex}`);
+      queryParams.push(tipo_servicio);
+      paramIndex++;
+    }
+
+    if (descripcion !== undefined) {
+      updateFields.push(`descripcion = $${paramIndex}`);
+      queryParams.push(descripcion);
+      paramIndex++;
+    }
+
+    if (precio !== undefined) {
+      updateFields.push(`precio = $${paramIndex}`);
+      queryParams.push(precio);
+      paramIndex++;
+    }
+
+    if (estado !== undefined) {
+      updateFields.push(`estado = $${paramIndex}`);
+      queryParams.push(estado);
+      paramIndex++;
+    }
+
+    if (notas !== undefined) {
+      updateFields.push(`notas = $${paramIndex}`);
+      queryParams.push(notas);
+      paramIndex++;
+    }
+
+    if (kilometraje_servicio !== undefined) {
+      updateFields.push(`kilometraje_servicio = $${paramIndex}`);
+      queryParams.push(kilometraje_servicio);
+      paramIndex++;
+    }
+
+    if (refacciones_usadas !== undefined) {
+      updateFields.push(`refacciones_usadas = $${paramIndex}`);
+      queryParams.push(refacciones_usadas);
+      paramIndex++;
+    }
+
+    if (proximo_servicio_km !== undefined) {
+      updateFields.push(`proximo_servicio_km = $${paramIndex}`);
+      queryParams.push(proximo_servicio_km);
+      paramIndex++;
+    }
+
+    if (proximo_servicio_fecha !== undefined) {
+      updateFields.push(`proximo_servicio_fecha = $${paramIndex}`);
+      queryParams.push(proximo_servicio_fecha);
+      paramIndex++;
+    }
+
+    if (garantia_meses !== undefined) {
+      updateFields.push(`garantia_meses = $${paramIndex}`);
+      queryParams.push(garantia_meses);
+      paramIndex++;
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'No hay campos para actualizar' });
+    }
+
+    const result = await query(`
+      UPDATE services 
+      SET ${updateFields.join(', ')}
+      WHERE service_id = $1
+      RETURNING *
+    `, queryParams);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Servicio no encontrado' });
+    }
+
+    res.json({
+      message: 'Servicio actualizado exitosamente',
+      service: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error actualizando servicio:', error);
+    res.status(500).json({ 
+      error: 'Error actualizando servicio',
+      details: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};

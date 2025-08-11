@@ -5,7 +5,8 @@ import {
   getServices,
   getServiceById,
   getRecentServices,
-  updateServiceStatus
+  updateServiceStatus,
+  updateService
 } from '../controllers/services';
 import { authenticateToken } from '../middleware/auth';
 
@@ -31,5 +32,8 @@ router.get('/:id', getServiceById);
 
 // Actualizar estado de servicio
 router.put('/:id/status', updateServiceStatus);
+
+// Actualizar servicio completo
+router.put('/:id', updateService);
 
 export default router;

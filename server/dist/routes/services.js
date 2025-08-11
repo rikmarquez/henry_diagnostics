@@ -18,5 +18,7 @@ router.get('/recent', services_1.getRecentServices);
 router.get('/:id', services_1.getServiceById);
 // Actualizar estado de servicio
 router.put('/:id/status', services_1.updateServiceStatus);
+// Actualizar servicio completo
+router.put('/:id', services_1.updateService);
 exports.default = router;
 //# sourceMappingURL=services.js.map

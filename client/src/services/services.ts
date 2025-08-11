@@ -98,6 +98,23 @@ class ServiceService {
     });
     return response.data;
   }
+
+  // Actualizar servicio completo
+  async updateService(serviceId: number, updates: {
+    tipo_servicio?: string;
+    descripcion?: string;
+    precio?: number;
+    estado?: Service['estado'];
+    notas?: string;
+    kilometraje_servicio?: number;
+    refacciones_usadas?: string;
+    proximo_servicio_km?: number;
+    proximo_servicio_fecha?: string;
+    garantia_meses?: number;
+  }) {
+    const response = await api.put(`/services/${serviceId}`, updates);
+    return response.data;
+  }
   
   // Completar servicio
   async completeService(serviceId: number, data: {
