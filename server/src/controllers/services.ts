@@ -317,7 +317,7 @@ export const updateServiceStatus = async (req: AuthRequest, res: Response) => {
 
     const result = await query(`
       UPDATE services 
-      SET ${updateFields.join(', ')}, fecha_actualizacion = CURRENT_TIMESTAMP
+      SET ${updateFields.join(', ')}
       WHERE service_id = $1
       RETURNING *
     `, queryParams);
