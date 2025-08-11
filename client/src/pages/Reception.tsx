@@ -16,6 +16,7 @@ const Reception: React.FC = () => {
   const [clientesEncontrados, setClientesEncontrados] = useState<any[]>([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState<any>(null);
   const [vehiculosCliente, setVehiculosCliente] = useState<any[]>([]);
+  const [mostrarVehiculos, setMostrarVehiculos] = useState(true); // Controlar visibilidad de lista
   const [tipoCliente, setTipoCliente] = useState<'nuevo' | 'existente'>('nuevo');
 
   // Estados para formulario walk-in
@@ -98,6 +99,7 @@ const Reception: React.FC = () => {
       // El backend devuelve { customer: {...}, vehicles: [...] }
       const vehiculos = response.vehicles || [];
       setVehiculosCliente(vehiculos);
+      setMostrarVehiculos(true); // ✅ MOSTRAR lista cuando carga nuevo cliente
       console.log('✅ Vehículos encontrados:', vehiculos.length);
       
       if (vehiculos.length > 0) {
@@ -106,6 +108,7 @@ const Reception: React.FC = () => {
     } catch (error) {
       console.error('❌ Error cargando vehículos:', error);
       setVehiculosCliente([]);
+      setMostrarVehiculos(false);
     }
   };
 
@@ -119,6 +122,9 @@ const Reception: React.FC = () => {
       cliente_nuevo: undefined,
       vehiculo_nuevo: undefined
     }));
+    
+    // ✅ CERRAR la lista de vehículos tras selección
+    setMostrarVehiculos(false);
     
     // Feedback visual - scroll hacia los campos de servicio
     setTimeout(() => {
@@ -227,6 +233,7 @@ const Reception: React.FC = () => {
     setClientesEncontrados([]);
     setClienteSeleccionado(null);
     setVehiculosCliente([]);
+    setMostrarVehiculos(true);
     setTipoCliente('nuevo');
   };
 
@@ -526,10 +533,20 @@ const Reception: React.FC = () => {
                     <div className="space-y-4">
                       {vehiculosCliente.length > 0 ? (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Seleccionar Vehículo del Cliente
-                          </label>
-                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                          <div className="flex justify-between items-center mb-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Seleccionar Vehículo del Cliente
+                            </label>
+                            <button 
+                              type="button"
+                              onClick={() => setMostrarVehiculos(!mostrarVehiculos)}
+                              className="text-xs text-blue-600 hover:text-blue-800"
+                            >
+                              {mostrarVehiculos ? '▼ Ocultar' : '▶ Mostrar'}
+                            </button>
+                          </div>
+                          {mostrarVehiculos && (
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
                             {vehiculosCliente.map((vehiculo) => (
                               <div
                                 key={vehiculo.vehicle_id}
@@ -548,7 +565,8 @@ const Reception: React.FC = () => {
                                 </div>
                               </div>
                             ))}
-                          </div>
+                            </div>
+                          )}
                           
                           <div className="mt-3 pt-3 border-t">
                             <label className="inline-flex items-center">
