@@ -9,6 +9,7 @@ import { Services } from './Services';
 import { Reminders } from './Reminders';
 import Users from './Users';
 import Reception from './Reception';
+import { Mechanics } from './Mechanics';
 
 export const MainApp = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -49,6 +50,8 @@ export const MainApp = () => {
         return <Reception />;
       case 'users':
         return <Users />;
+      case 'mechanics':
+        return <Mechanics />;
       default:
         return <Dashboard onNavigate={setCurrentPage} onNavigateToVehicleForm={navigateToVehicleForm} />;
     }

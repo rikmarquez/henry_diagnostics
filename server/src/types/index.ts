@@ -233,3 +233,78 @@ export interface UserFilters {
   page?: number;
   limit?: number;
 }
+
+// Mechanics interfaces
+export interface Mechanic {
+  mechanic_id: number;
+  branch_id: number;
+  numero_empleado: string;
+  nombre: string;
+  apellidos: string;
+  alias?: string; // Sobrenombre para identificación rápida (máximo 15 caracteres)
+  telefono?: string;
+  email?: string;
+  fecha_nacimiento?: Date;
+  fecha_ingreso: Date;
+  especialidades: string[];
+  certificaciones: string[];
+  nivel_experiencia: 'junior' | 'intermedio' | 'senior' | 'master';
+  salario_base?: number;
+  comision_porcentaje: number;
+  horario_trabajo?: string;
+  activo: boolean;
+  notas?: string;
+  fecha_creacion: Date;
+  fecha_actualizacion: Date;
+  // Datos de sucursal (JOIN)
+  branch_nombre?: string;
+}
+
+export interface CreateMechanicRequest {
+  branch_id: number;
+  numero_empleado: string;
+  nombre: string;
+  apellidos: string;
+  alias?: string; // Sobrenombre para identificación rápida (máximo 15 caracteres)
+  telefono?: string;
+  email?: string;
+  fecha_nacimiento?: string;
+  fecha_ingreso: string;
+  especialidades: string[];
+  certificaciones: string[];
+  nivel_experiencia: 'junior' | 'intermedio' | 'senior' | 'master';
+  salario_base?: number;
+  comision_porcentaje?: number;
+  horario_trabajo?: string;
+  notas?: string;
+}
+
+export interface UpdateMechanicRequest {
+  branch_id?: number;
+  numero_empleado?: string;
+  nombre?: string;
+  apellidos?: string;
+  alias?: string; // Sobrenombre para identificación rápida (máximo 15 caracteres)
+  telefono?: string;
+  email?: string;
+  fecha_nacimiento?: string;
+  fecha_ingreso?: string;
+  especialidades?: string[];
+  certificaciones?: string[];
+  nivel_experiencia?: 'junior' | 'intermedio' | 'senior' | 'master';
+  salario_base?: number;
+  comision_porcentaje?: number;
+  horario_trabajo?: string;
+  activo?: boolean;
+  notas?: string;
+}
+
+export interface MechanicFilters {
+  search?: string;
+  branch_id?: number;
+  nivel_experiencia?: string;
+  especialidad?: string;
+  activo?: boolean;
+  page?: number;
+  limit?: number;
+}

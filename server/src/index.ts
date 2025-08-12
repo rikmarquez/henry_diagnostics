@@ -11,6 +11,7 @@ import appointmentsRoutes from './routes/appointments';
 import { usersRouter } from './routes/users';
 import { receptionRoutes } from './routes/reception';
 import servicesRoutes from './routes/services';
+import mechanicsRoutes from './routes/mechanics';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -64,6 +65,7 @@ app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/users', usersRouter);
 app.use('/api/reception', receptionRoutes);
 app.use('/api/services', servicesRoutes);
+app.use('/api/mechanics', mechanicsRoutes);
 
 // Middleware para rutas no encontradas
 app.use('*', (req, res) => {
