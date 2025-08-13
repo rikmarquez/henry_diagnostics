@@ -74,10 +74,10 @@ export const Services = () => {
       const result = await serviceService.getServices(cleanFilters, page, pagination.limit);
       setServices(result.services || []);
       setPagination({
-        page: result.pagination?.page || 1,
-        limit: result.pagination?.limit || 20,
-        total: result.pagination?.total || 0,
-        totalPages: result.pagination?.totalPages || 0
+        page: result.page || 1,
+        limit: result.limit || 20,
+        total: result.total || 0,
+        totalPages: result.total_pages || 0
       });
     } catch (err: any) {
       console.error('Error cargando servicios:', err);
