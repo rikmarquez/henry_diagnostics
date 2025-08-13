@@ -52,8 +52,14 @@ export const Services = () => {
     setValue('cliente', '');
     setPagination(prev => ({ ...prev, page: 1 }));
     
+    // Pasar filtros directamente en lugar de depender del estado
+    const quickFilters = {
+      fecha_desde: getDateString(desde),
+      fecha_hasta: getDateString(hasta)
+    };
+    
     setTimeout(() => {
-      loadServices();
+      loadServicesWithFilters(quickFilters);
     }, 100);
   };
 
@@ -133,6 +139,46 @@ export const Services = () => {
         // Modo normal: usar filtros estándar
         const cleanFilters = Object.fromEntries(
           Object.entries(filters).filter(([_, value]) => value && value !== '')
+        );
+        
+        result = await serviceService.getServices(cleanFilters, page, pagination.limit);
+        setServices(result.services || []);
+        setPagination({
+          page: result.page || 1,
+          limit: result.limit || 20,
+          total: result.total || 0,
+          totalPages: result.total_pages || 0
+        });
+      }
+    } catch (err: any) {
+      console.error('Error cargando servicios:', err);
+      setError(err.response?.data?.message || 'Error al cargar servicios');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadServicesWithFilters = async (customFilters: any, page: number = 1) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      let result;
+      
+      if (historialMode.active && historialMode.customerId) {
+        // Modo historial: cargar todos los servicios del cliente específico
+        result = await serviceService.getServicesByCustomer(historialMode.customerId);
+        setServices(result.services || []);
+        setPagination({
+          page: 1,
+          limit: result.services?.length || 0,
+          total: result.services?.length || 0,
+          totalPages: 1
+        });
+      } else {
+        // Modo normal: usar filtros personalizados
+        const cleanFilters = Object.fromEntries(
+          Object.entries(customFilters).filter(([_, value]) => value && value !== '')
         );
         
         result = await serviceService.getServices(cleanFilters, page, pagination.limit);
