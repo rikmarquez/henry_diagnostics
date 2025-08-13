@@ -5,6 +5,7 @@ import {
   getServices,
   getServiceById,
   getRecentServices,
+  getServicesByCustomer,
   updateServiceStatus,
   updateService
 } from '../controllers/services';
@@ -26,6 +27,9 @@ router.get('/', getServices);
 
 // Obtener servicios recientes
 router.get('/recent', getRecentServices);
+
+// Obtener servicios por cliente
+router.get('/customer/:customerId', getServicesByCustomer);
 
 // Obtener servicio por ID
 router.get('/:id', getServiceById);

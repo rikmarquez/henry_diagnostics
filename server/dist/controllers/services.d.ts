@@ -11,4 +11,5 @@ export declare const getServiceById: (req: AuthRequest, res: Response) => Promis
 export declare const getRecentServices: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const updateServiceStatus: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const updateService: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getServicesByCustomer: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 //# sourceMappingURL=services.d.ts.map

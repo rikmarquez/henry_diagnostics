@@ -14,6 +14,8 @@ router.get('/count/month', services_1.getServiceCountThisMonth);
 router.get('/', services_1.getServices);
 // Obtener servicios recientes
 router.get('/recent', services_1.getRecentServices);
+// Obtener servicios por cliente
+router.get('/customer/:customerId', services_1.getServicesByCustomer);
 // Obtener servicio por ID
 router.get('/:id', services_1.getServiceById);
 // Actualizar estado de servicio

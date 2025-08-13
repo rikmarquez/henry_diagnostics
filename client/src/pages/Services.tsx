@@ -45,31 +45,28 @@ export const Services = () => {
     return date.toISOString().split('T')[0];
   };
 
-  const applyQuickDateFilter = (desde: Date, hasta: Date) => {
+  const applyQuickDateFilter = async (desde: Date, hasta: Date) => {
+    // Primero actualizar el formulario para que el UI se vea correcto
     setValue('fecha_desde', getDateString(desde));
     setValue('fecha_hasta', getDateString(hasta));
     setValue('estado', '');
     setValue('cliente', '');
     setPagination(prev => ({ ...prev, page: 1 }));
     
-    // Pasar filtros directamente en lugar de depender del estado
+    // Ejecutar búsqueda inmediatamente con filtros directos
     const quickFilters = {
       fecha_desde: getDateString(desde),
       fecha_hasta: getDateString(hasta)
     };
     
-    setTimeout(() => {
-      loadServicesWithFilters(quickFilters);
-    }, 100);
+    await loadServicesWithFilters(quickFilters);
   };
 
-  const backToNormalView = () => {
+  const backToNormalView = async () => {
     // Limpiar todos los filtros y regresar a vista normal inteligente
     reset();
     setPagination(prev => ({ ...prev, page: 1 }));
-    setTimeout(() => {
-      loadServices();
-    }, 100);
+    await loadServices();
   };
 
   const quickFilters = {
@@ -269,7 +266,7 @@ export const Services = () => {
     loadServices();
   };
 
-  const activateHistorialMode = (customerId: number, customerName: string) => {
+  const activateHistorialMode = async (customerId: number, customerName: string) => {
     setHistorialMode({
       active: true,
       customerId,
@@ -277,17 +274,13 @@ export const Services = () => {
     });
     setViewMode('list');
     reset(); // Limpiar filtros existentes
-    setTimeout(() => {
-      loadServices();
-    }, 100);
+    await loadServices();
   };
 
-  const deactivateHistorialMode = () => {
+  const deactivateHistorialMode = async () => {
     setHistorialMode({ active: false });
     reset();
-    setTimeout(() => {
-      loadServices();
-    }, 100);
+    await loadServices();
   };
 
   const formatCurrency = (amount: number) => {

@@ -476,3 +476,55 @@ export const updateService = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+// Obtener servicios por cliente
+export const getServicesByCustomer = async (req: AuthRequest, res: Response) => {
+  try {
+    const { customerId } = req.params;
+
+    if (!customerId || isNaN(Number(customerId))) {
+      return res.status(400).json({ error: 'ID de cliente inválido' });
+    }
+
+    const result = await query(`
+      SELECT 
+        s.*,
+        c.nombre as cliente_nombre,
+        c.telefono as cliente_telefono,
+        v.marca as vehiculo_marca,
+        v.modelo as vehiculo_modelo,
+        v.año as vehiculo_año,
+        v.placa_actual,
+        b.nombre as sucursal_nombre,
+        COALESCE(
+          CASE 
+            WHEN m.alias IS NOT NULL AND m.alias != '' 
+            THEN '"' || m.alias || '" - ' || m.nombre || ' ' || m.apellidos
+            ELSE m.nombre || ' ' || m.apellidos
+          END,
+          u.nombre
+        ) as mecanico_nombre
+      FROM services s
+      LEFT JOIN customers c ON s.customer_id = c.customer_id
+      LEFT JOIN vehicles v ON s.vehicle_id = v.vehicle_id
+      LEFT JOIN mechanics m ON s.mechanic_id = m.mechanic_id
+      LEFT JOIN users u ON s.usuario_mecanico = u.user_id
+      LEFT JOIN branches b ON s.branch_id = b.branch_id
+      WHERE s.customer_id = $1
+      ORDER BY s.fecha_servicio DESC, s.fecha_creacion DESC
+    `, [customerId]);
+
+    res.json({ 
+      services: result.rows,
+      total: result.rows.length,
+      customer_id: customerId
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo servicios por cliente:', error);
+    res.status(500).json({ 
+      error: 'Error obteniendo servicios del cliente',
+      details: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
