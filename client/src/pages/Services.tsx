@@ -312,9 +312,14 @@ export const Services = () => {
   };
 
   const deactivateHistorialMode = async () => {
+    console.log(`🔄 Desactivando modo historial`);
     setHistorialMode({ active: false });
     reset();
-    await loadServices();
+    setPagination(prev => ({ ...prev, page: 1 }));
+    
+    // Forzar carga normal sin historial - igual que backToNormalView
+    console.log(`🔍 Forzando vista normal desde historial`);
+    await loadServicesWithFilters({}, 1, true);
   };
 
   const formatCurrency = (amount: number) => {
