@@ -275,13 +275,16 @@ export const Services = () => {
   };
 
   const activateHistorialMode = async (customerId: number, customerName: string) => {
+    console.log(`🔄 Activando modo historial - Customer ID: ${customerId}, Nombre: ${customerName}`);
     setHistorialMode({
       active: true,
       customerId,
       customerName
     });
+    console.log(`✅ Estado historial actualizado`);
     setViewMode('list');
     reset(); // Limpiar filtros existentes
+    console.log(`🔍 Iniciando carga de servicios para historial`);
     await loadServices();
   };
 
@@ -611,7 +614,10 @@ export const Services = () => {
                   {selectedService?.customer_id && selectedService?.cliente_nombre && (
                     <div className="mt-4">
                       <button
-                        onClick={() => activateHistorialMode(selectedService.customer_id, selectedService.cliente_nombre!)}
+                        onClick={() => {
+                          console.log(`🔍 Botón historial clickeado - Customer ID: ${selectedService.customer_id}, Nombre: ${selectedService.cliente_nombre}`);
+                          activateHistorialMode(selectedService.customer_id, selectedService.cliente_nombre!);
+                        }}
                         className="w-full px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg flex items-center justify-center space-x-2"
                       >
                         <span>📚</span>
