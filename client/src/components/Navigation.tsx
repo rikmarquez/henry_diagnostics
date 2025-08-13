@@ -46,58 +46,58 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
     <>
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo y botón de menú secundario */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <Logo size="sm" />
-                <span className="ml-3 text-xl font-semibold text-gray-900">
-                  Henry Diagnostics
-                </span>
-              </div>
-              
-              {/* Botón para abrir menú secundario */}
-              <button
-                onClick={toggleSecondaryMenu}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isSecondaryMenuOpen
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-                title="Más opciones"
-              >
-                <span>⚙️</span>
-                <span className="hidden sm:inline">Más</span>
-                <span className={`transition-transform duration-200 ${isSecondaryMenuOpen ? 'rotate-180' : ''}`}>
-                  ▼
-                </span>
-              </button>
+          {/* Primera línea: Logo, título y botón más opciones */}
+          <div className="flex justify-between items-center h-14">
+            <div className="flex items-center">
+              <Logo size="sm" />
+              <span className="ml-3 text-xl font-semibold text-gray-900">
+                Henry Diagnostics
+              </span>
             </div>
             
-            {/* Menú principal */}
-            <nav className="flex items-center space-x-2 lg:space-x-4">
+            {/* Botón para abrir menú secundario */}
+            <button
+              onClick={toggleSecondaryMenu}
+              className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isSecondaryMenuOpen
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+              title="Más opciones"
+            >
+              <span>⚙️</span>
+              <span className="hidden sm:inline">Más</span>
+              <span className={`transition-transform duration-200 ${isSecondaryMenuOpen ? 'rotate-180' : ''}`}>
+                ▼
+              </span>
+            </button>
+          </div>
+          
+          {/* Segunda línea: Menú principal - Solo desktop */}
+          <div className="hidden sm:block border-t border-gray-100 py-2">
+            <nav className="flex items-center justify-center space-x-3 lg:space-x-6">
               {primaryMenuItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => onPageChange(item.id)}
-                  className={`flex items-center space-x-1 lg:space-x-2 px-2 lg:px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                     currentPage === item.id
                       ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   <span>{item.icon}</span>
-                  <span className="hidden sm:inline">{item.label}</span>
+                  <span>{item.label}</span>
                 </button>
               ))}
               
               {/* Cerrar sesión */}
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-1 lg:space-x-2 px-2 lg:px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors whitespace-nowrap"
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors whitespace-nowrap"
               >
                 <span>🚪</span>
-                <span className="hidden sm:inline">Cerrar Sesión</span>
+                <span>Cerrar Sesión</span>
               </button>
             </nav>
           </div>
