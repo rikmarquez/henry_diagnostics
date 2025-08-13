@@ -257,6 +257,11 @@ export const updateMechanic = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const updateData = req.body as UpdateMechanicRequest;
 
+    console.log('🔄 Actualizando mecánico:', {
+      mechanic_id: id,
+      updateData: updateData
+    });
+
     // Verificar que el mecánico existe
     const mechanicCheck = await query(
       'SELECT mechanic_id FROM mechanics WHERE mechanic_id = $1',
@@ -282,21 +287,29 @@ export const updateMechanic = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Construir query dinámico
+    // Construir query dinámico con validación de campos
     const fields: string[] = [];
     const values: any[] = [];
     let paramIndex = 1;
 
+    // Campos válidos para actualización
+    const validFields = ['branch_id', 'nombre', 'apellidos', 'alias', 'telefono', 'especialidades', 'nivel_experiencia', 'salario_base', 'comision_porcentaje', 'activo', 'notas'];
+
     Object.entries(updateData).forEach(([key, value]) => {
-      if (value !== undefined) {
+      if (value !== undefined && validFields.includes(key)) {
         fields.push(`${key} = $${paramIndex}`);
-        values.push(value);
+        // Convertir arrays a formato PostgreSQL
+        if (key === 'especialidades' && Array.isArray(value)) {
+          values.push(JSON.stringify(value));
+        } else {
+          values.push(value);
+        }
         paramIndex++;
       }
     });
 
     if (fields.length === 0) {
-      return res.status(400).json({ message: 'No se proporcionaron datos para actualizar' });
+      return res.status(400).json({ message: 'No se proporcionaron datos válidos para actualizar' });
     }
 
     // Agregar fecha_actualizacion
@@ -306,12 +319,22 @@ export const updateMechanic = async (req: AuthRequest, res: Response) => {
       UPDATE mechanics 
       SET ${fields.join(', ')}
       WHERE mechanic_id = $${paramIndex}
-      RETURNING *
+      RETURNING mechanic_id, branch_id, numero_empleado, nombre, apellidos, alias, telefono, especialidades, nivel_experiencia, salario_base, comision_porcentaje, activo, notas, fecha_creacion, fecha_actualizacion
     `;
 
     values.push(id);
 
+    console.log('🔍 Query a ejecutar:', {
+      query: updateQuery,
+      values: values
+    });
+
     const result = await query(updateQuery, values);
+    
+    console.log('✅ Query ejecutado exitosamente, resultado:', {
+      rowCount: result.rowCount,
+      mechanic: result.rows[0]
+    });
 
     console.log('✅ Mecánico actualizado exitosamente:', {
       mechanic_id: id,
