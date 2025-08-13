@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
 import { Dashboard } from './Dashboard';
 import { Appointments } from './Appointments';
+import AppointmentList from './AppointmentList';
 import { Vehicles } from './Vehicles';
 import { Customers } from './Customers';
 import { Opportunities } from './Opportunities';
@@ -34,6 +35,8 @@ export const MainApp = () => {
 
   const renderPage = () => {
     switch (currentPage) {
+      case 'appointmentList':
+        return <AppointmentList />;
       case 'appointments':
         return <Appointments />;
       case 'vehicles':
