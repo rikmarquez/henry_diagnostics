@@ -45,6 +45,21 @@ export const Services = () => {
 
   // Recargar cuando cambien los filtros
   useEffect(() => {
+    // Verificar si hay filtros de fecha
+    const hasFechaDesde = filters.fecha_desde;
+    const hasFechaHasta = filters.fecha_hasta;
+    
+    // Si hay filtros de fecha, solo buscar cuando ambas fechas estén completas
+    if (hasFechaDesde || hasFechaHasta) {
+      if (hasFechaDesde && hasFechaHasta) {
+        setPagination(prev => ({ ...prev, page: 1 }));
+        loadServices();
+      }
+      // Si solo hay una fecha, no hacer nada (evitar consultas incompletas)
+      return;
+    }
+    
+    // Para otros filtros (estado, cliente), buscar normalmente
     if (Object.values(filters).some(value => value)) {
       setPagination(prev => ({ ...prev, page: 1 }));
       loadServices();
@@ -610,6 +625,18 @@ export const Services = () => {
                       className="input-field text-sm"
                     />
                   </div>
+
+                  {/* Mensaje informativo para filtros de fecha */}
+                  {(filters.fecha_desde || filters.fecha_hasta) && !(filters.fecha_desde && filters.fecha_hasta) && (
+                    <div className="md:col-span-2 lg:col-span-4">
+                      <div className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <span className="text-yellow-600">⚠️</span>
+                        <span className="text-sm text-yellow-700">
+                          Para buscar por fechas, completa ambos campos "Desde" y "Hasta"
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="md:col-span-2 lg:col-span-4">
                     <button
