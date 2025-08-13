@@ -57,6 +57,15 @@ export const Services = () => {
     }, 100);
   };
 
+  const backToNormalView = () => {
+    // Limpiar todos los filtros y regresar a vista normal inteligente
+    reset();
+    setPagination(prev => ({ ...prev, page: 1 }));
+    setTimeout(() => {
+      loadServices();
+    }, 100);
+  };
+
   const quickFilters = {
     yesterday: () => {
       const yesterday = new Date();
@@ -714,7 +723,24 @@ export const Services = () => {
               {!historialMode.active && (
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">🚀 Filtros Rápidos</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                  
+                  {/* Botón VISTA NORMAL destacado */}
+                  <div className="mb-3">
+                    <button
+                      onClick={backToNormalView}
+                      className="px-6 py-3 text-lg font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-yellow-900 rounded-xl border-2 border-yellow-600 transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center space-x-2 w-full justify-center"
+                      disabled={isLoading}
+                    >
+                      <span className="text-xl">🏠</span>
+                      <span>VISTA NORMAL</span>
+                    </button>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Servicios activos + completados/cancelados de hoy (vista inteligente por defecto)
+                    </p>
+                  </div>
+
+                  {/* Otros filtros */}
+                  <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2">
                     <button
                       onClick={quickFilters.yesterday}
                       className="px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition-all duration-200 hover:shadow-md"
@@ -743,6 +769,10 @@ export const Services = () => {
                     >
                       🔄 Últimos 7 días
                     </button>
+                  </div>
+                  
+                  {/* Línea separada para el último filtro */}
+                  <div className="mt-2">
                     <button
                       onClick={quickFilters.last30Days}
                       className="px-3 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded-lg border border-red-200 transition-all duration-200 hover:shadow-md"
@@ -751,6 +781,7 @@ export const Services = () => {
                       📆 Últimos 30 días
                     </button>
                   </div>
+                  
                   <div className="mt-2 text-xs text-gray-500">
                     Los filtros rápidos buscan automáticamente en el rango de fechas seleccionado
                   </div>
