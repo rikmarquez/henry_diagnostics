@@ -25,7 +25,6 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
     { id: 'services', label: 'Servicios', icon: '🔧' },
     { id: 'appointmentList', label: 'Citas del Día', icon: '📅' },
     { id: 'opportunities', label: 'Oportunidades', icon: '💼' },
-    { id: 'reminders', label: 'Recordatorios', icon: '⏰' },
   ];
 
   // Menú secundario (cortina)
