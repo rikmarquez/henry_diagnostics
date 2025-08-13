@@ -7,7 +7,8 @@ import {
   updateMechanic,
   deleteMechanic,
   getBranches,
-  getMechanicsStats
+  getMechanicsStats,
+  debugMechanicTable
 } from '../controllers/mechanics';
 
 const router = Router();
@@ -23,6 +24,9 @@ router.get('/stats', getMechanicsStats);
 
 // GET /api/mechanics/branches - Obtener lista de sucursales para dropdown
 router.get('/branches', getBranches);
+
+// GET /api/mechanics/debug - Endpoint temporal de debug
+router.get('/debug', debugMechanicTable);
 
 // GET /api/mechanics/:id - Obtener mecánico por ID
 router.get('/:id', getMechanicById);

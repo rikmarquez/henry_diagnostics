@@ -7,4 +7,5 @@ export declare const updateMechanic: (req: AuthRequest, res: Response) => Promis
 export declare const deleteMechanic: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const getBranches: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const getMechanicsStats: (req: AuthRequest, res: Response) => Promise<void>;
+export declare const debugMechanicTable: (req: AuthRequest, res: Response) => Promise<void>;
 //# sourceMappingURL=mechanics.d.ts.map

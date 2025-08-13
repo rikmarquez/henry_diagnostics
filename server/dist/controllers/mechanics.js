@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMechanicsStats = exports.getBranches = exports.deleteMechanic = exports.updateMechanic = exports.createMechanic = exports.getMechanicById = exports.getMechanics = void 0;
+exports.debugMechanicTable = exports.getMechanicsStats = exports.getBranches = exports.deleteMechanic = exports.updateMechanic = exports.createMechanic = exports.getMechanicById = exports.getMechanics = void 0;
 const connection_1 = require("../database/connection");
 const getMechanics = async (req, res) => {
     try {
@@ -172,7 +172,7 @@ const createMechanic = async (req, res) => {
             alias || null,
             telefono || null,
             new Date().toISOString().split('T')[0], // fecha_ingreso automática
-            especialidades,
+            especialidades.length > 0 ? `{${especialidades.join(',')}}` : '{}', // Formato PostgreSQL para arrays
             nivel_experiencia,
             salario_base || null,
             comision_porcentaje,
@@ -230,7 +230,8 @@ const updateMechanic = async (req, res) => {
                 fields.push(`${key} = $${paramIndex}`);
                 // Convertir arrays a formato PostgreSQL
                 if (key === 'especialidades' && Array.isArray(value)) {
-                    values.push(JSON.stringify(value));
+                    // PostgreSQL usa formato '{item1,item2}' para arrays
+                    values.push(value.length > 0 ? `{${value.join(',')}}` : '{}');
                 }
                 else {
                     values.push(value);
@@ -270,8 +271,12 @@ const updateMechanic = async (req, res) => {
     }
     catch (error) {
         console.error('❌ Error actualizando mecánico:', error);
+        console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack available');
+        console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error');
         res.status(500).json({
-            message: 'Error interno del servidor al actualizar mecánico'
+            message: 'Error interno del servidor al actualizar mecánico',
+            error: error instanceof Error ? error.message : 'Unknown error',
+            details: error instanceof Error ? error.stack : 'No details available'
         });
     }
 };
@@ -363,4 +368,32 @@ const getMechanicsStats = async (req, res) => {
     }
 };
 exports.getMechanicsStats = getMechanicsStats;
+// Endpoint temporal de debug para verificar estructura de tabla
+const debugMechanicTable = async (req, res) => {
+    try {
+        // Verificar estructura de la tabla
+        const structureQuery = `
+      SELECT column_name, data_type, is_nullable 
+      FROM information_schema.columns 
+      WHERE table_name = 'mechanics' 
+      ORDER BY ordinal_position
+    `;
+        const structure = await (0, connection_1.query)(structureQuery);
+        // Obtener mecánico específico
+        const mechanicQuery = `SELECT * FROM mechanics WHERE mechanic_id = 1`;
+        const mechanic = await (0, connection_1.query)(mechanicQuery);
+        res.json({
+            table_structure: structure.rows,
+            mechanic_data: mechanic.rows[0] || null
+        });
+    }
+    catch (error) {
+        console.error('❌ Error en debug:', error);
+        res.status(500).json({
+            message: 'Error en debug',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+exports.debugMechanicTable = debugMechanicTable;
 //# sourceMappingURL=mechanics.js.map
