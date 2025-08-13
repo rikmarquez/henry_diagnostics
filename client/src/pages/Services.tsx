@@ -29,11 +29,64 @@ export const Services = () => {
     total: 0,
     totalPages: 0
   });
+  const [historialMode, setHistorialMode] = useState<{
+    active: boolean;
+    customerId?: number;
+    customerName?: string;
+  }>({ active: false });
 
   const canUpdateServices = user?.rol === 'administrador' || user?.rol === 'mecanico';
 
-  const { register, watch, reset, handleSubmit } = useForm<ServiceFilters>();
+  const { register, watch, reset, handleSubmit, setValue } = useForm<ServiceFilters>();
   const filters = watch();
+
+  // Funciones helper para filtros rápidos de fecha
+  const getDateString = (date: Date) => {
+    return date.toISOString().split('T')[0];
+  };
+
+  const applyQuickDateFilter = (desde: Date, hasta: Date) => {
+    setValue('fecha_desde', getDateString(desde));
+    setValue('fecha_hasta', getDateString(hasta));
+    setValue('estado', '');
+    setValue('cliente', '');
+    setPagination(prev => ({ ...prev, page: 1 }));
+    
+    setTimeout(() => {
+      loadServices();
+    }, 100);
+  };
+
+  const quickFilters = {
+    yesterday: () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      applyQuickDateFilter(yesterday, yesterday);
+    },
+    currentWeek: () => {
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - today.getDay() + 1);
+      applyQuickDateFilter(monday, today);
+    },
+    currentMonth: () => {
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      applyQuickDateFilter(firstDay, today);
+    },
+    last7Days: () => {
+      const today = new Date();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      applyQuickDateFilter(sevenDaysAgo, today);
+    },
+    last30Days: () => {
+      const today = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      applyQuickDateFilter(thirtyDaysAgo, today);
+    }
+  };
 
   const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, formState: { isSubmitting } } = useForm<Partial<Service>>();
 
@@ -67,18 +120,33 @@ export const Services = () => {
     setError(null);
     
     try {
-      const cleanFilters = Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value && value !== '')
-      );
+      let result;
       
-      const result = await serviceService.getServices(cleanFilters, page, pagination.limit);
-      setServices(result.services || []);
-      setPagination({
-        page: result.page || 1,
-        limit: result.limit || 20,
-        total: result.total || 0,
-        totalPages: result.total_pages || 0
-      });
+      if (historialMode.active && historialMode.customerId) {
+        // Modo historial: cargar todos los servicios del cliente específico
+        result = await serviceService.getServicesByCustomer(historialMode.customerId);
+        setServices(result.services || []);
+        setPagination({
+          page: 1,
+          limit: result.services?.length || 0,
+          total: result.services?.length || 0,
+          totalPages: 1
+        });
+      } else {
+        // Modo normal: usar filtros estándar
+        const cleanFilters = Object.fromEntries(
+          Object.entries(filters).filter(([_, value]) => value && value !== '')
+        );
+        
+        result = await serviceService.getServices(cleanFilters, page, pagination.limit);
+        setServices(result.services || []);
+        setPagination({
+          page: result.page || 1,
+          limit: result.limit || 20,
+          total: result.total || 0,
+          totalPages: result.total_pages || 0
+        });
+      }
     } catch (err: any) {
       console.error('Error cargando servicios:', err);
       setError(err.response?.data?.message || 'Error al cargar servicios');
@@ -156,6 +224,27 @@ export const Services = () => {
     reset();
     setPagination(prev => ({ ...prev, page: 1 }));
     loadServices();
+  };
+
+  const activateHistorialMode = (customerId: number, customerName: string) => {
+    setHistorialMode({
+      active: true,
+      customerId,
+      customerName
+    });
+    setViewMode('list');
+    reset(); // Limpiar filtros existentes
+    setTimeout(() => {
+      loadServices();
+    }, 100);
+  };
+
+  const deactivateHistorialMode = () => {
+    setHistorialMode({ active: false });
+    reset();
+    setTimeout(() => {
+      loadServices();
+    }, 100);
   };
 
   const formatCurrency = (amount: number) => {
@@ -473,6 +562,22 @@ export const Services = () => {
                       <p><span className="font-medium">Sucursal:</span> {selectedService.sucursal_nombre}</p>
                     )}
                   </div>
+
+                  {/* Botón Ver Historial Completo */}
+                  {selectedService?.customer_id && selectedService?.cliente_nombre && (
+                    <div className="mt-4">
+                      <button
+                        onClick={() => activateHistorialMode(selectedService.customer_id, selectedService.cliente_nombre!)}
+                        className="w-full px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg flex items-center justify-center space-x-2"
+                      >
+                        <span>📚</span>
+                        <span>Ver Historial Completo de {selectedService.cliente_nombre}</span>
+                      </button>
+                      <p className="text-xs text-gray-500 mt-1 text-center">
+                        Muestra todos los servicios históricos de este cliente
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -565,6 +670,32 @@ export const Services = () => {
       default:
         return (
           <div className="space-y-6">
+            {/* Indicador de Modo Historial */}
+            {historialMode.active && (
+              <div className="card p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-500">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">📚</span>
+                    <div>
+                      <h3 className="font-semibold text-blue-900">
+                        Historial Completo de {historialMode.customerName}
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        Mostrando todos los servicios históricos de este cliente (incluye completados y cancelados)
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={deactivateHistorialMode}
+                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+                  >
+                    <span>←</span>
+                    <span>Regresar a Vista Normal</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Filtros y acciones */}
             <div className="card p-6">
               <div className="flex justify-between items-center mb-4">
@@ -579,8 +710,67 @@ export const Services = () => {
                 </button>
               </div>
 
+              {/* Filtros Rápidos de Fecha - Solo visible en vista normal */}
+              {!historialMode.active && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">🚀 Filtros Rápidos</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                    <button
+                      onClick={quickFilters.yesterday}
+                      className="px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition-all duration-200 hover:shadow-md"
+                      disabled={isLoading}
+                    >
+                      📅 Ayer
+                    </button>
+                    <button
+                      onClick={quickFilters.currentWeek}
+                      className="px-3 py-2 text-sm bg-green-50 hover:bg-green-100 text-green-700 rounded-lg border border-green-200 transition-all duration-200 hover:shadow-md"
+                      disabled={isLoading}
+                    >
+                      📊 Esta Semana
+                    </button>
+                    <button
+                      onClick={quickFilters.currentMonth}
+                      className="px-3 py-2 text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg border border-purple-200 transition-all duration-200 hover:shadow-md"
+                      disabled={isLoading}
+                    >
+                      📈 Este Mes
+                    </button>
+                    <button
+                      onClick={quickFilters.last7Days}
+                      className="px-3 py-2 text-sm bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg border border-orange-200 transition-all duration-200 hover:shadow-md"
+                      disabled={isLoading}
+                    >
+                      🔄 Últimos 7 días
+                    </button>
+                    <button
+                      onClick={quickFilters.last30Days}
+                      className="px-3 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded-lg border border-red-200 transition-all duration-200 hover:shadow-md"
+                      disabled={isLoading}
+                    >
+                      📆 Últimos 30 días
+                    </button>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Los filtros rápidos buscan automáticamente en el rango de fechas seleccionado
+                  </div>
+                </div>
+              )}
+
+              {/* Mensaje cuando los filtros están deshabilitados en modo historial */}
+              {showFilters && historialMode.active && (
+                <div className="p-4 bg-gray-50 rounded-lg mb-4 border border-gray-200">
+                  <div className="flex items-center space-x-2 text-gray-600">
+                    <span>ℹ️</span>
+                    <span className="text-sm">
+                      Los filtros están deshabilitados en el modo historial. Se muestran todos los servicios del cliente seleccionado.
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Filtros */}
-              {showFilters && (
+              {showFilters && !historialMode.active && (
                 <form onSubmit={handleSubmit(handleSearch)} className="p-4 bg-gray-50 rounded-lg mb-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                     <div>
@@ -673,7 +863,10 @@ export const Services = () => {
             ) : services.length > 0 ? (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {pagination.total} servicios encontrados (página {pagination.page} de {pagination.totalPages})
+                  {historialMode.active 
+                    ? `${pagination.total} servicios en el historial de ${historialMode.customerName}`
+                    : `${pagination.total} servicios encontrados (página ${pagination.page} de ${pagination.totalPages})`
+                  }
                 </h3>
                 
                 {/* Lista de servicios */}
@@ -768,8 +961,8 @@ export const Services = () => {
                   ))}
                 </div>
 
-                {/* Paginación */}
-                {pagination.totalPages > 1 && (
+                {/* Paginación - Solo en vista normal */}
+                {!historialMode.active && pagination.totalPages > 1 && (
                   <div className="flex justify-center space-x-2 mt-6">
                     <button
                       onClick={() => loadServices(pagination.page - 1)}
