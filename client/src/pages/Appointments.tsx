@@ -63,15 +63,14 @@ export const Appointments = () => {
   const filterAppointments = () => {
     if (appointments.length === 0) return;
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD formato
     
     let filtered = appointments;
     
     if (!showPastAppointments) {
       filtered = appointments.filter(appointment => {
-        const appointmentDate = new Date(appointment.cita_fecha + 'T00:00:00');
-        return appointmentDate >= today;
+        // Comparar strings de fecha directamente (más confiable)
+        return appointment.cita_fecha >= today;
       });
     }
     
