@@ -68,7 +68,9 @@ export const Services = () => {
     // Limpiar todos los filtros y regresar a vista normal inteligente
     reset();
     setPagination(prev => ({ ...prev, page: 1 }));
-    await loadServices();
+    
+    // Forzar carga normal sin historial - pasar filtros vacíos y forzar modo normal
+    await loadServicesWithFilters({}, 1, true);
   };
 
   const quickFilters = {
@@ -160,14 +162,15 @@ export const Services = () => {
     }
   };
 
-  const loadServicesWithFilters = async (customFilters: any, page: number = 1) => {
+  const loadServicesWithFilters = async (customFilters: any, page: number = 1, forceNormalMode: boolean = false) => {
     setIsLoading(true);
     setError(null);
     
     try {
       let result;
       
-      if (historialMode.active && historialMode.customerId) {
+      // Si forceNormalMode es true, ignorar modo historial
+      if (!forceNormalMode && historialMode.active && historialMode.customerId) {
         // Modo historial: cargar todos los servicios del cliente específico
         result = await serviceService.getServicesByCustomer(historialMode.customerId);
         setServices(result.services || []);

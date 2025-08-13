@@ -21,6 +21,8 @@ const mechanics_1 = __importDefault(require("./routes/mechanics"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
+// Trust proxy for Railway deployment
+app.set('trust proxy', true);
 // Middleware de seguridad
 app.use((0, helmet_1.default)());
 // CORS configuration
