@@ -147,6 +147,17 @@ export const getServices = async (req: AuthRequest, res: Response) => {
       paramIndex++;
     }
 
+    // 🎯 FILTRO POR DEFECTO: Excluir completados/cancelados de días anteriores
+    // Solo aplica si NO se especifican filtros de fecha (para permitir ver históricos)
+    const hasDateFilters = fecha_desde || fecha_hasta;
+    if (!hasDateFilters) {
+      whereConditions.push(`(
+        s.estado NOT IN ('completado', 'cancelado') 
+        OR s.fecha_servicio = CURRENT_DATE
+        OR s.estado IN ('recibido', 'cotizado', 'autorizado', 'en_proceso')
+      )`);
+    }
+
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
     // Paginación
