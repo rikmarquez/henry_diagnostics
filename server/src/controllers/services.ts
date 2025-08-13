@@ -482,6 +482,8 @@ export const getServicesByCustomer = async (req: AuthRequest, res: Response) => 
   try {
     const { customerId } = req.params;
 
+    console.log(`🔍 Consultando servicios para cliente ID: ${customerId}`);
+
     if (!customerId || isNaN(Number(customerId))) {
       return res.status(400).json({ error: 'ID de cliente inválido' });
     }
@@ -513,6 +515,12 @@ export const getServicesByCustomer = async (req: AuthRequest, res: Response) => 
       WHERE s.customer_id = $1
       ORDER BY s.fecha_servicio DESC, s.fecha_creacion DESC
     `, [customerId]);
+
+    console.log(`✅ Encontrados ${result.rows.length} servicios para cliente ${customerId}`);
+    
+    // Log de nombres de clientes para detectar mezclas
+    const clienteNombres = [...new Set(result.rows.map(row => row.cliente_nombre))];
+    console.log(`👥 Clientes en resultado: ${clienteNombres.join(', ')}`);
 
     res.json({ 
       services: result.rows,

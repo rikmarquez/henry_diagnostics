@@ -63,6 +63,8 @@ export const Services = () => {
   };
 
   const backToNormalView = async () => {
+    // IMPORTANTE: Primero desactivar modo historial
+    setHistorialMode({ active: false });
     // Limpiar todos los filtros y regresar a vista normal inteligente
     reset();
     setPagination(prev => ({ ...prev, page: 1 }));
@@ -124,7 +126,10 @@ export const Services = () => {
       
       if (historialMode.active && historialMode.customerId) {
         // Modo historial: cargar todos los servicios del cliente específico
+        console.log(`🔍 Frontend: Consultando historial para cliente ${historialMode.customerId}`);
         result = await serviceService.getServicesByCustomer(historialMode.customerId);
+        console.log(`✅ Frontend: Recibidos ${result.services?.length || 0} servicios`);
+        console.log(`👥 Frontend: Customer ID esperado: ${historialMode.customerId}, recibido: ${result.customer_id}`);
         setServices(result.services || []);
         setPagination({
           page: 1,
