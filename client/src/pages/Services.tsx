@@ -130,7 +130,9 @@ export const Services = () => {
         mechanic_id: data.mechanic_id ? Number(data.mechanic_id) : null,
       });
       
-      setSelectedService(response.service);
+      // 🔧 FIX: Recargar servicio completo con todos los JOINs para mostrar mecánico
+      const updatedServiceResponse = await serviceService.getServiceById(selectedService.service_id);
+      setSelectedService(updatedServiceResponse.service);
       setViewMode('detail');
       loadServices(pagination.page);
     } catch (err: any) {
@@ -683,6 +685,12 @@ export const Services = () => {
                               <span>🚗</span>
                               <span>{service.vehiculo_marca} {service.vehiculo_modelo}</span>
                             </span>
+                            {service.mecanico_nombre && (
+                              <span className="flex items-center space-x-1">
+                                <span>🔧</span>
+                                <span>{service.mecanico_nombre}</span>
+                              </span>
+                            )}
                           </div>
                         </div>
                         
