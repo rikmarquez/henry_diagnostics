@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { serviceService } from '../services/services';
 import { useAuth } from '../hooks/useAuth';
@@ -43,8 +43,8 @@ export const Services = () => {
     loadMechanics();
   }, []);
 
-  // Debounce para filtros
-  const debouncedLoadServices = useCallback(() => {
+  // Recargar cuando cambien los filtros con debounce
+  useEffect(() => {
     const timeoutId = setTimeout(() => {
       // Verificar si hay filtros de fecha
       const hasFechaDesde = filters.fecha_desde;
@@ -64,17 +64,15 @@ export const Services = () => {
       if (Object.values(filters).some(value => value)) {
         setPagination(prev => ({ ...prev, page: 1 }));
         loadServices();
+      } else {
+        // Si no hay filtros activos, cargar servicios por defecto
+        setPagination(prev => ({ ...prev, page: 1 }));
+        loadServices();
       }
     }, 500); // 500ms de delay para evitar consultas excesivas
 
     return () => clearTimeout(timeoutId);
   }, [filters]);
-
-  // Recargar cuando cambien los filtros con debounce
-  useEffect(() => {
-    const cleanup = debouncedLoadServices();
-    return cleanup;
-  }, [debouncedLoadServices]);
 
   const loadServices = async (page: number = 1) => {
     setIsLoading(true);
