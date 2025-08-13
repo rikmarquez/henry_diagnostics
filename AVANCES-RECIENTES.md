@@ -83,6 +83,27 @@
 
 ---
 
+### 6. **🔧 FIX FILTROS FECHA: Evitar consultas incompletas** - [9be123b]
+**Estado:** ✅ COMPLETADO
+
+**Problema resuelto:**
+- **Fix crítico:** Consultas se bloqueaban al poner solo una fecha
+- Sistema ahora **requiere ambas fechas** (Desde y Hasta) para buscar
+- **Indicador visual** amarillo cuando falta una fecha
+- Otros filtros (Estado, Cliente) funcionan normalmente
+
+**Beneficios UX:**
+- No más bloqueos del sistema al filtrar por fechas
+- Guía clara al usuario sobre campos requeridos
+- Sistema más estable y responsive
+- Filtrado más intuitivo y confiable
+
+**Archivos modificados:**
+- `client/src/pages/Services.tsx` - Lógica de filtros mejorada
+- `client/dist/` - Frontend compilado con fix
+
+---
+
 ## 🔧 FIXES CRÍTICOS ANTERIORES
 
 ### **🐛 PRECIO NULL + ESTADOS CORRECTOS** - [47255a5]
@@ -126,15 +147,32 @@
 
 ## 🚀 PRÓXIMAS MEJORAS SUGERIDAS
 
+### **Prioridad Inmediata (Próxima Sesión):**
+1. **📅 FILTROS RÁPIDOS DE FECHA** - Botones automáticos para filtrado
+   - **Día Anterior** - Servicios de ayer
+   - **Semana Actual** - Servicios de esta semana 
+   - **Mes Actual** - Servicios del mes en curso
+   - **Últimos 7 días** - Servicios de la semana pasada
+   - **Últimos 30 días** - Servicios del mes pasado
+   - **Rango personalizado** - Mantener filtros manuales existentes
+
+**Beneficios esperados:**
+   - UX mejorada con acceso rápido a períodos comunes
+   - Menos clics para consultas frecuentes
+   - Mejor análisis de tendencias operativas
+   - Navegación más intuitiva en módulo servicios
+
+**Ubicación sugerida:** Encima de filtros actuales como botones de acceso rápido
+
 ### **Prioridad Alta:**
-1. **🏢 Filtros por sucursal** - Implementar en todos los módulos
-2. **📊 Dashboard por sucursal** - Métricas segmentadas
-3. **📈 Reportes avanzados** - Análisis de conversión y rendimiento
+2. **🏢 Filtros por sucursal** - Implementar en todos los módulos
+3. **📊 Dashboard por sucursal** - Métricas segmentadas
+4. **📈 Reportes avanzados** - Análisis de conversión y rendimiento
 
 ### **Prioridad Media:**
-4. **🔔 Notificaciones automáticas** - SMS/WhatsApp 
-5. **📱 App móvil mecánicos** - Para trabajo en campo
-6. **🔍 Búsquedas avanzadas** - Filtros más granulares
+5. **🔔 Notificaciones automáticas** - SMS/WhatsApp 
+6. **📱 App móvil mecánicos** - Para trabajo en campo
+7. **🔍 Búsquedas avanzadas** - Filtros más granulares
 
 ---
 

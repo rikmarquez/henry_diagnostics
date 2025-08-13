@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { serviceService } from '../services/services';
 import { useAuth } from '../hooks/useAuth';
@@ -43,28 +43,38 @@ export const Services = () => {
     loadMechanics();
   }, []);
 
-  // Recargar cuando cambien los filtros
-  useEffect(() => {
-    // Verificar si hay filtros de fecha
-    const hasFechaDesde = filters.fecha_desde;
-    const hasFechaHasta = filters.fecha_hasta;
-    
-    // Si hay filtros de fecha, solo buscar cuando ambas fechas estén completas
-    if (hasFechaDesde || hasFechaHasta) {
-      if (hasFechaDesde && hasFechaHasta) {
+  // Debounce para filtros
+  const debouncedLoadServices = useCallback(() => {
+    const timeoutId = setTimeout(() => {
+      // Verificar si hay filtros de fecha
+      const hasFechaDesde = filters.fecha_desde;
+      const hasFechaHasta = filters.fecha_hasta;
+      
+      // Si hay filtros de fecha, solo buscar cuando ambas fechas estén completas
+      if (hasFechaDesde || hasFechaHasta) {
+        if (hasFechaDesde && hasFechaHasta) {
+          setPagination(prev => ({ ...prev, page: 1 }));
+          loadServices();
+        }
+        // Si solo hay una fecha, no hacer nada (evitar consultas incompletas)
+        return;
+      }
+      
+      // Para otros filtros (estado, cliente), buscar normalmente
+      if (Object.values(filters).some(value => value)) {
         setPagination(prev => ({ ...prev, page: 1 }));
         loadServices();
       }
-      // Si solo hay una fecha, no hacer nada (evitar consultas incompletas)
-      return;
-    }
-    
-    // Para otros filtros (estado, cliente), buscar normalmente
-    if (Object.values(filters).some(value => value)) {
-      setPagination(prev => ({ ...prev, page: 1 }));
-      loadServices();
-    }
+    }, 500); // 500ms de delay para evitar consultas excesivas
+
+    return () => clearTimeout(timeoutId);
   }, [filters]);
+
+  // Recargar cuando cambien los filtros con debounce
+  useEffect(() => {
+    const cleanup = debouncedLoadServices();
+    return cleanup;
+  }, [debouncedLoadServices]);
 
   const loadServices = async (page: number = 1) => {
     setIsLoading(true);
