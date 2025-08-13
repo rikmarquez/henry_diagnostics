@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { serviceService } from '../services/services';
 import { useAuth } from '../hooks/useAuth';
@@ -32,11 +32,8 @@ export const Services = () => {
 
   const canUpdateServices = user?.rol === 'administrador' || user?.rol === 'mecanico';
 
-  const { register, watch, reset } = useForm<ServiceFilters>();
+  const { register, watch, reset, handleSubmit } = useForm<ServiceFilters>();
   const filters = watch();
-  
-  // Ref para evitar loops infinitos en debounce
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, formState: { isSubmitting } } = useForm<Partial<Service>>();
 
@@ -46,49 +43,24 @@ export const Services = () => {
     loadMechanics();
   }, []);
 
-  // Recargar cuando cambien los filtros con debounce
-  useEffect(() => {
-    // Limpiar timeout anterior
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    // Solo ejecutar si hay filtros activos
-    if (!Object.values(filters).some(value => value)) {
-      return; // No hacer nada si no hay filtros
-    }
-
-    debounceRef.current = setTimeout(() => {
-      // Verificar si hay filtros de fecha
-      const hasFechaDesde = filters.fecha_desde;
-      const hasFechaHasta = filters.fecha_hasta;
-      
-      // Si hay filtros de fecha, solo buscar cuando ambas fechas estén completas
-      if (hasFechaDesde || hasFechaHasta) {
-        if (hasFechaDesde && hasFechaHasta) {
-          setPagination(prev => ({ ...prev, page: 1 }));
-          loadServices();
-        }
-        // Si solo hay una fecha, no hacer nada (evitar consultas incompletas)
+  // Función para ejecutar búsqueda manual
+  const handleSearch = (data: ServiceFilters) => {
+    // Verificar si hay filtros de fecha
+    const hasFechaDesde = data.fecha_desde;
+    const hasFechaHasta = data.fecha_hasta;
+    
+    // Si hay filtros de fecha, solo buscar cuando ambas fechas estén completas
+    if (hasFechaDesde || hasFechaHasta) {
+      if (!hasFechaDesde || !hasFechaHasta) {
+        setError('Para buscar por fechas, debes completar ambos campos "Desde" y "Hasta"');
         return;
       }
-      
-      // Para otros filtros (estado, cliente), buscar normalmente
-      if (Object.values(filters).some(value => value)) {
-        setPagination(prev => ({ ...prev, page: 1 }));
-        loadServices();
-      }
-      
-      debounceRef.current = null; // Limpiar referencia
-    }, 500); // 500ms de delay para evitar consultas excesivas
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = null;
-      }
-    };
-  }, [filters]);
+    }
+    
+    // Ejecutar búsqueda
+    setPagination(prev => ({ ...prev, page: 1 }));
+    loadServices();
+  };
 
   const loadServices = async (page: number = 1) => {
     setIsLoading(true);
@@ -609,50 +581,52 @@ export const Services = () => {
 
               {/* Filtros */}
               {showFilters && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                    <select {...register('estado')} className="input-field text-sm">
-                      <option value="">Todos</option>
-                      <option value="cotizado">Cotizado</option>
-                      <option value="autorizado">Autorizado</option>
-                      <option value="en_proceso">En Proceso</option>
-                      <option value="completado">Completado</option>
-                      <option value="cancelado">Cancelado</option>
-                    </select>
-                  </div>
+                <form onSubmit={handleSubmit(handleSearch)} className="p-4 bg-gray-50 rounded-lg mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                      <select {...register('estado')} className="input-field text-sm">
+                        <option value="">Todos</option>
+                        <option value="cotizado">Cotizado</option>
+                        <option value="autorizado">Autorizado</option>
+                        <option value="en_proceso">En Proceso</option>
+                        <option value="completado">Completado</option>
+                        <option value="cancelado">Cancelado</option>
+                      </select>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
-                    <input
-                      {...register('cliente')}
-                      type="text"
-                      placeholder="Buscar por nombre..."
-                      className="input-field text-sm"
-                    />
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                      <input
+                        {...register('cliente')}
+                        type="text"
+                        placeholder="Buscar por nombre..."
+                        className="input-field text-sm"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
-                    <input
-                      {...register('fecha_desde')}
-                      type="date"
-                      className="input-field text-sm"
-                    />
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Desde</label>
+                      <input
+                        {...register('fecha_desde')}
+                        type="date"
+                        className="input-field text-sm"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
-                    <input
-                      {...register('fecha_hasta')}
-                      type="date"
-                      className="input-field text-sm"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
+                      <input
+                        {...register('fecha_hasta')}
+                        type="date"
+                        className="input-field text-sm"
+                      />
+                    </div>
                   </div>
 
                   {/* Mensaje informativo para filtros de fecha */}
                   {(filters.fecha_desde || filters.fecha_hasta) && !(filters.fecha_desde && filters.fecha_hasta) && (
-                    <div className="md:col-span-2 lg:col-span-4">
+                    <div className="mb-4">
                       <div className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                         <span className="text-yellow-600">⚠️</span>
                         <span className="text-sm text-yellow-700">
@@ -662,15 +636,25 @@ export const Services = () => {
                     </div>
                   )}
 
-                  <div className="md:col-span-2 lg:col-span-4">
+                  {/* Botones de acción */}
+                  <div className="flex flex-wrap gap-2">
                     <button
+                      type="submit"
+                      className="btn-primary text-sm flex items-center space-x-2"
+                      disabled={isLoading}
+                    >
+                      <span>🔍</span>
+                      <span>{isLoading ? 'Buscando...' : 'Buscar'}</span>
+                    </button>
+                    <button
+                      type="button"
                       onClick={clearFilters}
                       className="btn-secondary text-sm"
                     >
                       Limpiar Filtros
                     </button>
                   </div>
-                </div>
+                </form>
               )}
             </div>
 
