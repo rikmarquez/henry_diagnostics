@@ -75,6 +75,14 @@ export const vehicleService = {
     return response.data;
   },
 
+  // Obtener vehículos de un cliente específico
+  getCustomerVehicles: async (customer_id: number) => {
+    const response = await api.get('/vehicles/search', { 
+      params: { customer_id, limit: 100 } 
+    });
+    return response.data;
+  },
+
   // Búsqueda rápida por placas (función de conveniencia)
   searchByPlate: async (placa: string) => {
     const response = await api.get('/vehicles/search', { 

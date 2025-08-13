@@ -93,7 +93,7 @@ const ConvertAppointmentModal: React.FC<ConvertAppointmentModalProps> = ({
     if (customerSearchTerm.length >= 2 && !isNewCustomer) {
       const timeoutId = setTimeout(async () => {
         try {
-          const response = await customerService.searchCustomers({ nombre: customerSearchTerm });
+          const response = await customerService.searchByName(customerSearchTerm);
           setCustomerSearchResults(response.customers || []);
         } catch (error) {
           console.error('Error buscando clientes:', error);

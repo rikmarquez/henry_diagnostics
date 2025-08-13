@@ -102,6 +102,41 @@ const convertAppointmentToService = async (req, res) => {
         console.log('🎯 Iniciando conversión de cita a servicio...');
         const appointmentId = parseInt(req.params.id);
         const { tipo_servicio, descripcion, precio, mechanic_id, customer_id, vehicle_id, new_customer, new_vehicle } = req.body;
+        console.log('📋 Datos recibidos del frontend:', {
+            appointmentId,
+            tipo_servicio,
+            precio,
+            customer_id,
+            vehicle_id,
+            has_new_customer: !!new_customer,
+            has_new_vehicle: !!new_vehicle,
+            new_customer_data: new_customer,
+            new_vehicle_data: new_vehicle
+        });
+        // Validaciones obligatorias
+        if (!tipo_servicio || !precio) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                error: 'tipo_servicio y precio son requeridos'
+            });
+        }
+        // Validar que se proporcione información de cliente
+        if (!customer_id && !new_customer) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                error: 'Debe proporcionar customer_id o new_customer'
+            });
+        }
+        // Validar que se proporcione información de vehículo
+        if (!vehicle_id && !new_vehicle) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                error: 'Debe proporcionar vehicle_id o new_vehicle'
+            });
+        }
         // 1. Validar que la cita existe y es válida
         const appointmentQuery = `
       SELECT * FROM opportunities 
@@ -128,7 +163,7 @@ const convertAppointmentToService = async (req, res) => {
         // 3. Determinar customer_id (crear cliente si es necesario)
         let final_customer_id = customer_id;
         if (new_customer) {
-            console.log('👤 Creando nuevo cliente...');
+            console.log('👤 Creando nuevo cliente:', new_customer);
             const createCustomerQuery = `
         INSERT INTO customers (nombre, telefono, email, direccion, branch_id)
         VALUES ($1, $2, $3, $4, 1)
@@ -143,10 +178,14 @@ const convertAppointmentToService = async (req, res) => {
             final_customer_id = customerResult.rows[0].customer_id;
             console.log(`✅ Cliente creado con ID: ${final_customer_id}`);
         }
+        else {
+            console.log(`👤 Usando cliente existente ID: ${customer_id}`);
+        }
+        console.log(`🎯 final_customer_id determinado: ${final_customer_id}`);
         // 4. Determinar vehicle_id (crear vehículo si es necesario)
         let final_vehicle_id = vehicle_id;
         if (new_vehicle) {
-            console.log('🚗 Creando nuevo vehículo...');
+            console.log('🚗 Creando nuevo vehículo:', new_vehicle);
             // Verificar que las placas no existan
             const plateCheckQuery = `
         SELECT vehicle_id FROM vehicles 
@@ -176,8 +215,20 @@ const convertAppointmentToService = async (req, res) => {
             final_vehicle_id = vehicleResult.rows[0].vehicle_id;
             console.log(`✅ Vehículo creado con ID: ${final_vehicle_id}`);
         }
+        else {
+            console.log(`🚗 Usando vehículo existente ID: ${vehicle_id}`);
+        }
+        console.log(`🎯 final_vehicle_id determinado: ${final_vehicle_id}`);
+        // Validación final antes de crear servicio
+        if (!final_customer_id || !final_vehicle_id) {
+            await client.query('ROLLBACK');
+            return res.status(500).json({
+                success: false,
+                error: `Error interno: IDs no válidos - customer_id: ${final_customer_id}, vehicle_id: ${final_vehicle_id}`
+            });
+        }
         // 5. Crear el servicio
-        console.log('🔧 Creando servicio...');
+        console.log('🔧 Creando servicio con IDs:', { final_customer_id, final_vehicle_id });
         const createServiceQuery = `
       INSERT INTO services (
         customer_id, 
