@@ -47,7 +47,8 @@ export interface Service {
   service_id: number;
   vehicle_id: number;
   customer_id: number;
-  usuario_mecanico?: number;
+  usuario_mecanico?: number; // Campo legacy - mantener para compatibilidad
+  mechanic_id?: number; // Nueva referencia a tabla mechanics
   fecha_servicio: Date;
   tipo_servicio: string;
   descripcion: string;
@@ -60,6 +61,10 @@ export interface Service {
   garantia_meses: number;
   refacciones_usadas?: string;
   fecha_creacion: Date;
+  // Campos de JOIN para mostrar en UI
+  mecanico_nombre?: string;
+  branch_id?: number;
+  sucursal_nombre?: string;
 }
 
 export interface Opportunity {

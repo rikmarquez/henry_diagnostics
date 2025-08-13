@@ -111,6 +111,7 @@ class ServiceService {
     proximo_servicio_km?: number;
     proximo_servicio_fecha?: string;
     garantia_meses?: number;
+    mechanic_id?: number | null;
   }) {
     const response = await api.put(`/services/${serviceId}`, updates);
     return response.data;
@@ -143,6 +144,19 @@ class ServiceService {
   // Obtener servicios recientes
   async getRecentServices(limit: number = 10) {
     const response = await api.get(`/services/recent?limit=${limit}`);
+    return response.data;
+  }
+
+  // Obtener mecánicos activos para dropdown
+  async getAvailableMechanics(): Promise<{ mechanics: Array<{
+    mechanic_id: number;
+    nombre: string;
+    apellidos: string;
+    alias?: string;
+    branch_nombre: string;
+    nivel_experiencia: string;
+  }> }> {
+    const response = await api.get('/mechanics?activo=true&limit=100');
     return response.data;
   }
 }

@@ -301,7 +301,7 @@ exports.updateServiceStatus = updateServiceStatus;
 const updateService = async (req, res) => {
     try {
         const { id } = req.params;
-        const { tipo_servicio, descripcion, precio, estado, notas, kilometraje_servicio, refacciones_usadas, proximo_servicio_km, proximo_servicio_fecha, garantia_meses } = req.body;
+        const { tipo_servicio, descripcion, precio, estado, notas, kilometraje_servicio, refacciones_usadas, proximo_servicio_km, proximo_servicio_fecha, garantia_meses, mechanic_id } = req.body;
         // Validar estado si se proporciona
         if (estado) {
             const validStates = ['cotizado', 'autorizado', 'en_proceso', 'completado', 'cancelado'];
@@ -361,6 +361,11 @@ const updateService = async (req, res) => {
         if (garantia_meses !== undefined) {
             updateFields.push(`garantia_meses = $${paramIndex}`);
             queryParams.push(garantia_meses);
+            paramIndex++;
+        }
+        if (mechanic_id !== undefined) {
+            updateFields.push(`mechanic_id = $${paramIndex}`);
+            queryParams.push(mechanic_id);
             paramIndex++;
         }
         if (updateFields.length === 0) {

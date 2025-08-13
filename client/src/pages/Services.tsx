@@ -12,6 +12,14 @@ export const Services = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [services, setServices] = useState<Service[]>([]);
+  const [mechanics, setMechanics] = useState<Array<{
+    mechanic_id: number;
+    nombre: string;
+    apellidos: string;
+    alias?: string;
+    branch_nombre: string;
+    nivel_experiencia: string;
+  }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -29,9 +37,10 @@ export const Services = () => {
 
   const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, formState: { isSubmitting } } = useForm<Partial<Service>>();
 
-  // Cargar servicios al iniciar
+  // Cargar servicios y mecánicos al iniciar
   useEffect(() => {
     loadServices();
+    loadMechanics();
   }, []);
 
   // Recargar cuando cambien los filtros
@@ -64,6 +73,16 @@ export const Services = () => {
       setError(err.response?.data?.message || 'Error al cargar servicios');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadMechanics = async () => {
+    try {
+      const result = await serviceService.getAvailableMechanics();
+      setMechanics(result.mechanics || []);
+    } catch (err: any) {
+      console.error('Error cargando mecánicos:', err);
+      // No mostrar error crítico ya que es opcional
     }
   };
 
@@ -108,6 +127,7 @@ export const Services = () => {
         proximo_servicio_km: data.proximo_servicio_km ? Number(data.proximo_servicio_km) : undefined,
         proximo_servicio_fecha: data.proximo_servicio_fecha,
         garantia_meses: data.garantia_meses ? Number(data.garantia_meses) : undefined,
+        mechanic_id: data.mechanic_id ? Number(data.mechanic_id) : null,
       });
       
       setSelectedService(response.service);
@@ -226,6 +246,21 @@ export const Services = () => {
                         <option value="en_proceso">En Proceso</option>
                         <option value="completado">Completado</option>
                         <option value="cancelado">Cancelado</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mecánico Asignado
+                      </label>
+                      <select {...registerEdit('mechanic_id')} className="input-field">
+                        <option value="">Sin asignar</option>
+                        {mechanics.map((mechanic) => (
+                          <option key={mechanic.mechanic_id} value={mechanic.mechanic_id}>
+                            {mechanic.alias ? `"${mechanic.alias}" - ` : ''}{mechanic.nombre} {mechanic.apellidos} 
+                            ({mechanic.nivel_experiencia} - {mechanic.branch_nombre})
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

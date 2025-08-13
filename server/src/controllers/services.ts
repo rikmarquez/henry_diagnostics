@@ -354,7 +354,8 @@ export const updateService = async (req: AuthRequest, res: Response) => {
       refacciones_usadas,
       proximo_servicio_km,
       proximo_servicio_fecha,
-      garantia_meses
+      garantia_meses,
+      mechanic_id
     } = req.body;
 
     // Validar estado si se proporciona
@@ -427,6 +428,12 @@ export const updateService = async (req: AuthRequest, res: Response) => {
     if (garantia_meses !== undefined) {
       updateFields.push(`garantia_meses = $${paramIndex}`);
       queryParams.push(garantia_meses);
+      paramIndex++;
+    }
+
+    if (mechanic_id !== undefined) {
+      updateFields.push(`mechanic_id = $${paramIndex}`);
+      queryParams.push(mechanic_id);
       paramIndex++;
     }
 

@@ -45,6 +45,7 @@ export interface Service {
     vehicle_id: number;
     customer_id: number;
     usuario_mecanico?: number;
+    mechanic_id?: number;
     fecha_servicio: Date;
     tipo_servicio: string;
     descripcion: string;
@@ -57,6 +58,9 @@ export interface Service {
     garantia_meses: number;
     refacciones_usadas?: string;
     fecha_creacion: Date;
+    mecanico_nombre?: string;
+    branch_id?: number;
+    sucursal_nombre?: string;
 }
 export interface Opportunity {
     opportunity_id: number;
