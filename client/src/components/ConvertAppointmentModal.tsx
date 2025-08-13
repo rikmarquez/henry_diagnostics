@@ -447,37 +447,23 @@ const ConvertAppointmentModal: React.FC<ConvertAppointmentModalProps> = ({
               )}
 
               {/* Datos del servicio */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo de Servicio *
-                  </label>
-                  <select
-                    {...register('tipo_servicio', { required: 'Tipo de servicio es requerido' })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  >
-                    <option value="">Seleccionar...</option>
-                    <option value="Diagnóstico">Diagnóstico</option>
-                    <option value="Reparación">Reparación</option>
-                    <option value="Mantenimiento">Mantenimiento</option>
-                    <option value="Revisión">Revisión</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio Estimado *
-                  </label>
-                  <input
-                    {...register('precio', { 
-                      required: 'Precio es requerido',
-                      min: { value: 0.01, message: 'Precio debe ser mayor a 0' }
-                    })}
-                    type="number"
-                    step="0.01"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo de Servicio *
+                </label>
+                <select
+                  {...register('tipo_servicio', { required: 'Tipo de servicio es requerido' })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="Diagnóstico">Diagnóstico</option>
+                  <option value="Reparación">Reparación</option>
+                  <option value="Mantenimiento">Mantenimiento</option>
+                  <option value="Revisión">Revisión</option>
+                </select>
+                <p className="text-sm text-gray-500 mt-1">
+                  💡 El precio se establecerá durante la cotización
+                </p>
               </div>
 
               <div>

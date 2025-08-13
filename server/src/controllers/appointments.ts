@@ -134,11 +134,11 @@ export const convertAppointmentToService = async (req: Request, res: Response) =
     });
     
     // Validaciones obligatorias
-    if (!tipo_servicio || !precio) {
+    if (!tipo_servicio) {
       await client.query('ROLLBACK');
       return res.status(400).json({
         success: false,
-        error: 'tipo_servicio y precio son requeridos'
+        error: 'tipo_servicio es requerido'
       });
     }
     
@@ -275,7 +275,7 @@ export const convertAppointmentToService = async (req: Request, res: Response) =
         estado,
         mechanic_id,
         branch_id
-      ) VALUES ($1, $2, $3, $4, $5, CURRENT_DATE, 'autorizado', $6, 1)
+      ) VALUES ($1, $2, $3, $4, $5, CURRENT_DATE, 'recibido', $6, 1)
       RETURNING service_id
     `;
     
@@ -284,7 +284,7 @@ export const convertAppointmentToService = async (req: Request, res: Response) =
       final_vehicle_id,
       tipo_servicio,
       descripcion || `Servicio programado: ${appointment.cita_descripcion_breve}`,
-      precio,
+      null, // precio será NULL hasta que se cotice
       mechanic_id || null
     ]);
     
