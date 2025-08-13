@@ -285,7 +285,30 @@ export const Services = () => {
     setViewMode('list');
     reset(); // Limpiar filtros existentes
     console.log(`🔍 Iniciando carga de servicios para historial`);
-    await loadServices();
+    
+    // Llamar directamente a la API sin depender del estado
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log(`🔍 Frontend: Consultando historial directo para cliente ${customerId}`);
+      const result = await serviceService.getServicesByCustomer(customerId);
+      console.log(`✅ Frontend: Recibidos ${result.services?.length || 0} servicios directos`);
+      console.log(`👥 Frontend: Customer ID enviado: ${customerId}, recibido: ${result.customer_id}`);
+      
+      setServices(result.services || []);
+      setPagination({
+        page: 1,
+        limit: result.services?.length || 0,
+        total: result.services?.length || 0,
+        totalPages: 1
+      });
+    } catch (err: any) {
+      console.error('Error cargando historial:', err);
+      setError(err.response?.data?.message || 'Error al cargar historial del cliente');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const deactivateHistorialMode = async () => {
