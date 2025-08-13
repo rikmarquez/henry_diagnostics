@@ -45,6 +45,11 @@ export const Services = () => {
 
   // Recargar cuando cambien los filtros con debounce
   useEffect(() => {
+    // Solo ejecutar si hay filtros activos
+    if (!Object.values(filters).some(value => value)) {
+      return; // No hacer nada si no hay filtros
+    }
+
     const timeoutId = setTimeout(() => {
       // Verificar si hay filtros de fecha
       const hasFechaDesde = filters.fecha_desde;
@@ -62,10 +67,6 @@ export const Services = () => {
       
       // Para otros filtros (estado, cliente), buscar normalmente
       if (Object.values(filters).some(value => value)) {
-        setPagination(prev => ({ ...prev, page: 1 }));
-        loadServices();
-      } else {
-        // Si no hay filtros activos, cargar servicios por defecto
         setPagination(prev => ({ ...prev, page: 1 }));
         loadServices();
       }
