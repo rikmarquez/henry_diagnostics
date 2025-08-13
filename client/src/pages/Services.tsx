@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { serviceService } from '../services/services';
 import { useAuth } from '../hooks/useAuth';
@@ -34,6 +34,9 @@ export const Services = () => {
 
   const { register, watch, reset } = useForm<ServiceFilters>();
   const filters = watch();
+  
+  // Ref para evitar loops infinitos en debounce
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { register: registerEdit, handleSubmit: handleSubmitEdit, reset: resetEdit, formState: { isSubmitting } } = useForm<Partial<Service>>();
 
@@ -45,12 +48,17 @@ export const Services = () => {
 
   // Recargar cuando cambien los filtros con debounce
   useEffect(() => {
+    // Limpiar timeout anterior
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
     // Solo ejecutar si hay filtros activos
     if (!Object.values(filters).some(value => value)) {
       return; // No hacer nada si no hay filtros
     }
 
-    const timeoutId = setTimeout(() => {
+    debounceRef.current = setTimeout(() => {
       // Verificar si hay filtros de fecha
       const hasFechaDesde = filters.fecha_desde;
       const hasFechaHasta = filters.fecha_hasta;
@@ -70,9 +78,16 @@ export const Services = () => {
         setPagination(prev => ({ ...prev, page: 1 }));
         loadServices();
       }
+      
+      debounceRef.current = null; // Limpiar referencia
     }, 500); // 500ms de delay para evitar consultas excesivas
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+    };
   }, [filters]);
 
   const loadServices = async (page: number = 1) => {
