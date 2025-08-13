@@ -27,39 +27,27 @@ export interface Mechanic {
 
 export interface CreateMechanicRequest {
   branch_id: number;
-  numero_empleado: string;
   nombre: string;
   apellidos: string;
   alias?: string; // Sobrenombre para identificación rápida (máximo 15 caracteres)
   telefono?: string;
-  email?: string;
-  fecha_nacimiento?: string;
-  fecha_ingreso: string;
   especialidades: string[];
-  certificaciones: string[];
   nivel_experiencia: 'junior' | 'intermedio' | 'senior' | 'master';
   salario_base?: number;
   comision_porcentaje?: number;
-  horario_trabajo?: string;
   notas?: string;
 }
 
 export interface UpdateMechanicRequest {
   branch_id?: number;
-  numero_empleado?: string;
   nombre?: string;
   apellidos?: string;
   alias?: string; // Sobrenombre para identificación rápida (máximo 15 caracteres)
   telefono?: string;
-  email?: string;
-  fecha_nacimiento?: string;
-  fecha_ingreso?: string;
   especialidades?: string[];
-  certificaciones?: string[];
   nivel_experiencia?: 'junior' | 'intermedio' | 'senior' | 'master';
   salario_base?: number;
   comision_porcentaje?: number;
-  horario_trabajo?: string;
   activo?: boolean;
   notas?: string;
 }
@@ -245,35 +233,12 @@ export const mechanicService = {
     });
   },
 
-  // Especialidades comunes predefinidas
+  // Especialidades disponibles (simplificadas)
   getCommonSpecialties: (): string[] => {
     return [
-      'Motor',
-      'Transmisión',
       'Frenos',
       'Suspensión',
-      'Aire Acondicionado',
-      'Sistema Eléctrico',
-      'Dirección',
-      'Escape',
-      'Diagnóstico Computarizado',
-      'Carrocería',
-      'Pintura',
-      'Hojalatería'
-    ];
-  },
-
-  // Certificaciones comunes predefinidas
-  getCommonCertifications: (): string[] => {
-    return [
-      'ASE Certified',
-      'Certificación de Marca',
-      'Diagnóstico Avanzado',
-      'Soldadura',
-      'Refrigeración Automotriz',
-      'Sistemas Híbridos',
-      'Vehículos Eléctricos',
-      'Seguridad Industrial'
+      'Dirección'
     ];
   }
 };

@@ -228,38 +228,26 @@ export interface Mechanic {
 }
 export interface CreateMechanicRequest {
     branch_id: number;
-    numero_empleado: string;
     nombre: string;
     apellidos: string;
     alias?: string;
     telefono?: string;
-    email?: string;
-    fecha_nacimiento?: string;
-    fecha_ingreso: string;
     especialidades: string[];
-    certificaciones: string[];
     nivel_experiencia: 'junior' | 'intermedio' | 'senior' | 'master';
     salario_base?: number;
     comision_porcentaje?: number;
-    horario_trabajo?: string;
     notas?: string;
 }
 export interface UpdateMechanicRequest {
     branch_id?: number;
-    numero_empleado?: string;
     nombre?: string;
     apellidos?: string;
     alias?: string;
     telefono?: string;
-    email?: string;
-    fecha_nacimiento?: string;
-    fecha_ingreso?: string;
     especialidades?: string[];
-    certificaciones?: string[];
     nivel_experiencia?: 'junior' | 'intermedio' | 'senior' | 'master';
     salario_base?: number;
     comision_porcentaje?: number;
-    horario_trabajo?: string;
     activo?: boolean;
     notas?: string;
 }

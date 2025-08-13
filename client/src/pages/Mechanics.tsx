@@ -43,7 +43,6 @@ export const Mechanics = () => {
   } = useForm<CreateMechanicRequest | UpdateMechanicRequest>();
 
   const especialidadesValue = watch('especialidades') || [];
-  const certificacionesValue = watch('certificaciones') || [];
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -107,9 +106,7 @@ export const Mechanics = () => {
   const handleCreateMechanic = () => {
     resetForm({
       branch_id: branches[0]?.branch_id || 1,
-      fecha_ingreso: new Date().toISOString().split('T')[0],
       especialidades: [],
-      certificaciones: [],
       nivel_experiencia: 'junior',
       comision_porcentaje: 0
     });
@@ -119,9 +116,7 @@ export const Mechanics = () => {
   const handleEditMechanic = () => {
     if (selectedMechanic) {
       resetForm({
-        ...selectedMechanic,
-        fecha_nacimiento: selectedMechanic.fecha_nacimiento?.split('T')[0],
-        fecha_ingreso: selectedMechanic.fecha_ingreso.split('T')[0]
+        ...selectedMechanic
       });
       setViewMode('edit');
     }
@@ -177,15 +172,6 @@ export const Mechanics = () => {
     setValue('especialidades', especialidadesValue.filter((_, i) => i !== index));
   };
 
-  const addCertificacion = (certificacion: string) => {
-    if (certificacion && !certificacionesValue.includes(certificacion)) {
-      setValue('certificaciones', [...certificacionesValue, certificacion]);
-    }
-  };
-
-  const removeCertificacion = (index: number) => {
-    setValue('certificaciones', certificacionesValue.filter((_, i) => i !== index));
-  };
 
   const getExperienceBadgeColor = (level: string) => {
     switch (level) {
@@ -218,10 +204,10 @@ export const Mechanics = () => {
               </h2>
 
               <form onSubmit={handleSubmit(handleSaveMechanic)} className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Información Personal */}
+                <div className="space-y-6">
+                  {/* Información Básica */}
                   <div className="space-y-4">
-                    <h3 className="font-medium text-gray-900">Información Personal</h3>
+                    <h3 className="font-medium text-gray-900">Información del Mecánico</h3>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -234,19 +220,6 @@ export const Mechanics = () => {
                           </option>
                         ))}
                       </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Número de Empleado *
-                      </label>
-                      <input
-                        {...registerForm('numero_empleado')}
-                        type="text"
-                        className="input-field"
-                        placeholder="EMP001"
-                        required
-                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -277,13 +250,13 @@ export const Mechanics = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Alias/Sobrenombre
-                        <span className="text-xs text-gray-500 ml-2">(máximo 15 caracteres)</span>
+                        <span className="text-xs text-gray-500 ml-2">(máximo 15 caracteres - ej: "Pepe", "El Checo")</span>
                       </label>
                       <input
                         {...registerForm('alias')}
                         type="text"
                         className="input-field"
-                        placeholder='ej: "Pepe", "El Checo", "Memo"'
+                        placeholder='Sobrenombre para identificación rápida'
                         maxLength={15}
                       />
                     </div>
@@ -297,59 +270,20 @@ export const Mechanics = () => {
                           {...registerForm('telefono')}
                           type="tel"
                           className="input-field"
+                          placeholder="Opcional"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Email
+                          Nivel de Experiencia *
                         </label>
-                        <input
-                          {...registerForm('email')}
-                          type="email"
-                          className="input-field"
-                        />
+                        <select {...registerForm('nivel_experiencia')} className="input-field" required>
+                          <option value="junior">Junior</option>
+                          <option value="intermedio">Intermedio</option>
+                          <option value="senior">Senior</option>
+                          <option value="master">Master</option>
+                        </select>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Fecha de Nacimiento
-                        </label>
-                        <input
-                          {...registerForm('fecha_nacimiento')}
-                          type="date"
-                          className="input-field"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Fecha de Ingreso *
-                        </label>
-                        <input
-                          {...registerForm('fecha_ingreso')}
-                          type="date"
-                          className="input-field"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Información Laboral */}
-                  <div className="space-y-4">
-                    <h3 className="font-medium text-gray-900">Información Laboral</h3>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Nivel de Experiencia *
-                      </label>
-                      <select {...registerForm('nivel_experiencia')} className="input-field" required>
-                        <option value="junior">Junior</option>
-                        <option value="intermedio">Intermedio</option>
-                        <option value="senior">Senior</option>
-                        <option value="master">Master</option>
-                      </select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -362,7 +296,7 @@ export const Mechanics = () => {
                           type="number"
                           step="0.01"
                           className="input-field"
-                          placeholder="15000.00"
+                          placeholder="Opcional"
                         />
                       </div>
                       <div>
@@ -376,21 +310,9 @@ export const Mechanics = () => {
                           min="0"
                           max="100"
                           className="input-field"
-                          placeholder="5.00"
+                          placeholder="0"
                         />
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Horario de Trabajo
-                      </label>
-                      <input
-                        {...registerForm('horario_trabajo')}
-                        type="text"
-                        className="input-field"
-                        placeholder="Lunes a Viernes 8:00 - 17:00"
-                      />
                     </div>
 
                     {viewMode === 'edit' && (
@@ -448,45 +370,6 @@ export const Mechanics = () => {
                   </div>
                 </div>
 
-                {/* Certificaciones */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Certificaciones
-                  </label>
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      {certificacionesValue.map((cert, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
-                        >
-                          {cert}
-                          <button
-                            type="button"
-                            onClick={() => removeCertificacion(index)}
-                            className="ml-2 text-green-600 hover:text-green-800"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {mechanicService.getCommonCertifications()
-                        .filter(cert => !certificacionesValue.includes(cert))
-                        .map((cert) => (
-                        <button
-                          key={cert}
-                          type="button"
-                          onClick={() => addCertificacion(cert)}
-                          className="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50"
-                        >
-                          + {cert}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
 
                 {/* Notas */}
                 <div>
@@ -628,22 +511,6 @@ export const Mechanics = () => {
                 </div>
               )}
 
-              {/* Certificaciones */}
-              {selectedMechanic!.certificaciones.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="font-medium text-gray-900 mb-3">Certificaciones</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedMechanic!.certificaciones.map((cert, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-                      >
-                        🏅 {cert}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Notas */}
               {selectedMechanic!.notas && (

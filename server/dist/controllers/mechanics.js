@@ -138,20 +138,17 @@ const getMechanicById = async (req, res) => {
 exports.getMechanicById = getMechanicById;
 const createMechanic = async (req, res) => {
     try {
-        const { branch_id, numero_empleado, nombre, apellidos, alias, telefono, email, fecha_nacimiento, fecha_ingreso, especialidades = [], certificaciones = [], nivel_experiencia, salario_base, comision_porcentaje = 0, horario_trabajo, notas } = req.body;
+        const { branch_id, nombre, apellidos, alias, telefono, especialidades = [], nivel_experiencia, salario_base, comision_porcentaje = 0, notas } = req.body;
         // Validaciones básicas
-        if (!branch_id || !numero_empleado || !nombre || !apellidos || !nivel_experiencia) {
+        if (!branch_id || !nombre || !apellidos || !nivel_experiencia) {
             return res.status(400).json({
-                message: 'Campos requeridos: branch_id, numero_empleado, nombre, apellidos, nivel_experiencia'
+                message: 'Campos requeridos: branch_id, nombre, apellidos, nivel_experiencia'
             });
         }
-        // Verificar que el número de empleado no exista
-        const employeeCheck = await (0, connection_1.query)('SELECT mechanic_id FROM mechanics WHERE numero_empleado = $1', [numero_empleado]);
-        if (employeeCheck.rows.length > 0) {
-            return res.status(400).json({
-                message: 'El número de empleado ya existe'
-            });
-        }
+        // Generar número de empleado automáticamente
+        const countResult = await (0, connection_1.query)('SELECT COUNT(*) as total FROM mechanics');
+        const totalMechanics = parseInt(countResult.rows[0].total);
+        const numero_empleado = `MEC${String(totalMechanics + 1).padStart(3, '0')}`;
         // Verificar que la sucursal exista
         const branchCheck = await (0, connection_1.query)('SELECT branch_id FROM branches WHERE branch_id = $1', [branch_id]);
         if (branchCheck.rows.length === 0) {
@@ -161,11 +158,10 @@ const createMechanic = async (req, res) => {
         }
         const insertQuery = `
       INSERT INTO mechanics (
-        branch_id, numero_empleado, nombre, apellidos, alias, telefono, email,
-        fecha_nacimiento, fecha_ingreso, especialidades, certificaciones,
-        nivel_experiencia, salario_base, comision_porcentaje, horario_trabajo, notas
+        branch_id, numero_empleado, nombre, apellidos, alias, telefono,
+        fecha_ingreso, especialidades, nivel_experiencia, salario_base, comision_porcentaje, notas
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
       ) RETURNING *
     `;
         const values = [
@@ -175,15 +171,11 @@ const createMechanic = async (req, res) => {
             apellidos,
             alias || null,
             telefono || null,
-            email || null,
-            fecha_nacimiento || null,
-            fecha_ingreso || new Date().toISOString().split('T')[0],
+            new Date().toISOString().split('T')[0], // fecha_ingreso automática
             especialidades,
-            certificaciones,
             nivel_experiencia,
             salario_base || null,
             comision_porcentaje,
-            horario_trabajo || null,
             notas || null
         ];
         const result = await (0, connection_1.query)(insertQuery, values);
@@ -213,15 +205,6 @@ const updateMechanic = async (req, res) => {
         const mechanicCheck = await (0, connection_1.query)('SELECT mechanic_id FROM mechanics WHERE mechanic_id = $1', [id]);
         if (mechanicCheck.rows.length === 0) {
             return res.status(404).json({ message: 'Mecánico no encontrado' });
-        }
-        // Si se está actualizando el número de empleado, verificar que no exista
-        if (updateData.numero_empleado) {
-            const employeeCheck = await (0, connection_1.query)('SELECT mechanic_id FROM mechanics WHERE numero_empleado = $1 AND mechanic_id != $2', [updateData.numero_empleado, id]);
-            if (employeeCheck.rows.length > 0) {
-                return res.status(400).json({
-                    message: 'El número de empleado ya existe'
-                });
-            }
         }
         // Si se está actualizando la sucursal, verificar que exista
         if (updateData.branch_id) {
