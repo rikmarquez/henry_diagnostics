@@ -5,6 +5,7 @@ interface OpportunityCardProps {
   onSelect?: (opportunity: Opportunity) => void;
   onStatusChange?: (opportunityId: number, newStatus: string) => void;
   onConvertToAppointment?: (opportunity: Opportunity) => void;
+  onDelete?: (opportunity: Opportunity) => void;
   showVehicleInfo?: boolean;
 }
 
@@ -43,6 +44,7 @@ export const OpportunityCard = ({
   onSelect, 
   onStatusChange, 
   onConvertToAppointment,
+  onDelete,
   showVehicleInfo = true 
 }: OpportunityCardProps) => {
   
@@ -88,6 +90,18 @@ export const OpportunityCard = ({
     if (daysUntilService <= 3) return 'border-l-4 border-orange-500'; // Urgente
     if (daysUntilService <= 7) return 'border-l-4 border-yellow-500'; // Próximo
     return 'border-l-4 border-green-500'; // Futuro
+  };
+
+  // Verificar si la oportunidad se puede eliminar
+  const canDelete = () => {
+    // No se puede eliminar si ya fue convertida a servicio
+    if (opportunity.converted_to_service_id) {
+      return false;
+    }
+    
+    // Solo se puede eliminar si no tiene servicio asignado
+    // (En este contexto, asumimos que si no tiene converted_to_service_id, se puede eliminar)
+    return true;
   };
 
   return (
@@ -283,6 +297,22 @@ export const OpportunityCard = ({
           >
             Ver Detalles
           </button>
+
+          {/* Botón Eliminar - Solo mostrar si se puede eliminar y se proporciona la función */}
+          {canDelete() && onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`¿Estás seguro de que deseas eliminar esta oportunidad?\n\n"${opportunity.titulo}"\n\nEsta acción no se puede deshacer.`)) {
+                  onDelete(opportunity);
+                }
+              }}
+              className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition-colors"
+              title="Eliminar oportunidad (solo si no tiene servicio asignado)"
+            >
+              🗑️ Eliminar
+            </button>
+          )}
         </div>
       </div>
     </div>

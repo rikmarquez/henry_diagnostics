@@ -11,6 +11,7 @@ import {
   convertOpportunityToAppointment,
   rescheduleAppointment,
   cancelAppointment,
+  deleteOpportunity,
 } from '../controllers/opportunities';
 import { authenticateToken, requireMecanicoOrAdmin, requireSeguimientoOrAdmin } from '../middleware/auth';
 
@@ -51,5 +52,8 @@ router.put('/:id/reschedule', rescheduleAppointment);
 
 // Cancelar cita (disponible para todos los usuarios autenticados)
 router.put('/:id/cancel', cancelAppointment);
+
+// Eliminar oportunidad (solo personal de seguimiento y administradores)
+router.delete('/:id', requireSeguimientoOrAdmin, deleteOpportunity);
 
 export default router;

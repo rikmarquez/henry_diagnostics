@@ -70,6 +70,25 @@ export const Reminders = () => {
     }
   };
 
+  const handleDelete = async (opportunity: Opportunity) => {
+    try {
+      setIsLoading(true);
+      await opportunityService.delete(opportunity.opportunity_id);
+      
+      // Mostrar mensaje de éxito
+      alert(`✅ Oportunidad "${opportunity.titulo}" eliminada exitosamente`);
+      
+      // Recargar la lista
+      loadReminders();
+    } catch (err: any) {
+      console.error('Error eliminando oportunidad:', err);
+      const message = err.response?.data?.message || 'Error al eliminar la oportunidad';
+      alert(`❌ ${message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const formatPhoneForWhatsApp = (phone: string) => {
     const cleanPhone = phone.replace(/^\+52/, '');
     return `https://wa.me/52${cleanPhone}`;
@@ -252,6 +271,7 @@ export const Reminders = () => {
                       <OpportunityCard
                         opportunity={reminder}
                         onStatusChange={canUpdateOpportunities ? handleStatusChange : undefined}
+                        onDelete={canUpdateOpportunities ? handleDelete : undefined}
                         showVehicleInfo={true}
                       />
                       

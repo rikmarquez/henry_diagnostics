@@ -117,6 +117,32 @@ export const Opportunities = () => {
     setViewMode('convert-appointment');
   };
 
+  const handleDelete = async (opportunity: Opportunity) => {
+    try {
+      setIsLoading(true);
+      await opportunityService.delete(opportunity.opportunity_id);
+      
+      // Mostrar mensaje de éxito
+      alert(`✅ Oportunidad "${opportunity.titulo}" eliminada exitosamente`);
+      
+      // Recargar la lista
+      loadOpportunities();
+      loadRemindersToday();
+      
+      // Si estaba viendo el detalle de la oportunidad eliminada, volver a búsqueda
+      if (selectedOpportunity?.opportunity_id === opportunity.opportunity_id) {
+        setViewMode('search');
+        setSelectedOpportunity(null);
+      }
+    } catch (err: any) {
+      console.error('Error eliminando oportunidad:', err);
+      const message = err.response?.data?.message || 'Error al eliminar la oportunidad';
+      alert(`❌ ${message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const clearFilters = () => {
     reset();
     loadOpportunities();
@@ -458,6 +484,7 @@ export const Opportunities = () => {
                     onSelect={handleOpportunitySelect}
                     onStatusChange={canUpdateOpportunities ? handleStatusChange : undefined}
                     onConvertToAppointment={handleConvertToAppointment}
+                    onDelete={canUpdateOpportunities ? handleDelete : undefined}
                   />
                 ))}
               </div>

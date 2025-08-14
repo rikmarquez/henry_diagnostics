@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cancelAppointment = exports.rescheduleAppointment = exports.convertOpportunityToAppointment = exports.createAppointment = exports.getRemindersToday = exports.getOpportunitiesByVehicle = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
+exports.deleteOpportunity = exports.cancelAppointment = exports.rescheduleAppointment = exports.convertOpportunityToAppointment = exports.createAppointment = exports.getRemindersToday = exports.getOpportunitiesByVehicle = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
 const vinSchema = zod_1.z.string().min(1, 'VIN requerido');
@@ -693,4 +693,59 @@ const cancelAppointment = async (req, res) => {
     }
 };
 exports.cancelAppointment = cancelAppointment;
+const deleteOpportunity = async (req, res) => {
+    try {
+        const opportunityId = parseInt(req.params.id);
+        if (isNaN(opportunityId)) {
+            return res.status(400).json({ message: 'ID de oportunidad inválido' });
+        }
+        // Verificar que la oportunidad existe
+        const opportunityCheck = await (0, connection_1.query)(`
+      SELECT * FROM opportunities 
+      WHERE opportunity_id = $1
+    `, [opportunityId]);
+        if (opportunityCheck.rows.length === 0) {
+            return res.status(404).json({ message: 'Oportunidad no encontrada' });
+        }
+        const opportunity = opportunityCheck.rows[0];
+        // Verificar que no tenga servicio asignado (converted_to_service_id)
+        if (opportunity.converted_to_service_id) {
+            return res.status(400).json({
+                message: 'No se puede eliminar una oportunidad que ya fue convertida a servicio',
+                service_id: opportunity.converted_to_service_id
+            });
+        }
+        // Verificar que no haya servicios directamente relacionados con esta oportunidad
+        const relatedServices = await (0, connection_1.query)(`
+      SELECT service_id FROM services 
+      WHERE opportunity_id = $1
+    `, [opportunityId]);
+        if (relatedServices.rows.length > 0) {
+            return res.status(400).json({
+                message: 'No se puede eliminar una oportunidad que tiene servicios relacionados',
+                related_services: relatedServices.rows.map(r => r.service_id)
+            });
+        }
+        // Eliminar notas de la oportunidad primero (por foreign key)
+        await (0, connection_1.query)(`
+      DELETE FROM opportunity_notes 
+      WHERE opportunity_id = $1
+    `, [opportunityId]);
+        // Eliminar la oportunidad
+        const result = await (0, connection_1.query)(`
+      DELETE FROM opportunities 
+      WHERE opportunity_id = $1
+      RETURNING *
+    `, [opportunityId]);
+        res.json({
+            message: 'Oportunidad eliminada exitosamente',
+            deleted_opportunity: result.rows[0],
+        });
+    }
+    catch (error) {
+        console.error('Error eliminando oportunidad:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+exports.deleteOpportunity = deleteOpportunity;
 //# sourceMappingURL=opportunities.js.map

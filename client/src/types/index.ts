@@ -58,7 +58,7 @@ export interface LoginResponse {
 
 export interface Opportunity {
   opportunity_id: number;
-  vin: string;
+  vehicle_id?: number;
   customer_id: number;
   tipo_oportunidad: 'mantenimiento' | 'reparacion' | 'venta' | 'seguimiento';
   titulo: string;
@@ -68,7 +68,7 @@ export interface Opportunity {
   fecha_sugerida?: string;
   fecha_contacto_sugerida?: string;
   fecha_recordatorio?: string;
-  estado: 'pendiente' | 'contactado' | 'agendado' | 'en_proceso' | 'completado' | 'perdido' | 'completada' | 'cancelada';
+  estado: 'pendiente' | 'contactado' | 'agendado' | 'en_proceso' | 'completado' | 'perdido' | 'completada' | 'cancelada' | 'cancelado';
   prioridad: 'alta' | 'media' | 'baja';
   usuario_asignado?: number;
   origen: 'manual' | 'automatico' | 'historial' | 'kilometraje';
@@ -77,7 +77,16 @@ export interface Opportunity {
   usuario_creador?: number;
   fecha_creacion: string;
   fecha_actualizacion: string;
-  activo: boolean;
+  activo?: boolean;
+  // Campos de citas
+  tiene_cita?: boolean;
+  cita_fecha?: string;
+  cita_hora?: string;
+  cita_descripcion_breve?: string;
+  cita_telefono_contacto?: string;
+  cita_nombre_contacto?: string;
+  // Campo de conversión a servicio
+  converted_to_service_id?: number;
   // Campos calculados/relacionados
   customer_nombre?: string;
   customer_telefono?: string;

@@ -141,4 +141,10 @@ export const opportunityService = {
     const response = await api.post(`/opportunities/${opportunityId}/convert-to-appointment`, appointmentData);
     return response.data;
   },
+
+  // Eliminar oportunidad
+  delete: async (id: number) => {
+    const response = await api.delete(`/opportunities/${id}`);
+    return response.data;
+  },
 };

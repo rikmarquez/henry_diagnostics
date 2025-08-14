@@ -11,4 +11,5 @@ export declare const createAppointment: (req: AuthRequest, res: Response) => Pro
 export declare const convertOpportunityToAppointment: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const rescheduleAppointment: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const cancelAppointment: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const deleteOpportunity: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 //# sourceMappingURL=opportunities.d.ts.map

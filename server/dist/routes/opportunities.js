@@ -28,5 +28,7 @@ router.post('/:id/convert-to-appointment', opportunities_1.convertOpportunityToA
 router.put('/:id/reschedule', opportunities_1.rescheduleAppointment);
 // Cancelar cita (disponible para todos los usuarios autenticados)
 router.put('/:id/cancel', opportunities_1.cancelAppointment);
+// Eliminar oportunidad (solo personal de seguimiento y administradores)
+router.delete('/:id', auth_1.requireSeguimientoOrAdmin, opportunities_1.deleteOpportunity);
 exports.default = router;
 //# sourceMappingURL=opportunities.js.map
