@@ -29,13 +29,15 @@ interface CreateAppointmentRequest {
   descripcion?: string;
 }
 
+type DateFilter = 'today' | 'week' | 'month' | 'all';
+
 export const Appointments = () => {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showPastAppointments, setShowPastAppointments] = useState(false);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showConvertModal, setShowConvertModal] = useState(false);
   const [formData, setFormData] = useState<CreateAppointmentRequest>({
@@ -63,15 +65,51 @@ export const Appointments = () => {
   const filterAppointments = () => {
     if (appointments.length === 0) return;
     
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD formato
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD formato
     
     let filtered = appointments;
     
-    if (!showPastAppointments) {
-      filtered = appointments.filter(appointment => {
-        // Comparar strings de fecha directamente (más confiable)
-        return appointment.cita_fecha >= today;
-      });
+    switch (dateFilter) {
+      case 'today':
+        filtered = appointments.filter(appointment => 
+          appointment.cita_fecha === todayStr
+        );
+        break;
+      
+      case 'week':
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay()); // Domingo
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6); // Sábado
+        
+        const startWeekStr = startOfWeek.toISOString().split('T')[0];
+        const endWeekStr = endOfWeek.toISOString().split('T')[0];
+        
+        filtered = appointments.filter(appointment => 
+          appointment.cita_fecha >= startWeekStr && appointment.cita_fecha <= endWeekStr
+        );
+        break;
+      
+      case 'month':
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        
+        const startMonthStr = startOfMonth.toISOString().split('T')[0];
+        const endMonthStr = endOfMonth.toISOString().split('T')[0];
+        
+        filtered = appointments.filter(appointment => 
+          appointment.cita_fecha >= startMonthStr && appointment.cita_fecha <= endMonthStr
+        );
+        break;
+      
+      case 'all':
+      default:
+        // Mostrar todas las citas futuras
+        filtered = appointments.filter(appointment => 
+          appointment.cita_fecha >= todayStr
+        );
+        break;
     }
     
     // Ordenar por fecha y hora
@@ -86,7 +124,7 @@ export const Appointments = () => {
 
   useEffect(() => {
     filterAppointments();
-  }, [appointments, showPastAppointments]);
+  }, [appointments, dateFilter]);
 
   // Funciones para conversión de citas
   const handleConvertAppointment = (appointment: Appointment) => {
@@ -180,33 +218,71 @@ export const Appointments = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">📋 Todas las Citas</h1>
+          <h1 className="text-3xl font-bold text-gray-900">📅 Citas</h1>
           <p className="text-gray-600">
-            Gestión completa de citas agendadas - 
-            {showPastAppointments 
-              ? `${filteredAppointments.length} citas (todas)`
-              : `${filteredAppointments.length} citas (futuras)`
-            }
+            Gestión completa de citas agendadas - {filteredAppointments.length} citas
+            {dateFilter === 'today' && ' (hoy)'}
+            {dateFilter === 'week' && ' (esta semana)'}
+            {dateFilter === 'month' && ' (este mes)'}
+            {dateFilter === 'all' && ' (futuras)'}
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          {/* Toggle para mostrar citas pasadas */}
-          <label className="flex items-center space-x-2 text-sm">
-            <input
-              type="checkbox"
-              checked={showPastAppointments}
-              onChange={(e) => setShowPastAppointments(e.target.checked)}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="text-gray-700">Mostrar citas pasadas</span>
-          </label>
-          
           <button
             onClick={() => setShowCreateForm(true)}
             className="btn-primary"
           >
             📅 Nueva Cita
           </button>
+        </div>
+      </div>
+
+      {/* Filtros de fecha */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-gray-700">Período:</h3>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setDateFilter('today')}
+              className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                dateFilter === 'today'
+                  ? 'bg-blue-100 text-blue-700 font-medium'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              📅 Hoy
+            </button>
+            <button
+              onClick={() => setDateFilter('week')}
+              className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                dateFilter === 'week'
+                  ? 'bg-blue-100 text-blue-700 font-medium'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              📆 Semana
+            </button>
+            <button
+              onClick={() => setDateFilter('month')}
+              className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                dateFilter === 'month'
+                  ? 'bg-blue-100 text-blue-700 font-medium'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              🗓️ Mes
+            </button>
+            <button
+              onClick={() => setDateFilter('all')}
+              className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                dateFilter === 'all'
+                  ? 'bg-blue-100 text-blue-700 font-medium'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              📋 Todas
+            </button>
+          </div>
         </div>
       </div>
 

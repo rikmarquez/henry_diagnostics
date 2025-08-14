@@ -147,7 +147,7 @@ export const Dashboard = ({ onNavigate, onNavigateToVehicleForm }: DashboardProp
             <div className={`card p-6 ${stats.appointmentsToday > 0 ? 'ring-2 ring-blue-200 bg-blue-50' : ''}`}>
               <div className="flex items-center">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600">Citas Hoy</p>
+                  <p className="text-sm font-medium text-gray-600">Citas</p>
                   <p className={`text-2xl font-bold ${stats.appointmentsToday > 0 ? 'text-blue-600' : 'text-gray-900'}`}>
                     {isLoading ? '--' : stats.appointmentsToday}
                   </p>

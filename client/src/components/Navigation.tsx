@@ -23,14 +23,14 @@ export const Navigation = ({ currentPage, onPageChange }: NavigationProps) => {
   const primaryMenuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
     { id: 'services', label: 'Servicios', icon: '🔧' },
-    { id: 'appointmentList', label: 'Citas del Día', icon: '📅' },
+    { id: 'appointments', label: 'Citas', icon: '📅' },
     { id: 'opportunities', label: 'Oportunidades', icon: '💼' },
   ];
 
   // Menú secundario (cortina)
   const secondaryMenuItems = [
     { id: 'reception', label: 'Recepción', icon: '🚪' },
-    { id: 'appointments', label: 'Todas las Citas', icon: '📋' },
+    { id: 'appointmentList', label: 'Lista Completa', icon: '📋' },
     { id: 'vehicles', label: 'Vehículos', icon: '🚗' },
     { id: 'customers', label: 'Clientes', icon: '👥' },
     { id: 'mechanics', label: 'Mecánicos', icon: '🔧' },

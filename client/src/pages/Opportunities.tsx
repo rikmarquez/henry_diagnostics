@@ -257,11 +257,28 @@ export const Opportunities = () => {
                 <div className="text-sm text-gray-600">WhatsApp o llamada</div>
               </button>
               
-              <button className="card p-4 text-center hover:shadow-md transition-shadow">
-                <div className="text-2xl mb-2">📅</div>
-                <div className="font-medium">Programar Cita</div>
-                <div className="text-sm text-gray-600">Agendar servicio</div>
-              </button>
+              {!selectedOpportunity?.tiene_cita && selectedOpportunity?.customer_id && selectedOpportunity?.vehicle_id ? (
+                <button 
+                  onClick={() => handleConvertToAppointment(selectedOpportunity)}
+                  className="card p-4 text-center hover:shadow-md transition-shadow hover:bg-purple-50"
+                >
+                  <div className="text-2xl mb-2">📅</div>
+                  <div className="font-medium">Programar Cita</div>
+                  <div className="text-sm text-gray-600">Convertir a cita programada</div>
+                </button>
+              ) : selectedOpportunity?.tiene_cita ? (
+                <div className="card p-4 text-center bg-green-50 border-green-200">
+                  <div className="text-2xl mb-2">✅</div>
+                  <div className="font-medium text-green-700">Ya es una Cita</div>
+                  <div className="text-sm text-green-600">Cita programada para {selectedOpportunity.cita_fecha}</div>
+                </div>
+              ) : (
+                <div className="card p-4 text-center bg-gray-50 border-gray-200">
+                  <div className="text-2xl mb-2">⏳</div>
+                  <div className="font-medium text-gray-700">Sin Cliente/Vehículo</div>
+                  <div className="text-sm text-gray-600">Asigna cliente y vehículo primero</div>
+                </div>
+              )}
               
               <button className="card p-4 text-center hover:shadow-md transition-shadow">
                 <div className="text-2xl mb-2">📝</div>
