@@ -27,11 +27,12 @@ cd .. && git add . && git commit -m "mensaje" && git push
 ```
 ✅ AUTENTICACIÓN          - 100% funcional
 ✅ CITAS PROGRAMACIÓN     - 100% funcional (crear citas rápidas)
+✅ CITAS GESTIÓN          - 100% funcional (filtros + conversión oportunidad→cita)
 ✅ CITAS CONVERSIÓN       - 100% funcional (citas → servicios)
 ✅ RECEPCIÓN              - 100% funcional (walk-in clients)
 ✅ CLIENTES               - 100% funcional
 ✅ VEHÍCULOS              - 100% funcional
-✅ OPORTUNIDADES          - 100% funcional
+✅ OPORTUNIDADES          - 100% funcional (conversión a citas + trazabilidad)
 ✅ SERVICIOS              - 100% funcional (CRUD completo)
 ✅ MECÁNICOS              - 100% funcional (CRUD + asignaciones)
 📱 DASHBOARD              - 95% funcional
@@ -41,21 +42,33 @@ cd .. && git add . && git commit -m "mensaje" && git push
 
 ### 🎯 **FLUJO OPERATIVO COMPLETO:**
 ```
-📱 AGENDAR CITA → 📅 CITAS DEL DÍA → 🎯 CONVERTIR A SERVICIO
-                                           ↓
-🚪 RECEPCIÓN WALK-IN → 📋 CREAR SERVICIO → 🔧 ASIGNAR MECÁNICO
-                                           ↓
-📊 SERVICIOS → 💰 COTIZAR → ✅ AUTORIZAR → 🔧 EN PROCESO → 🎉 COMPLETADO
+💼 OPORTUNIDAD → 📅 PROGRAMAR CITA → 🎯 CONVERTIR A SERVICIO
+       ↓                    ↓                    ↓
+📱 CITA RÁPIDA → 📊 CITAS (HOY/SEMANA/MES) → 🔧 ASIGNAR MECÁNICO
+       ↓                    ↓                    ↓
+🚪 RECEPCIÓN WALK-IN → 📋 CREAR SERVICIO → 🔧 EN PROCESO → 🎉 COMPLETADO
 ```
 
 ---
 
 ## 🔧 ARQUITECTURA CLAVE
 
-### 📅 **Citas Rápidas:**
-- Registro mínimo en `opportunities` con `tiene_cita = true`
-- NO crean clientes/vehículos hasta conversión
-- Conversión crea cliente/vehículo automáticamente
+### 📅 **Sistema de Citas Completo:**
+
+#### **Tipos de Citas:**
+- **Citas Rápidas:** Registro mínimo en `opportunities` con `tiene_cita = true`
+- **Oportunidades → Citas:** Conversión de oportunidades existentes con cliente/vehículo
+
+#### **Módulo Citas:**
+- **Filtros por período:** Hoy, Semana, Mes, Todas (futuras)
+- **Corrección timezone:** Consistencia entre filtro y display 
+- **Trazabilidad completa:** Info de cita visible en oportunidades
+- **Estados inteligentes:** Visual feedback del estado de conversión
+
+#### **Flujos Funcionales:**
+- Dashboard → "Citas" → Filtros por período ✅
+- Oportunidades → "Programar Cita" → Formulario conversión ✅
+- Citas → "Convertir a Servicio" → Servicio completo ✅
 
 ### 🚗 **Identificación Vehículos:**
 - **PLACAS** son identificador único principal (NO VIN)
@@ -109,16 +122,55 @@ especialidades: array.length > 0 ? `{${array.join(',')}}` : '{}' // → {}
 - Validar respuesta: `response.customers` vs `response.data`
 - Implementar debounce apropiado
 
+## 📋 AVANCES RECIENTES COMPLETADOS
+
+### ✅ **MÓDULO CITAS AVANZADO (14 Agosto 2025):**
+
+#### **Navegación Optimizada:**
+- Menú "Citas del Día" → "Citas" (más general)
+- Dashboard: Tarjeta "Citas" con conteo dinámico
+- Reorganización menú secundario para mejor UX
+
+#### **Filtros Inteligentes por Período:**
+- 📅 **Hoy:** Solo citas del día actual
+- 📆 **Semana:** Domingo a sábado actual  
+- 🗓️ **Mes:** Todo el mes en curso
+- 📋 **Todas:** Citas futuras (desde hoy)
+
+#### **Conversión Oportunidad → Cita:**
+- Botón "Programar Cita" funcional en detalle oportunidades
+- Estados inteligentes: Disponible/Ya convertida/Sin datos
+- Formulario completo con pre-llenado de datos
+- Validaciones: solo si tiene cliente + vehículo asignados
+
+#### **Trazabilidad y UI:**
+- Información completa de cita en detalle oportunidad
+- Sección destacada con datos: fecha, hora, contacto, teléfono
+- Botón "Ya es una Cita" muestra fecha y hora
+- UI verde para identificar oportunidades convertidas
+
+#### **Correcciones Técnicas Críticas:**
+- **Fix timezone:** Consistencia entre filtro y display de fechas
+- **Fix pantalla blanca:** Eliminación de referencias obsoletas  
+- **Debug logs:** Implementados para troubleshooting futuro
+
+---
+
 ## 🎯 PRÓXIMOS PASOS SUGERIDOS
 
-1. **🏢 Filtros por sucursal** - Implementar en todos los módulos
-2. **📊 Dashboard segmentado** - Métricas por sucursal y mecánico  
-3. **📈 Reportes avanzados** - Análisis rendimiento y conversión
-4. **📱 App móvil** - Para mecánicos en campo
-5. **🔔 Notificaciones** - SMS/WhatsApp automáticos
+### **📅 CITAS - Funcionalidades Pendientes:**
+1. **🔄 REAGENDAR CITA** - Cambiar fecha/hora de citas existentes
+2. **❌ CANCELAR CITA** - Cambiar estado y liberar slot
+
+### **🏢 Sistema General:**
+3. **🏢 Filtros por sucursal** - Implementar en todos los módulos
+4. **📊 Dashboard segmentado** - Métricas por sucursal y mecánico  
+5. **📈 Reportes avanzados** - Análisis rendimiento y conversión
+6. **📱 App móvil** - Para mecánicos en campo
+7. **🔔 Notificaciones** - SMS/WhatsApp automáticos
 
 ---
 
 **🎉 Sistema listo para operación comercial inmediata**
 
-**Última actualización:** 13 Agosto 2025 - Sistema completamente funcional
+**Última actualización:** 14 Agosto 2025 - Módulo Citas Avanzado + Conversión Oportunidades
