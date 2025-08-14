@@ -83,9 +83,10 @@ export const Appointments = () => {
     
     switch (dateFilter) {
       case 'today':
-        filtered = appointments.filter(appointment => 
-          appointment.cita_fecha === todayStr
-        );
+        filtered = appointments.filter(appointment => {
+          const appointmentDate = appointment.cita_fecha?.split('T')[0]; // Extraer solo YYYY-MM-DD
+          return appointmentDate === todayStr;
+        });
         console.log('📅 Today filter result:', filtered.length, 'citas para', todayStr);
         break;
       
@@ -98,9 +99,10 @@ export const Appointments = () => {
         const startWeekStr = startOfWeek.toISOString().split('T')[0];
         const endWeekStr = endOfWeek.toISOString().split('T')[0];
         
-        filtered = appointments.filter(appointment => 
-          appointment.cita_fecha >= startWeekStr && appointment.cita_fecha <= endWeekStr
-        );
+        filtered = appointments.filter(appointment => {
+          const appointmentDate = appointment.cita_fecha?.split('T')[0];
+          return appointmentDate >= startWeekStr && appointmentDate <= endWeekStr;
+        });
         break;
       
       case 'month':
@@ -110,17 +112,19 @@ export const Appointments = () => {
         const startMonthStr = startOfMonth.toISOString().split('T')[0];
         const endMonthStr = endOfMonth.toISOString().split('T')[0];
         
-        filtered = appointments.filter(appointment => 
-          appointment.cita_fecha >= startMonthStr && appointment.cita_fecha <= endMonthStr
-        );
+        filtered = appointments.filter(appointment => {
+          const appointmentDate = appointment.cita_fecha?.split('T')[0];
+          return appointmentDate >= startMonthStr && appointmentDate <= endMonthStr;
+        });
         break;
       
       case 'all':
       default:
         // Mostrar todas las citas futuras
-        filtered = appointments.filter(appointment => 
-          appointment.cita_fecha >= todayStr
-        );
+        filtered = appointments.filter(appointment => {
+          const appointmentDate = appointment.cita_fecha?.split('T')[0];
+          return appointmentDate >= todayStr;
+        });
         break;
     }
     
