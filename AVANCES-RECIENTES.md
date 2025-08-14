@@ -1,11 +1,88 @@
 # 📈 AVANCES RECIENTES - Henry's Diagnostics
 
 ## 🗓️ Período: Agosto 13-14, 2025
-**Última actualización:** 14 Agosto 2025 - Módulo Citas Avanzado + Conversión Oportunidades
+**Última actualización:** 14 Agosto 2025 - Módulo Citas + Gestión Avanzada (Reagendar/Cancelar/Eliminar)
 
 ---
 
 ## 🚀 NUEVA FUNCIONALIDAD COMPLETADA - 14 AGOSTO 2025
+
+### 12. **🗑️ ELIMINACIÓN SEGURA DE OPORTUNIDADES** - [AUTO-DEPLOY]
+**Estado:** ✅ COMPLETADO 
+
+**🎯 FUNCIONALIDAD IMPLEMENTADA:**
+
+#### **🗑️ SISTEMA DE ELIMINACIÓN INTELIGENTE:**
+- **Botón "Eliminar" condicionado** - Solo aparece si es seguro eliminar
+- **Validaciones múltiples** para prevenir pérdida de datos críticos
+- **Confirmación doble** con diálogos informativos
+- **Permisos específicos** - Solo usuarios con rol seguimiento + admin
+- **Auto-refresh** de lista tras eliminación exitosa
+
+#### **🛡️ VALIDACIONES DE SEGURIDAD:**
+- **Bloqueo si `converted_to_service_id`** - Oportunidades ya convertidas a servicios
+- **Bloqueo si servicios relacionados** - Verificación en tabla services 
+- **Eliminación en cascada** - Notas de oportunidad se eliminan automáticamente
+- **Feedback específico** - Mensajes detallados explicando por qué no se puede eliminar
+
+#### **🎨 EXPERIENCIA DE USUARIO:**
+- **Visibilidad condicionada** - Botón solo visible cuando es seguro
+- **Confirmación informativa** - Usuario sabe exactamente qué se eliminará
+- **Estados visuales claros** - Feedback inmediato tras acción
+- **Integración perfecta** - Encaja naturalmente en tarjetas existentes
+
+**🛠️ ARQUITECTURA TÉCNICA:**
+- **Backend:** Función `deleteOpportunity()` con validaciones exhaustivas
+- **Frontend:** Lógica condicional en `OpportunityCard` component
+- **API:** Ruta `DELETE /opportunities/:id` con middleware de autenticación
+- **Base de datos:** Eliminación transaccional con CASCADE en notas
+
+**🎯 BENEFICIOS OPERATIVOS:**
+- **Limpieza de datos** - Eliminación segura de oportunidades de prueba
+- **Prevención de errores** - Imposible eliminar datos críticos por accidente
+- **Gestión eficiente** - Admin puede limpiar base de datos de testing
+- **Integridad garantizada** - Sistema previene inconsistencias
+
+---
+
+### 11. **🔄 GESTIÓN AVANZADA DE CITAS** - [AUTO-DEPLOY]
+**Estado:** ✅ COMPLETADO 
+
+**🎯 FUNCIONALIDADES IMPLEMENTADAS:**
+
+#### **🔄 REAGENDAR CITAS:**
+- **Modal de reagendar** con selección de nueva fecha/hora
+- **Validación de fechas** - No permite fechas pasadas
+- **Display de cita actual** para referencia del usuario
+- **Actualización instantánea** en base de datos y UI
+- **Bloqueo para citas canceladas** - No se pueden reagendar
+
+#### **❌ CANCELAR CITAS:**
+- **Modal de cancelación** con campo de motivo opcional
+- **Validación inteligente** - No permite cancelar citas ya convertidas a servicios
+- **Estado visual claro** - Feedback inmediato sobre por qué no se puede cancelar
+- **Cambio de estado** a "cancelado" en base de datos
+- **Preservación de datos** - Información de cita se mantiene para historial
+
+#### **🗄️ MIGRACIÓN DE BASE DE DATOS:**
+- **Campo `motivo_cancelacion`** agregado a tabla opportunities
+- **Estado "cancelado"** añadido a enum de estados
+- **Compatibilidad backwards** - Datos existentes no afectados
+- **Migración directa** ejecutada en Railway production
+
+**🛠️ ARQUITECTURA TÉCNICA:**
+- **Backend:** Funciones `rescheduleAppointment()` y `cancelAppointment()`
+- **Frontend:** Componentes `RescheduleAppointmentModal` y `CancelAppointmentModal`
+- **API:** Rutas `PUT /:id/reschedule` y `PUT /:id/cancel`
+- **Base de datos:** Nuevos campos y estados en tabla opportunities
+
+**🎯 BENEFICIOS OPERATIVOS:**
+- **Gestión completa de citas** - Crear, ver, reagendar, cancelar
+- **Flexibilidad operativa** - Cambios de último minuto cubiertos
+- **Trazabilidad total** - Historial completo de cambios en citas
+- **UX profesional** - Modales informativos con validación clara
+
+---
 
 ### 11. **📅 MÓDULO CITAS AVANZADO + CONVERSIÓN OPORTUNIDADES** - [70eb859, af31303, 49eac54]
 **Estado:** ✅ COMPLETADO 
@@ -311,27 +388,34 @@
 ## 🚀 PRÓXIMAS MEJORAS SUGERIDAS
 
 ### **Prioridad Inmediata (Próxima Sesión):**
-1. **🔄 REAGENDAR CITA** - Cambiar fecha/hora de citas existentes
-   - **Modal de reagendar** desde módulo Citas
-   - **Validación de nueva fecha/hora** 
-   - **Actualización automática** en base de datos
-   - **Notificación de cambio** al cliente
+1. **✅ REAGENDAR CITA** - ✅ COMPLETADO
+   - ✅ Modal de reagendar desde módulo Citas
+   - ✅ Validación de nueva fecha/hora 
+   - ✅ Actualización automática en base de datos
+   - ⏳ Notificación de cambio al cliente (pendiente)
    
-2. **❌ CANCELAR CITA** - Cambiar estado y liberar slot
-   - **Botón cancelar** con confirmación
-   - **Cambio de estado** a "cancelado"
-   - **Liberación de horario** para nuevas citas
-   - **Registro de motivo** de cancelación
+2. **✅ CANCELAR CITA** - ✅ COMPLETADO  
+   - ✅ Botón cancelar con confirmación
+   - ✅ Cambio de estado a "cancelado"
+   - ✅ Liberación de horario para nuevas citas
+   - ✅ Registro de motivo de cancelación
 
-### **Prioridad Alta:**
-3. **🏢 Filtros por sucursal** - Implementar en todos los módulos
-4. **📊 Dashboard por sucursal** - Métricas segmentadas
-4. **📈 Reportes avanzados** - Análisis de conversión y rendimiento
+3. **✅ ELIMINAR OPORTUNIDADES** - ✅ COMPLETADO
+   - ✅ Botón eliminar con validaciones de seguridad
+   - ✅ Prevención de eliminación de datos críticos  
+   - ✅ Limpieza de oportunidades de prueba
+   - ✅ Eliminación en cascada de notas relacionadas
+
+### **Prioridad Alta (Próxima Sesión):**
+1. **🏢 Filtros por sucursal** - Implementar en todos los módulos
+2. **📊 Dashboard por sucursal** - Métricas segmentadas  
+3. **📈 Reportes avanzados** - Análisis de conversión y rendimiento
+4. **🔔 Notificaciones automáticas** - SMS/WhatsApp para cambios de citas
 
 ### **Prioridad Media:**
-5. **🔔 Notificaciones automáticas** - SMS/WhatsApp 
-6. **📱 App móvil mecánicos** - Para trabajo en campo
-7. **🔍 Búsquedas avanzadas** - Filtros más granulares
+5. **📱 App móvil mecánicos** - Para trabajo en campo
+6. **🔍 Búsquedas avanzadas** - Filtros más granulares  
+7. **📊 Analytics avanzados** - KPIs y métricas de negocio
 
 ---
 
@@ -339,18 +423,18 @@
 
 **📈 Progreso:** Sistema completamente funcional para operación comercial inmediata
 
-**🎯 Sesión actual:** **MÓDULO CITAS AVANZADO** completamente implementado
-- ✅ **Conversión Oportunidad → Cita** funcionando perfectamente
-- ✅ **Filtros por período** (Hoy/Semana/Mes/Todas) operativos
-- ✅ **Trazabilidad completa** entre módulos
-- ✅ **Fix timezone crítico** - Consistencia total
-- ✅ **Navegación optimizada** - UX profesional
+**🎯 Sesión actual:** **GESTIÓN TOTAL DE CITAS** completamente implementado
+- ✅ **Reagendar citas** - Modal con validación de fechas y preservación de datos
+- ✅ **Cancelar citas** - Sistema inteligente con motivos y validaciones
+- ✅ **Eliminar oportunidades** - Limpieza segura con múltiples validaciones
+- ✅ **Migración base de datos** - Nuevos campos y estados implementados
+- ✅ **Integración completa** - Todos los módulos funcionando cohesivamente
 
-**🏆 Logro destacado:** **FLUJO COMERCIAL COMPLETO** - De oportunidad perdida a sistema integral: Oportunidad → Cita → Servicio con gestión temporal avanzada
+**🏆 Logro destacado:** **GESTIÓN PROFESIONAL COMPLETA** - Sistema de citas con ciclo de vida total: Crear → Reagendar → Cancelar → Eliminar + limpieza inteligente de datos de prueba
 
-**🚀 Estado:** **SISTEMA DE CITAS COMPLETAMENTE FUNCIONAL** - Gestión profesional de citas lista para operación comercial intensiva
+**🚀 Estado:** **SISTEMA DE GESTIÓN EMPRESARIAL COMPLETO** - Capacidades de producción con gestión avanzada de citas, validaciones de seguridad y limpieza de datos
 
-**🎯 Próximo objetivo:** Implementar Reagendar/Cancelar citas para completar gestión total del sistema
+**🎯 Próximo objetivo:** Implementar filtros por sucursal y reportes avanzados para escalabilidad empresarial
 
 ---
 
