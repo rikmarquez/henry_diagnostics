@@ -246,6 +246,23 @@ export const Opportunities = () => {
                     <p><span className="font-medium">Creado:</span> {new Date(selectedOpportunity?.fecha_creacion || '').toLocaleDateString('es-MX')}</p>
                   </div>
                 </div>
+
+                {/* Información de Cita - Solo si tiene_cita = true */}
+                {selectedOpportunity?.tiene_cita && (
+                  <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h3 className="font-medium text-green-900 mb-3 flex items-center">
+                      <span className="mr-2">📅</span>
+                      Información de la Cita
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="font-medium text-green-800">Fecha:</span> {new Date(selectedOpportunity.cita_fecha || '').toLocaleDateString('es-MX')}</p>
+                      <p><span className="font-medium text-green-800">Hora:</span> {selectedOpportunity.cita_hora}</p>
+                      <p><span className="font-medium text-green-800">Contacto:</span> {selectedOpportunity.cita_nombre_contacto}</p>
+                      <p><span className="font-medium text-green-800">Teléfono:</span> {selectedOpportunity.cita_telefono_contacto}</p>
+                      <p><span className="font-medium text-green-800">Descripción:</span> {selectedOpportunity.cita_descripcion_breve}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -270,7 +287,11 @@ export const Opportunities = () => {
                 <div className="card p-4 text-center bg-green-50 border-green-200">
                   <div className="text-2xl mb-2">✅</div>
                   <div className="font-medium text-green-700">Ya es una Cita</div>
-                  <div className="text-sm text-green-600">Cita programada para {selectedOpportunity.cita_fecha}</div>
+                  <div className="text-sm text-green-600">
+                    📅 {new Date(selectedOpportunity.cita_fecha || '').toLocaleDateString('es-MX')}
+                    <br />
+                    🕐 {selectedOpportunity.cita_hora}
+                  </div>
                 </div>
               ) : (
                 <div className="card p-4 text-center bg-gray-50 border-gray-200">

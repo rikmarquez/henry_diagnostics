@@ -390,17 +390,17 @@ export const Appointments = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               {appointments.length === 0 
                 ? "No hay citas agendadas" 
-                : showPastAppointments 
-                  ? "No hay citas en el rango seleccionado"
+                : filteredAppointments.length === 0 
+                  ? "No hay citas en el período seleccionado"
                   : "No hay citas futuras"
               }
             </h3>
             <p className="text-gray-500 mb-4">
               {appointments.length === 0 
                 ? "Comienza agendando tu primera cita"
-                : showPastAppointments 
-                  ? "Intenta cambiar el filtro de fechas"
-                  : "Las citas futuras aparecerán aquí"
+                : filteredAppointments.length === 0 
+                  ? "Intenta cambiar el filtro de período"
+                  : "Las citas aparecerán aquí"
               }
             </p>
             {appointments.length === 0 && (
