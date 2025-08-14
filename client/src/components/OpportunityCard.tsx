@@ -4,6 +4,7 @@ interface OpportunityCardProps {
   opportunity: Opportunity;
   onSelect?: (opportunity: Opportunity) => void;
   onStatusChange?: (opportunityId: number, newStatus: string) => void;
+  onConvertToAppointment?: (opportunity: Opportunity) => void;
   showVehicleInfo?: boolean;
 }
 
@@ -41,6 +42,7 @@ export const OpportunityCard = ({
   opportunity, 
   onSelect, 
   onStatusChange, 
+  onConvertToAppointment,
   showVehicleInfo = true 
 }: OpportunityCardProps) => {
   
@@ -256,6 +258,20 @@ export const OpportunityCard = ({
             >
               WhatsApp
             </a>
+          )}
+
+          {/* Botón Convertir a Cita - Solo mostrar si la oportunidad NO es ya una cita y tiene cliente/vehículo */}
+          {!opportunity.tiene_cita && opportunity.customer_id && opportunity.vehicle_id && onConvertToAppointment && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onConvertToAppointment(opportunity);
+              }}
+              className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 px-2 py-1 rounded"
+              title="Convertir a cita programada"
+            >
+              📅 Agendar
+            </button>
           )}
           
           <button

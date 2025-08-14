@@ -8,6 +8,7 @@ import {
   getOpportunitiesByVehicle,
   getRemindersToday,
   createAppointment,
+  convertOpportunityToAppointment,
 } from '../controllers/opportunities';
 import { authenticateToken, requireMecanicoOrAdmin, requireSeguimientoOrAdmin } from '../middleware/auth';
 
@@ -39,5 +40,8 @@ router.put('/:id', requireSeguimientoOrAdmin, updateOpportunity);
 
 // Solo personal de seguimiento y administradores pueden agregar notas
 router.post('/:id/notes', requireSeguimientoOrAdmin, addOpportunityNote);
+
+// Convertir oportunidad a cita (disponible para todos los usuarios autenticados)
+router.post('/:id/convert-to-appointment', convertOpportunityToAppointment);
 
 export default router;

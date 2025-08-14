@@ -127,4 +127,18 @@ export const opportunityService = {
     console.log('📊 getAppointmentsToday: Total opportunities:', response.data?.opportunities?.length || 0);
     return response.data;
   },
+
+  // Convertir oportunidad a cita
+  convertToAppointment: async (opportunityId: number, appointmentData: {
+    cita_fecha: string;
+    cita_hora: string;
+    cita_descripcion_breve: string;
+    cita_telefono_contacto: string;
+    cita_nombre_contacto: string;
+    titulo?: string;
+    descripcion?: string;
+  }) => {
+    const response = await api.post(`/opportunities/${opportunityId}/convert-to-appointment`, appointmentData);
+    return response.data;
+  },
 };

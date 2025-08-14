@@ -22,5 +22,7 @@ router.post('/appointments', opportunities_1.createAppointment);
 router.put('/:id', auth_1.requireSeguimientoOrAdmin, opportunities_1.updateOpportunity);
 // Solo personal de seguimiento y administradores pueden agregar notas
 router.post('/:id/notes', auth_1.requireSeguimientoOrAdmin, opportunities_1.addOpportunityNote);
+// Convertir oportunidad a cita (disponible para todos los usuarios autenticados)
+router.post('/:id/convert-to-appointment', opportunities_1.convertOpportunityToAppointment);
 exports.default = router;
 //# sourceMappingURL=opportunities.js.map

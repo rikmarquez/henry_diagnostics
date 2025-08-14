@@ -566,3 +566,81 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
+export const convertOpportunityToAppointment = async (req: AuthRequest, res: Response) => {
+  try {
+    const opportunityId = parseInt(req.params.id);
+    if (isNaN(opportunityId)) {
+      return res.status(400).json({ message: 'ID de oportunidad inválido' });
+    }
+
+    const appointmentData = appointmentSchema.parse(req.body);
+
+    // Verificar que la oportunidad existe y no es ya una cita
+    const opportunityCheck = await query(`
+      SELECT * FROM opportunities 
+      WHERE opportunity_id = $1
+    `, [opportunityId]);
+
+    if (opportunityCheck.rows.length === 0) {
+      return res.status(404).json({ message: 'Oportunidad no encontrada' });
+    }
+
+    const opportunity = opportunityCheck.rows[0];
+
+    if (opportunity.tiene_cita) {
+      return res.status(409).json({ 
+        message: 'Esta oportunidad ya es una cita',
+        existing_appointment: opportunity
+      });
+    }
+
+    // Verificar que la oportunidad tenga cliente y vehículo asignados
+    if (!opportunity.customer_id || !opportunity.vehicle_id) {
+      return res.status(400).json({ 
+        message: 'La oportunidad debe tener cliente y vehículo asignados para convertirse en cita' 
+      });
+    }
+
+    // Convertir la oportunidad a cita
+    const result = await query(`
+      UPDATE opportunities 
+      SET 
+        tiene_cita = true,
+        estado = 'agendado',
+        cita_fecha = $2,
+        cita_hora = $3,
+        cita_descripcion_breve = $4,
+        cita_telefono_contacto = $5,
+        cita_nombre_contacto = $6,
+        titulo = COALESCE($7, titulo),
+        descripcion = COALESCE($8, descripcion),
+        fecha_actualizacion = CURRENT_TIMESTAMP
+      WHERE opportunity_id = $1
+      RETURNING *
+    `, [
+      opportunityId,
+      appointmentData.cita_fecha,
+      appointmentData.cita_hora,
+      appointmentData.cita_descripcion_breve,
+      appointmentData.cita_telefono_contacto,
+      appointmentData.cita_nombre_contacto,
+      appointmentData.titulo,
+      appointmentData.descripcion
+    ]);
+
+    res.json({
+      message: 'Oportunidad convertida exitosamente a cita',
+      appointment: result.rows[0],
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        message: 'Datos inválidos',
+        errors: error.errors.map(e => `${e.path.join('.')}: ${e.message}`),
+      });
+    }
+    console.error('Error convirtiendo oportunidad a cita:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};

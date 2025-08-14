@@ -3,11 +3,12 @@ import { useForm } from 'react-hook-form';
 import { opportunityService } from '../services/opportunities';
 import { OpportunityCard } from '../components/OpportunityCard';
 import { OpportunityForm } from '../components/OpportunityForm';
+import { ConvertToAppointmentForm } from '../components/ConvertToAppointmentForm';
 import { useAuth } from '../hooks/useAuth';
 
 import type { Opportunity } from '../types/index';
 
-type ViewMode = 'search' | 'create' | 'edit' | 'detail';
+type ViewMode = 'search' | 'create' | 'edit' | 'detail' | 'convert-appointment';
 
 interface SearchFilters {
   estado?: string;
@@ -111,6 +112,11 @@ export const Opportunities = () => {
     }
   };
 
+  const handleConvertToAppointment = (opportunity: Opportunity) => {
+    setSelectedOpportunity(opportunity);
+    setViewMode('convert-appointment');
+  };
+
   const clearFilters = () => {
     reset();
     loadOpportunities();
@@ -138,6 +144,28 @@ export const Opportunities = () => {
             onSuccess={handleSuccess as any}
             onCancel={handleCancel}
           />
+        );
+
+      case 'convert-appointment':
+        return (
+          <div className="space-y-6">
+            {/* Botón de regreso */}
+            <button
+              onClick={() => setViewMode('search')}
+              className="flex items-center text-gray-600 hover:text-gray-800"
+            >
+              ← Regresar a oportunidades
+            </button>
+
+            <ConvertToAppointmentForm
+              opportunity={selectedOpportunity!}
+              onSuccess={() => {
+                loadOpportunities();
+                setViewMode('search');
+              }}
+              onCancel={() => setViewMode('search')}
+            />
+          </div>
         );
 
       case 'detail':
@@ -391,6 +419,7 @@ export const Opportunities = () => {
                     opportunity={opportunity}
                     onSelect={handleOpportunitySelect}
                     onStatusChange={canUpdateOpportunities ? handleStatusChange : undefined}
+                    onConvertToAppointment={handleConvertToAppointment}
                   />
                 ))}
               </div>
