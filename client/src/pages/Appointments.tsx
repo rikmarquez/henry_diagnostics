@@ -84,8 +84,19 @@ export const Appointments = () => {
     switch (dateFilter) {
       case 'today':
         filtered = appointments.filter(appointment => {
-          const appointmentDate = appointment.cita_fecha?.split('T')[0]; // Extraer solo YYYY-MM-DD
-          return appointmentDate === todayStr;
+          // Convertir la fecha de la cita a formato local para comparar
+          const appointmentDateObj = new Date(appointment.cita_fecha);
+          const appointmentDateLocal = appointmentDateObj.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+          
+          console.log('🔍 Comparando fechas:', {
+            citaFechaRaw: appointment.cita_fecha,
+            appointmentDateLocal,
+            todayStr,
+            displayDate: appointmentDateObj.toLocaleDateString('es-MX'),
+            coincide: appointmentDateLocal === todayStr
+          });
+          
+          return appointmentDateLocal === todayStr;
         });
         console.log('📅 Today filter result:', filtered.length, 'citas para', todayStr);
         break;
@@ -96,12 +107,13 @@ export const Appointments = () => {
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6); // Sábado
         
-        const startWeekStr = startOfWeek.toISOString().split('T')[0];
-        const endWeekStr = endOfWeek.toISOString().split('T')[0];
+        const startWeekStr = startOfWeek.toLocaleDateString('en-CA');
+        const endWeekStr = endOfWeek.toLocaleDateString('en-CA');
         
         filtered = appointments.filter(appointment => {
-          const appointmentDate = appointment.cita_fecha?.split('T')[0];
-          return appointmentDate >= startWeekStr && appointmentDate <= endWeekStr;
+          const appointmentDateObj = new Date(appointment.cita_fecha);
+          const appointmentDateLocal = appointmentDateObj.toLocaleDateString('en-CA');
+          return appointmentDateLocal >= startWeekStr && appointmentDateLocal <= endWeekStr;
         });
         break;
       
@@ -109,12 +121,13 @@ export const Appointments = () => {
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         
-        const startMonthStr = startOfMonth.toISOString().split('T')[0];
-        const endMonthStr = endOfMonth.toISOString().split('T')[0];
+        const startMonthStr = startOfMonth.toLocaleDateString('en-CA');
+        const endMonthStr = endOfMonth.toLocaleDateString('en-CA');
         
         filtered = appointments.filter(appointment => {
-          const appointmentDate = appointment.cita_fecha?.split('T')[0];
-          return appointmentDate >= startMonthStr && appointmentDate <= endMonthStr;
+          const appointmentDateObj = new Date(appointment.cita_fecha);
+          const appointmentDateLocal = appointmentDateObj.toLocaleDateString('en-CA');
+          return appointmentDateLocal >= startMonthStr && appointmentDateLocal <= endMonthStr;
         });
         break;
       
@@ -122,8 +135,9 @@ export const Appointments = () => {
       default:
         // Mostrar todas las citas futuras
         filtered = appointments.filter(appointment => {
-          const appointmentDate = appointment.cita_fecha?.split('T')[0];
-          return appointmentDate >= todayStr;
+          const appointmentDateObj = new Date(appointment.cita_fecha);
+          const appointmentDateLocal = appointmentDateObj.toLocaleDateString('en-CA');
+          return appointmentDateLocal >= todayStr;
         });
         break;
     }
