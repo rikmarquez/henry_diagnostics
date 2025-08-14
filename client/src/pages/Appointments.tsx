@@ -17,6 +17,7 @@ interface Appointment {
   fecha_creacion: string;
   converted_to_service_id?: number;
   origen_cita?: string;
+  tiene_cita?: boolean;
 }
 
 interface CreateAppointmentRequest {
@@ -52,7 +53,10 @@ export const Appointments = () => {
 
   const loadAppointments = async () => {
     try {
+      console.log('📅 Appointments: Cargando todas las citas...');
       const data = await opportunityService.search({ tiene_cita: 'true' });
+      console.log('📊 Appointments: Citas recibidas:', data.opportunities?.length || 0);
+      console.log('📋 Appointments: Datos completos:', JSON.stringify(data.opportunities, null, 2));
       setAppointments(data.opportunities || []);
     } catch (error) {
       console.error('Error al cargar citas:', error);
@@ -68,6 +72,13 @@ export const Appointments = () => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD formato
     
+    console.log('🔍 FilterAppointments:', {
+      dateFilter,
+      todayStr,
+      totalAppointments: appointments.length,
+      appointmentDates: appointments.map(a => ({ id: a.opportunity_id, fecha: a.cita_fecha, tiene_cita: a.tiene_cita }))
+    });
+    
     let filtered = appointments;
     
     switch (dateFilter) {
@@ -75,6 +86,7 @@ export const Appointments = () => {
         filtered = appointments.filter(appointment => 
           appointment.cita_fecha === todayStr
         );
+        console.log('📅 Today filter result:', filtered.length, 'citas para', todayStr);
         break;
       
       case 'week':
