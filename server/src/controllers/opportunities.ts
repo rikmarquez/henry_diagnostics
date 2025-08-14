@@ -799,18 +799,9 @@ export const deleteOpportunity = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Verificar que no haya servicios directamente relacionados con esta oportunidad
-    const relatedServices = await query(`
-      SELECT service_id FROM services 
-      WHERE opportunity_id = $1
-    `, [opportunityId]);
-
-    if (relatedServices.rows.length > 0) {
-      return res.status(400).json({ 
-        message: 'No se puede eliminar una oportunidad que tiene servicios relacionados',
-        related_services: relatedServices.rows.map(r => r.service_id)
-      });
-    }
+    // NOTA: La tabla services no tiene columna opportunity_id
+    // La relación se maneja únicamente a través de converted_to_service_id
+    // que ya fue verificada arriba, por lo que no necesitamos verificaciones adicionales
 
     // Eliminar notas de la oportunidad primero (por foreign key)
     await query(`
