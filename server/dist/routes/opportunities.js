@@ -24,5 +24,9 @@ router.put('/:id', auth_1.requireSeguimientoOrAdmin, opportunities_1.updateOppor
 router.post('/:id/notes', auth_1.requireSeguimientoOrAdmin, opportunities_1.addOpportunityNote);
 // Convertir oportunidad a cita (disponible para todos los usuarios autenticados)
 router.post('/:id/convert-to-appointment', opportunities_1.convertOpportunityToAppointment);
+// Reagendar cita (disponible para todos los usuarios autenticados)
+router.put('/:id/reschedule', opportunities_1.rescheduleAppointment);
+// Cancelar cita (disponible para todos los usuarios autenticados)
+router.put('/:id/cancel', opportunities_1.cancelAppointment);
 exports.default = router;
 //# sourceMappingURL=opportunities.js.map

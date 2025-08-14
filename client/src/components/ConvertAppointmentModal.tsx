@@ -63,7 +63,6 @@ const ConvertAppointmentModal: React.FC<ConvertAppointmentModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       reset();
-      setStep('customer');
       setIsNewCustomer(false);
       setIsNewVehicle(false);
       setError(null);
@@ -76,6 +75,44 @@ const ConvertAppointmentModal: React.FC<ConvertAppointmentModalProps> = ({
       
       // Pre-llenar con datos de la cita
       setValue('descripcion', `Servicio programado: ${appointment.cita_descripcion_breve}`);
+
+      // 🎯 LÓGICA MEJORADA: Si la cita ya tiene customer_id y vehicle_id, saltar a servicio
+      console.log('🔍 Verificando datos de cita:', {
+        customer_id: (appointment as any).customer_id,
+        vehicle_id: (appointment as any).vehicle_id,
+        customer_nombre: (appointment as any).customer_nombre,
+        vehicle_marca: (appointment as any).vehicle_marca
+      });
+
+      if ((appointment as any).customer_id && (appointment as any).vehicle_id) {
+        // YA TENEMOS CLIENTE Y VEHÍCULO - Ir directo a servicio
+        console.log('✅ Cita tiene cliente y vehículo - saltando a paso de servicio');
+        
+        // Crear objetos simulados con los datos que ya tenemos
+        const existingCustomer = {
+          customer_id: (appointment as any).customer_id,
+          nombre: (appointment as any).customer_nombre || appointment.cita_nombre_contacto,
+          telefono: (appointment as any).customer_telefono || appointment.cita_telefono_contacto,
+        };
+        
+        const existingVehicle = {
+          vehicle_id: (appointment as any).vehicle_id,
+          marca: (appointment as any).vehicle_marca || '',
+          modelo: (appointment as any).vehicle_modelo || '',
+          año: (appointment as any).vehicle_año || new Date().getFullYear(),
+          placa_actual: (appointment as any).vehicle_placa || '',
+        };
+
+        setSelectedCustomer(existingCustomer);
+        setSelectedVehicle(existingVehicle);
+        setValue('customer_id', existingCustomer.customer_id);
+        setValue('vehicle_id', existingVehicle.vehicle_id);
+        setStep('service');
+      } else {
+        // NO TIENE DATOS COMPLETOS - Empezar desde cliente
+        console.log('⚠️ Cita sin datos completos - empezando desde búsqueda');
+        setStep('customer');
+      }
     }
   }, [isOpen, reset, setValue, appointment]);
 
@@ -382,6 +419,23 @@ const ConvertAppointmentModal: React.FC<ConvertAppointmentModalProps> = ({
           {step === 'service' && (
             <div className="space-y-4">
               <h3 className="font-medium text-gray-900">🔧 Datos del Servicio</h3>
+
+              {/* Información del cliente y vehículo seleccionados */}
+              {selectedCustomer && selectedVehicle && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-medium text-green-900 mb-2">✅ Cliente y Vehículo Confirmados</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p><span className="font-medium">Cliente:</span> {selectedCustomer.nombre}</p>
+                      <p><span className="font-medium">Teléfono:</span> {selectedCustomer.telefono}</p>
+                    </div>
+                    <div>
+                      <p><span className="font-medium">Vehículo:</span> {selectedVehicle.marca} {selectedVehicle.modelo} {selectedVehicle.año}</p>
+                      <p><span className="font-medium">Placas:</span> {selectedVehicle.placa_actual}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Información del vehículo nuevo si aplica */}
               {isNewVehicle && (

@@ -3,6 +3,8 @@ import { useAuth } from '../hooks/useAuth';
 import { opportunityService } from '../services/opportunities';
 import appointmentService from '../services/appointments';
 import ConvertAppointmentModal from '../components/ConvertAppointmentModal';
+import RescheduleAppointmentModal from '../components/RescheduleAppointmentModal';
+import CancelAppointmentModal from '../components/CancelAppointmentModal';
 import api from '../services/api';
 
 interface Appointment {
@@ -41,6 +43,8 @@ export const Appointments = () => {
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showConvertModal, setShowConvertModal] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [formData, setFormData] = useState<CreateAppointmentRequest>({
     cita_fecha: '',
     cita_hora: '',
@@ -176,6 +180,46 @@ export const Appointments = () => {
     setSelectedAppointment(null);
   };
 
+  // Funciones para reagendar cita
+  const handleRescheduleAppointment = (appointment: Appointment) => {
+    console.log('🔄 Seleccionando cita para reagendar:', appointment.opportunity_id);
+    setSelectedAppointment(appointment);
+    setShowRescheduleModal(true);
+  };
+
+  const handleRescheduleSuccess = () => {
+    console.log('🔄 Reagendamiento exitoso, recargando lista...');
+    setShowRescheduleModal(false);
+    setSelectedAppointment(null);
+    loadAppointments(); // Recargar la lista
+  };
+
+  const handleRescheduleCancel = () => {
+    console.log('❌ Reagendamiento cancelado');
+    setShowRescheduleModal(false);
+    setSelectedAppointment(null);
+  };
+
+  // Funciones para cancelar cita
+  const handleCancelAppointment = (appointment: Appointment) => {
+    console.log('❌ Seleccionando cita para cancelar:', appointment.opportunity_id);
+    setSelectedAppointment(appointment);
+    setShowCancelModal(true);
+  };
+
+  const handleCancelSuccess = () => {
+    console.log('❌ Cancelación exitosa, recargando lista...');
+    setShowCancelModal(false);
+    setSelectedAppointment(null);
+    loadAppointments(); // Recargar la lista
+  };
+
+  const handleCancelCancel = () => {
+    console.log('❌ Cancelación cancelada');
+    setShowCancelModal(false);
+    setSelectedAppointment(null);
+  };
+
   const handleCreateAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -228,6 +272,7 @@ export const Appointments = () => {
       case 'en_proceso': return 'bg-yellow-100 text-yellow-800';
       case 'completado': return 'bg-green-100 text-green-800';
       case 'perdido': return 'bg-red-100 text-red-800';
+      case 'cancelado': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -502,19 +547,43 @@ export const Appointments = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex flex-col space-y-2">
-                        {appointment.converted_to_service_id ? (
+                        {appointment.estado === 'cancelado' ? (
+                          <div className="text-center">
+                            <div className="text-gray-600 text-lg">❌</div>
+                            <p className="text-xs text-gray-700">Cita Cancelada</p>
+                          </div>
+                        ) : appointment.converted_to_service_id ? (
                           <div className="text-center">
                             <div className="text-green-600 text-lg">✅</div>
                             <p className="text-xs text-green-700">Ya convertida</p>
                             <p className="text-xs text-gray-500">Servicio #{appointment.converted_to_service_id}</p>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => handleConvertAppointment(appointment)}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-2 rounded text-xs hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
-                          >
-                            🎯 Convertir a Servicio
-                          </button>
+                          <>
+                            {/* Botón Convertir a Servicio */}
+                            <button
+                              onClick={() => handleConvertAppointment(appointment)}
+                              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-2 rounded text-xs hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                            >
+                              🎯 Convertir a Servicio
+                            </button>
+                            
+                            {/* Botones de Reagendar y Cancelar */}
+                            <div className="flex space-x-1">
+                              <button
+                                onClick={() => handleRescheduleAppointment(appointment)}
+                                className="bg-orange-600 text-white px-2 py-1 rounded text-xs hover:bg-orange-700 transition-all flex-1"
+                              >
+                                🔄 Reagendar
+                              </button>
+                              <button
+                                onClick={() => handleCancelAppointment(appointment)}
+                                className="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 transition-all flex-1"
+                              >
+                                ❌ Cancelar
+                              </button>
+                            </div>
+                          </>
                         )}
                       </div>
                     </td>
@@ -533,6 +602,26 @@ export const Appointments = () => {
           isOpen={showConvertModal}
           onSuccess={handleConvertSuccess}
           onCancel={handleConvertCancel}
+        />
+      )}
+
+      {/* Modal de Reagendar */}
+      {selectedAppointment && (
+        <RescheduleAppointmentModal
+          appointment={selectedAppointment}
+          isOpen={showRescheduleModal}
+          onSuccess={handleRescheduleSuccess}
+          onCancel={handleRescheduleCancel}
+        />
+      )}
+
+      {/* Modal de Cancelar */}
+      {selectedAppointment && (
+        <CancelAppointmentModal
+          appointment={selectedAppointment}
+          isOpen={showCancelModal}
+          onSuccess={handleCancelSuccess}
+          onCancel={handleCancelCancel}
         />
       )}
     </div>

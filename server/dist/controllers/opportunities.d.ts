@@ -9,4 +9,6 @@ export declare const getOpportunitiesByVehicle: (req: AuthRequest, res: Response
 export declare const getRemindersToday: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const createAppointment: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export declare const convertOpportunityToAppointment: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const rescheduleAppointment: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const cancelAppointment: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 //# sourceMappingURL=opportunities.d.ts.map

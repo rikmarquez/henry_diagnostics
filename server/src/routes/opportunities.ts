@@ -9,6 +9,8 @@ import {
   getRemindersToday,
   createAppointment,
   convertOpportunityToAppointment,
+  rescheduleAppointment,
+  cancelAppointment,
 } from '../controllers/opportunities';
 import { authenticateToken, requireMecanicoOrAdmin, requireSeguimientoOrAdmin } from '../middleware/auth';
 
@@ -43,5 +45,11 @@ router.post('/:id/notes', requireSeguimientoOrAdmin, addOpportunityNote);
 
 // Convertir oportunidad a cita (disponible para todos los usuarios autenticados)
 router.post('/:id/convert-to-appointment', convertOpportunityToAppointment);
+
+// Reagendar cita (disponible para todos los usuarios autenticados)
+router.put('/:id/reschedule', rescheduleAppointment);
+
+// Cancelar cita (disponible para todos los usuarios autenticados)
+router.put('/:id/cancel', cancelAppointment);
 
 export default router;

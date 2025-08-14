@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertOpportunityToAppointment = exports.createAppointment = exports.getRemindersToday = exports.getOpportunitiesByVehicle = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
+exports.cancelAppointment = exports.rescheduleAppointment = exports.convertOpportunityToAppointment = exports.createAppointment = exports.getRemindersToday = exports.getOpportunitiesByVehicle = exports.addOpportunityNote = exports.updateOpportunity = exports.getOpportunityById = exports.searchOpportunities = exports.createOpportunity = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
 const vinSchema = zod_1.z.string().min(1, 'VIN requerido');
@@ -581,4 +581,116 @@ const convertOpportunityToAppointment = async (req, res) => {
     }
 };
 exports.convertOpportunityToAppointment = convertOpportunityToAppointment;
+const rescheduleAppointment = async (req, res) => {
+    try {
+        const opportunityId = parseInt(req.params.id);
+        if (isNaN(opportunityId)) {
+            return res.status(400).json({ message: 'ID de oportunidad inválido' });
+        }
+        const rescheduleSchema = zod_1.z.object({
+            cita_fecha: zod_1.z.string().min(1, 'Fecha de cita requerida'),
+            cita_hora: zod_1.z.string().min(1, 'Hora de cita requerida'),
+        });
+        const { cita_fecha, cita_hora } = rescheduleSchema.parse(req.body);
+        // Verificar que la oportunidad existe y es una cita
+        const opportunityCheck = await (0, connection_1.query)(`
+      SELECT * FROM opportunities 
+      WHERE opportunity_id = $1 AND tiene_cita = true
+    `, [opportunityId]);
+        if (opportunityCheck.rows.length === 0) {
+            return res.status(404).json({ message: 'Cita no encontrada' });
+        }
+        const appointment = opportunityCheck.rows[0];
+        // Verificar que la cita no esté cancelada
+        if (appointment.estado === 'cancelado') {
+            return res.status(400).json({ message: 'No se puede reagendar una cita cancelada' });
+        }
+        // Reagendar la cita
+        const result = await (0, connection_1.query)(`
+      UPDATE opportunities 
+      SET 
+        cita_fecha = $2,
+        cita_hora = $3,
+        fecha_actualizacion = CURRENT_TIMESTAMP
+      WHERE opportunity_id = $1
+      RETURNING *
+    `, [
+            opportunityId,
+            cita_fecha,
+            cita_hora
+        ]);
+        res.json({
+            message: 'Cita reagendada exitosamente',
+            appointment: result.rows[0],
+        });
+    }
+    catch (error) {
+        if (error instanceof zod_1.z.ZodError) {
+            return res.status(400).json({
+                message: 'Datos inválidos',
+                errors: error.errors.map(e => `${e.path.join('.')}: ${e.message}`),
+            });
+        }
+        console.error('Error reagendando cita:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+exports.rescheduleAppointment = rescheduleAppointment;
+const cancelAppointment = async (req, res) => {
+    try {
+        const opportunityId = parseInt(req.params.id);
+        if (isNaN(opportunityId)) {
+            return res.status(400).json({ message: 'ID de oportunidad inválido' });
+        }
+        const cancelSchema = zod_1.z.object({
+            motivo_cancelacion: zod_1.z.string().optional(),
+        });
+        const { motivo_cancelacion } = cancelSchema.parse(req.body);
+        // Verificar que la oportunidad existe y es una cita
+        const opportunityCheck = await (0, connection_1.query)(`
+      SELECT * FROM opportunities 
+      WHERE opportunity_id = $1 AND tiene_cita = true
+    `, [opportunityId]);
+        if (opportunityCheck.rows.length === 0) {
+            return res.status(404).json({ message: 'Cita no encontrada' });
+        }
+        const appointment = opportunityCheck.rows[0];
+        // Verificar que la cita no esté ya cancelada
+        if (appointment.estado === 'cancelado') {
+            return res.status(400).json({ message: 'La cita ya está cancelada' });
+        }
+        // Verificar que la cita no esté convertida a servicio
+        if (appointment.converted_to_service_id) {
+            return res.status(400).json({ message: 'No se puede cancelar una cita que ya fue convertida a servicio' });
+        }
+        // Cancelar la cita
+        const result = await (0, connection_1.query)(`
+      UPDATE opportunities 
+      SET 
+        estado = 'cancelado',
+        motivo_cancelacion = $2,
+        fecha_actualizacion = CURRENT_TIMESTAMP
+      WHERE opportunity_id = $1
+      RETURNING *
+    `, [
+            opportunityId,
+            motivo_cancelacion || 'Cancelada por usuario'
+        ]);
+        res.json({
+            message: 'Cita cancelada exitosamente',
+            appointment: result.rows[0],
+        });
+    }
+    catch (error) {
+        if (error instanceof zod_1.z.ZodError) {
+            return res.status(400).json({
+                message: 'Datos inválidos',
+                errors: error.errors.map(e => `${e.path.join('.')}: ${e.message}`),
+            });
+        }
+        console.error('Error cancelando cita:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+exports.cancelAppointment = cancelAppointment;
 //# sourceMappingURL=opportunities.js.map
