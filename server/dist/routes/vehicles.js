@@ -12,6 +12,8 @@ router.get('/count', vehicles_1.getVehiclesCount);
 router.get('/search', vehicles_1.searchVehicles);
 // Obtener vehículo por VIN (disponible para todos los usuarios autenticados)
 router.get('/:vin', vehicles_1.getVehicleByVin);
+// Obtener vehículo por ID (disponible para todos los usuarios autenticados)
+router.get('/id/:id', vehicles_1.getVehicleById);
 // Obtener historial completo del vehículo (disponible para todos los usuarios autenticados)
 router.get('/:vin/history', vehicles_1.getVehicleHistory);
 // Solo mecánicos y administradores pueden crear, actualizar y eliminar vehículos

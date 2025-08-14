@@ -310,6 +310,59 @@ export const getVehicleByVin = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getVehicleById = async (req: AuthRequest, res: Response) => {
+  try {
+    const vehicleId = parseInt(req.params.id);
+    if (isNaN(vehicleId)) {
+      return res.status(400).json({ message: 'ID de vehículo inválido' });
+    }
+
+    const result = await query(`
+      SELECT 
+        v.*,
+        c.nombre as customer_nombre,
+        c.telefono as customer_telefono,
+        c.whatsapp as customer_whatsapp,
+        c.email as customer_email,
+        c.direccion as customer_direccion
+      FROM vehicles v
+      LEFT JOIN customers c ON v.customer_id = c.customer_id
+      WHERE v.vehicle_id = $1 AND v.activo = true
+    `, [vehicleId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Vehículo no encontrado' });
+    }
+
+    const vehicle = result.rows[0];
+    const { customer_nombre, customer_telefono, customer_whatsapp, customer_email, customer_direccion, ...vehicleData } = vehicle;
+
+    // Obtener historial de placas
+    const plateHistory = await query(`
+      SELECT * FROM vehicle_plate_history 
+      WHERE vehicle_id = $1 
+      ORDER BY fecha_cambio DESC
+    `, [vehicleId]);
+
+    const vehicleResponse = {
+      ...vehicleData,
+      customer: customer_nombre ? {
+        nombre: customer_nombre,
+        telefono: customer_telefono,
+        whatsapp: customer_whatsapp,
+        email: customer_email,
+        direccion: customer_direccion
+      } : null,
+      plate_history: plateHistory.rows,
+    };
+
+    res.json({ vehicle: vehicleResponse });
+  } catch (error) {
+    console.error('Error obteniendo vehículo por ID:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 export const updateVehicle = async (req: AuthRequest, res: Response) => {
   try {
     const vin = vinSchema.parse(req.params.vin);

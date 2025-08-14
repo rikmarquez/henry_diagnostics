@@ -57,6 +57,12 @@ export const vehicleService = {
     return response.data;
   },
 
+  // Obtener vehículo por ID
+  getById: async (vehicleId: number) => {
+    const response = await api.get(`/vehicles/id/${vehicleId}`);
+    return response.data;
+  },
+
   // Actualizar vehículo
   update: async (vin: string, updateData: Partial<Vehicle>) => {
     const response = await api.put(`/vehicles/${vin}`, updateData);

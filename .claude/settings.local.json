@@ -38,7 +38,8 @@
       "Bash(timeout 10 npm start)",
       "Bash(timeout 8 npm start)",
       "Bash(node:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(PGPASSWORD=\"uFXiUmoRNqxdKctJesvlRiLiOXuWTQac\" psql -h shortline.proxy.rlwy.net -p 52806 -U postgres -d railway -c \"\\d opportunities\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

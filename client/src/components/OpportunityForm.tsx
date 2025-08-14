@@ -55,7 +55,7 @@ interface Vehicle {
 
 interface Opportunity {
   opportunity_id: number;
-  vin: string;
+  vehicle_id: number;
   customer_id: number;
   usuario_creador?: number;
   usuario_asignado?: number;
@@ -77,7 +77,7 @@ interface Opportunity {
 }
 
 const opportunitySchema = z.object({
-  vin: z.string().min(1, 'Seleccione un vehículo'),
+  vehicle_id: z.number().positive('Seleccione un vehículo'),
   customer_id: z.number().positive('Seleccione un cliente'),
   tipo_oportunidad: z.string().min(1, 'Tipo de oportunidad requerido'),
   descripcion: z.string().min(1, 'Nota requerida'),
@@ -91,7 +91,7 @@ type OpportunityFormData = z.infer<typeof opportunitySchema>;
 
 interface OpportunityFormProps {
   opportunity?: Opportunity;
-  preselectedVin?: string;
+  preselectedVehicleId?: number;
   onSuccess?: (opportunity: Opportunity) => void;
   onCancel?: () => void;
 }
@@ -106,7 +106,7 @@ const TIPOS_OPORTUNIDAD = [
 ];
 
 
-export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCancel }: OpportunityFormProps) => {
+export const OpportunityForm = ({ opportunity, preselectedVehicleId, onSuccess, onCancel }: OpportunityFormProps) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,7 +128,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
   } = useForm<OpportunityFormData>({
     resolver: zodResolver(opportunitySchema),
     defaultValues: opportunity ? {
-      vin: opportunity.vin,
+      vehicle_id: opportunity.vehicle_id,
       customer_id: opportunity.customer_id,
       tipo_oportunidad: opportunity.tipo_oportunidad,
       descripcion: opportunity.descripcion,
@@ -137,21 +137,24 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
       prioridad: opportunity.prioridad,
       kilometraje_referencia: opportunity.kilometraje_referencia || undefined,
     } : {
-      vin: preselectedVin || '',
+      vehicle_id: preselectedVehicleId || undefined,
       prioridad: 'media',
     },
   });
 
-  const selectedVin = watch('vin');
+  const selectedVehicleId = watch('vehicle_id');
+  const selectedCustomerId = watch('customer_id');
 
   // Cargar vehículo preseleccionado
   useEffect(() => {
     const loadPreselectedVehicle = async () => {
-      if (preselectedVin) {
+      if (preselectedVehicleId) {
         try {
-          const result = await vehicleService.getByVin(preselectedVin);
+          const result = await vehicleService.getById(preselectedVehicleId);
           setVehicle(result.vehicle);
+          setVehicleSelected(true);
           if (result.vehicle.customer_id) {
+            console.log('🔧 Auto-seleccionando cliente del vehículo:', result.vehicle.customer?.nombre);
             setValue('customer_id', result.vehicle.customer_id);
           }
         } catch (error) {
@@ -161,7 +164,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
     };
 
     loadPreselectedVehicle();
-  }, [preselectedVin, setValue]);
+  }, [preselectedVehicleId, setValue]);
 
   // Buscar vehículos cuando se escribe
   useEffect(() => {
@@ -192,11 +195,12 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
   // Cargar información del vehículo cuando se selecciona
   useEffect(() => {
     const loadVehicleInfo = async () => {
-      if (selectedVin && selectedVin.length === 17) {
+      if (selectedVehicleId && selectedVehicleId !== preselectedVehicleId) {
         try {
-          const result = await vehicleService.getByVin(selectedVin);
+          const result = await vehicleService.getById(selectedVehicleId);
           setVehicle(result.vehicle);
           if (result.vehicle.customer_id) {
+            console.log('🔧 Auto-seleccionando cliente del vehículo:', result.vehicle.customer?.nombre);
             setValue('customer_id', result.vehicle.customer_id);
             setValue('kilometraje_referencia', result.vehicle.kilometraje_actual);
           }
@@ -206,10 +210,8 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
       }
     };
 
-    if (selectedVin !== preselectedVin) {
-      loadVehicleInfo();
-    }
-  }, [selectedVin, setValue, preselectedVin]);
+    loadVehicleInfo();
+  }, [selectedVehicleId, setValue, preselectedVehicleId]);
 
   // Cargar clientes para dropdown
   useEffect(() => {
@@ -299,7 +301,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Vehículo</h3>
           
-          {!preselectedVin && (
+          {!preselectedVehicleId && (
             <div className="space-y-2 mb-4">
               <label className="block text-sm font-medium text-gray-700">
                 Buscar vehículo (placas o cliente)
@@ -322,20 +324,25 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
                   {vehicles.length > 0 ? (
                     vehicles.map((v) => (
                       <button
-                        key={v.vin}
+                        key={v.vehicle_id}
                         type="button"
                         onClick={() => {
                           console.log('Seleccionando vehículo:', v);
-                          setValue('vin', v.vin);
+                          setValue('vehicle_id', v.vehicle_id);
                           setVehicleSearch(`${v.marca} ${v.modelo} - ${v.placa_actual}`);
                           setVehicles([]);
                           setVehicleSelected(true);
+                          // Auto-seleccionar cliente si existe
+                          if (v.customer_id) {
+                            console.log('🔧 Auto-seleccionando cliente:', v.customer?.nombre);
+                            setValue('customer_id', v.customer_id);
+                          }
                         }}
                         className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-200 last:border-b-0"
                       >
                         <div className="font-medium">{v.marca} {v.modelo} {v.año}</div>
                         <div className="text-sm text-gray-600">
-                          {v.placa_actual} • VIN: {v.vin} • {v.customer?.nombre}
+                          {v.placa_actual} • VIN: {v.vin || 'No registrado'} • {v.customer?.nombre}
                         </div>
                       </button>
                     ))
@@ -380,9 +387,9 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
             </div>
           )}
 
-          <input type="hidden" {...register('vin')} />
-          {errors.vin && (
-            <p className="mt-1 text-sm text-red-600">{errors.vin.message}</p>
+          <input type="hidden" {...register('vehicle_id', { valueAsNumber: true })} />
+          {errors.vehicle_id && (
+            <p className="mt-1 text-sm text-red-600">{errors.vehicle_id.message}</p>
           )}
         </div>
 
@@ -485,7 +492,7 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
           </div>
         </div>
 
-        {/* Cliente */}
+        {/* Cliente - Movido aquí para estar junto al vehículo */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">Cliente</h3>
           
@@ -493,6 +500,14 @@ export const OpportunityForm = ({ opportunity, preselectedVin, onSuccess, onCanc
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Cliente *
             </label>
+            
+            {/* Mostrar cliente auto-seleccionado */}
+            {selectedCustomerId && vehicle?.customer?.nombre && (
+              <div className="mb-2 p-2 bg-green-50 border border-green-200 rounded text-sm">
+                ✅ <strong>Auto-seleccionado:</strong> {vehicle.customer.nombre}
+              </div>
+            )}
+            
             <select {...register('customer_id', { valueAsNumber: true })} className="input-field">
               <option value="">Seleccionar cliente</option>
               {customers.map(customer => (

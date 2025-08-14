@@ -3,6 +3,7 @@ import {
   createVehicle,
   searchVehicles,
   getVehicleByVin,
+  getVehicleById,
   updateVehicle,
   deleteVehicle,
   getVehicleHistory,
@@ -23,6 +24,9 @@ router.get('/search', searchVehicles);
 
 // Obtener vehículo por VIN (disponible para todos los usuarios autenticados)
 router.get('/:vin', getVehicleByVin);
+
+// Obtener vehículo por ID (disponible para todos los usuarios autenticados)
+router.get('/id/:id', getVehicleById);
 
 // Obtener historial completo del vehículo (disponible para todos los usuarios autenticados)
 router.get('/:vin/history', getVehicleHistory);

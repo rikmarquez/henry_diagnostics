@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVehiclesCount = exports.getVehicleHistory = exports.deleteVehicle = exports.updateVehicle = exports.getVehicleByVin = exports.searchVehicles = exports.createVehicle = void 0;
+exports.getVehiclesCount = exports.getVehicleHistory = exports.deleteVehicle = exports.updateVehicle = exports.getVehicleById = exports.getVehicleByVin = exports.searchVehicles = exports.createVehicle = void 0;
 const zod_1 = require("zod");
 const connection_1 = require("../database/connection");
 const vinSchema = zod_1.z.string().transform(val => val === '' ? undefined : val).optional();
@@ -280,6 +280,54 @@ const getVehicleByVin = async (req, res) => {
     }
 };
 exports.getVehicleByVin = getVehicleByVin;
+const getVehicleById = async (req, res) => {
+    try {
+        const vehicleId = parseInt(req.params.id);
+        if (isNaN(vehicleId)) {
+            return res.status(400).json({ message: 'ID de vehículo inválido' });
+        }
+        const result = await (0, connection_1.query)(`
+      SELECT 
+        v.*,
+        c.nombre as customer_nombre,
+        c.telefono as customer_telefono,
+        c.whatsapp as customer_whatsapp,
+        c.email as customer_email,
+        c.direccion as customer_direccion
+      FROM vehicles v
+      LEFT JOIN customers c ON v.customer_id = c.customer_id
+      WHERE v.vehicle_id = $1 AND v.activo = true
+    `, [vehicleId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Vehículo no encontrado' });
+        }
+        const vehicle = result.rows[0];
+        const { customer_nombre, customer_telefono, customer_whatsapp, customer_email, customer_direccion, ...vehicleData } = vehicle;
+        // Obtener historial de placas
+        const plateHistory = await (0, connection_1.query)(`
+      SELECT * FROM vehicle_plate_history 
+      WHERE vehicle_id = $1 
+      ORDER BY fecha_cambio DESC
+    `, [vehicleId]);
+        const vehicleResponse = {
+            ...vehicleData,
+            customer: customer_nombre ? {
+                nombre: customer_nombre,
+                telefono: customer_telefono,
+                whatsapp: customer_whatsapp,
+                email: customer_email,
+                direccion: customer_direccion
+            } : null,
+            plate_history: plateHistory.rows,
+        };
+        res.json({ vehicle: vehicleResponse });
+    }
+    catch (error) {
+        console.error('Error obteniendo vehículo por ID:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+exports.getVehicleById = getVehicleById;
 const updateVehicle = async (req, res) => {
     try {
         const vin = vinSchema.parse(req.params.vin);
